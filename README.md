@@ -1,5 +1,5 @@
 # MTGO-DB
-**MTGO-DB** is a cloud-based data ingestion tool used to process raw data for **Magic: the Gathering Online**. 
+**MTGO-DB.com** is a cloud-based data ingestion tool used to process raw data for **Magic: the Gathering Online**. 
 
 Players can upload and process raw data files created during online play. The processed data is then loaded and stored in a PostgreSQL database, after which users can clean and enhance their own records. Data is presented to the user in the form of tables and dashboards which help players track their results, evaluate their performance, and analyze their play patterns.
 
