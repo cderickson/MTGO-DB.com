@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Create Your Account{% endblock %}
+
+{% block content %}
+
+<div class="container">
+  <div class="section">
+    <div class="section-header">
+      <h1 class="section-title">Create Your Account</h1>
+      <p class="section-subtitle">Join MTGO-DB and start analyzing your Magic: The Gathering Online data today</p>
+    </div>
+
+    <div class="auth-container" style="max-width: 500px; margin: 0 auto;">
+      <div class="card">
+        <div class="card-content">
+          <form action="/email" method="POST">
+            <div class="form-group">
+              <label for="reg_email" class="form-label">Email Address</label>
+              <input type="email" class="form-input" id="reg_email" name="email" placeholder="Enter your email address" value="{{ inputs.0 if inputs else '' }}" required>
+              <small style="color: var(--fg-muted); font-size: 0.875rem;">We'll never share your email with anyone else.</small>
+            </div>
+            
+            <div class="form-group">
+              <label for="reg_pwd" class="form-label">Password</label>
+              <div style="position: relative;">
+                <input type="password" class="form-input" id="reg_pwd" name="pwd" placeholder="Create a strong password" value="{{ inputs.1 if inputs else '' }}" required>
+                <button type="button" class="password-toggle" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--fg-muted); cursor: pointer;">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+              <div class="password-strength" style="font-size: 0.875rem; margin-top: 0.5rem; font-weight: 500;"></div>
+            </div>
+            
+            <div class="form-group">
+              <label for="reg_pwd_confirm" class="form-label">Confirm Password</label>
+              <div style="position: relative;">
+                <input type="password" class="form-input" id="reg_pwd_confirm" name="pwd_confirm" placeholder="Confirm your password" value="{{ inputs.2 if inputs else '' }}" required>
+                <button type="button" class="password-toggle" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--fg-muted); cursor: pointer;">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+              <div id="password-match-indicator" style="font-size: 0.875rem; margin-top: 0.5rem; font-weight: 500;"></div>
+            </div>
+            
+            <div class="form-group">
+              <label for="reg_hero" class="form-label">MTGO Username</label>
+              <input type="text" class="form-input" id="reg_hero" name="hero" placeholder="Enter your MTGO username" value="{{ inputs.3 if inputs else '' }}" required>
+              <small style="color: var(--fg-muted); font-size: 0.875rem;">This helps us identify your game logs and match data.</small>
+            </div>
+
+            <button type="submit" class="btn btn-primary large" style="width: 100%; margin-top: var(--spacing-md);">
+              Create Account
+            </button>
+            
+            <div class="text-center" style="margin-top: var(--spacing-lg);">
+              <p style="color: var(--fg-muted); margin-bottom: var(--spacing-sm);">Already have an account?</p>
+              <a href="/login" class="btn btn-tertiary">Sign In Instead</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Register page specific styles */
+.auth-container .card {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-2xl);
+  box-shadow: var(--shadow-lg);
+}
+
+.form-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.form-label {
+  display: block;
+  font-weight: 500;
+  color: var(--fg-default);
+  margin-bottom: var(--spacing-sm);
+  font-size: 0.9rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--form-input-bg, var(--dusk));
+  border: 1px solid var(--form-input-border, var(--dusk-90));
+  border-radius: var(--radius-sm);
+  color: var(--form-input-fg, var(--dusk-10));
+  font-family: var(--primary-font);
+  font-size: 16px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--form-input-focused-border, var(--dusk-70));
+  box-shadow: 0 0 0 3px rgba(255, 68, 56, 0.1);
+}
+
+.form-input::placeholder {
+  color: var(--form-input-placeholder, var(--dusk-50));
+}
+
+.password-toggle {
+  transition: color var(--transition-fast);
+}
+
+.password-toggle:hover {
+  color: var(--fg-default) !important;
+}
+
+.password-strength {
+  font-weight: 500;
+}
+
+.password-match {
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .auth-container .card {
+    padding: var(--spacing-lg);
+  }
+  
+  .section-title {
+    font-size: 2rem;
+  }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Password visibility toggle
+  const passwordToggles = document.querySelectorAll('.password-toggle');
+  passwordToggles.forEach(toggle => {
+    toggle.addEventListener('click', function() {
+      const input = this.previousElementSibling;
+      const type = input.type === 'password' ? 'text' : 'password';
+      input.type = type;
+      
+      // Update icon
+      const icon = this.querySelector('i');
+      if (icon) {
+        icon.className = type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+      }
+    });
+  });
+
+  // Password strength indicator
+  const passwordInput = document.getElementById('reg_pwd');
+  const strengthIndicator = document.querySelector('.password-strength');
+  
+  if (passwordInput && strengthIndicator) {
+    passwordInput.addEventListener('input', function() {
+      const strength = calculatePasswordStrength(this.value);
+      updatePasswordStrengthIndicator(strength);
+    });
+  }
+
+  function calculatePasswordStrength(password) {
+    let score = 0;
+    let feedback = [];
+    
+    if (password.length >= 8) {
+      score += 1;
+    } else if (password.length > 0) {
+      feedback.push('At least 8 characters');
+    }
+    
+    if (/[a-z]/.test(password)) score += 1;
+    else if (password.length > 0) feedback.push('Lowercase letter');
+    
+    if (/[A-Z]/.test(password)) score += 1;
+    else if (password.length > 0) feedback.push('Uppercase letter');
+    
+    if (/[0-9]/.test(password)) score += 1;
+    else if (password.length > 0) feedback.push('Number');
+    
+    if (/[^A-Za-z0-9]/.test(password)) score += 1;
+    else if (password.length > 0) feedback.push('Special character');
+    
+    return { score: Math.min(score, 5), feedback };
+  }
+
+  function updatePasswordStrengthIndicator(result) {
+    const { score, feedback } = result;
+    const strengthTexts = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
+    const strengthColors = ['#ff4438', '#ff736a', '#ffa500', '#ffd700', '#90ee90', '#dcff1e'];
+    
+    if (score === 0) {
+      strengthIndicator.textContent = '';
+      return;
+    }
+    
+    strengthIndicator.textContent = `Strength: ${strengthTexts[score]}`;
+    strengthIndicator.style.color = strengthColors[score];
+    
+    if (feedback.length > 0 && score < 4) {
+      strengthIndicator.textContent += ` (Need: ${feedback.join(', ')})`;
+    }
+  }
+
+  // Password confirmation matching
+  const confirmInput = document.getElementById('reg_pwd_confirm');
+  const matchIndicator = document.getElementById('password-match-indicator');
+  
+  function checkPasswordMatch() {
+    if (!confirmInput.value) {
+      matchIndicator.textContent = '';
+      return;
+    }
+    
+    if (passwordInput.value === confirmInput.value) {
+      matchIndicator.textContent = '✓ Passwords match';
+      matchIndicator.style.color = '#dcff1e';
+    } else {
+      matchIndicator.textContent = '✗ Passwords do not match';
+      matchIndicator.style.color = '#ff4438';
+    }
+  }
+  
+  if (confirmInput && matchIndicator) {
+    confirmInput.addEventListener('input', checkPasswordMatch);
+    passwordInput.addEventListener('input', checkPasswordMatch);
+  }
+
+  // Form validation
+  const form = document.querySelector('form');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      const email = document.getElementById('reg_email').value;
+      const password = passwordInput.value;
+      const confirmPassword = confirmInput.value;
+      const username = document.getElementById('reg_hero').value;
+      
+      // Basic validation
+      if (!email || !password || !confirmPassword || !username) {
+        e.preventDefault();
+        alert('Please fill in all fields.');
+        return;
+      }
+      
+      if (password !== confirmPassword) {
+        e.preventDefault();
+        alert('Passwords do not match.');
+        return;
+      }
+      
+      if (password.length < 6) {
+        e.preventDefault();
+        alert('Password must be at least 6 characters long.');
+        return;
+      }
+      
+      // If we get here, form is valid
+      const submitBtn = form.querySelector('button[type="submit"]');
+      submitBtn.innerHTML = '<span class="spinner" style="width: 16px; height: 16px; margin-right: 8px;"></span> Creating Account...';
+      submitBtn.disabled = true;
+    });
+  }
+
+  // Auto-focus on first input
+  const firstInput = document.getElementById('reg_email');
+  if (firstInput) {
+    firstInput.focus();
+  }
+});
+</script>
+
+{% endblock %}

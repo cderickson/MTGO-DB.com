@@ -1,0 +1,41 @@
+td.td-small {
+  font-size: 9pt;
+  max-width: 100px;
+  min-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+th.th-small {
+  font-size: 9pt;
+  max-width: 100px;
+  min-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+table tr.tr-table-page {
+  background: #f0f0f0;
+}
+table tr.active {
+  background: #3c3c3c;
+  color: #f9f9f9;
+}
+.card {
+  width: auto;
+}
+.card-body {
+  overflow-x: auto;
+}
+.revise-button {
+  width: 150px;
+}
+.nav-button {
+  width: 150px;
+}
+.ignored {
+  font-size: 12pt;
+}
+.ignored-header {
+  font-size: 12pt;
+}

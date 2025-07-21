@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block page_title %}{% endblock %}
+
+{% block content %}
+
+<div class="container">
+  <div class="section">
+    <div class="section-header">
+      <h1 class="section-title">Welcome to MTGO-DB</h1>
+      <p class="section-subtitle">Sign in to access your Magic: The Gathering Online data and analytics</p>
+    </div>
+
+    <div class="auth-container" style="max-width: 500px; margin: 0 auto;">
+      <!-- Login Form -->
+      <div class="card">
+        <div class="card-content">
+          <form id="loginForm" action="/login" method="POST">
+            <div class="form-group">
+              <label for="login_email" class="form-label">Email Address</label>
+              <input type="email" class="form-input" id="login_email" name="login_email" placeholder="Enter your email" value="{{ inputs.0 if inputs else '' }}" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="login_pwd" class="form-label">Password</label>
+              <div style="position: relative;">
+                <input type="password" class="form-input" id="login_pwd" name="login_pwd" placeholder="Enter your password" value="{{ inputs.1 if inputs else '' }}" required>
+                <button type="button" class="password-toggle" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--fg-muted); cursor: pointer;">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; justify-content: center; align-items: center;">
+              <button type="submit" class="btn btn-primary" style="width: 160px;">
+                Sign In
+              </button>
+              <button type="button" class="btn btn-primary" onclick="showResetModal()" style="width: 160px;">
+                Reset Password
+              </button>
+            </div>
+
+            {% if not_confirmed %}
+            <div class="alert info">
+              <strong>Email not confirmed!</strong> Click below to resend confirmation email.
+            </div>
+            <button type="button" class="btn btn-tertiary" onclick="sendConfirmationEmail()" style="width: 100%;">
+              Send Confirmation Email
+            </button>
+            {% endif %}
+          </form>
+          
+          <!-- Link to Register Page -->
+          <div style="text-align: center; margin-top: var(--spacing-lg); padding-top: var(--spacing-lg); border-top: 1px solid var(--stroke-divider);">
+            <p style="color: var(--fg-muted); margin-bottom: var(--spacing-sm);">
+              Don't have an account?
+            </p>
+            <a href="{{ url_for('views.register') }}" class="btn btn-primary">
+              Create Account
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden forms for backend compatibility -->
+<form action="/send_confirmation_email" id="confirm_email_form" method="POST" style="display: none;">
+  <input type="hidden" name="confirm_email" id="confirm_email" value="">
+  <input type="hidden" name="confirm_pwd" id="confirm_pwd" value="">
+</form>
+
+<form action="/reset_pwd" method="POST" id="reset_form" style="display: none;">
+  <input type="hidden" name="reset_email" id="reset_email" value="">
+</form>
+
+<!-- Reset Password Modal -->
+<div id="resetModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+  <div class="modal-content" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--spacing-xl); max-width: 400px; width: 90%;">
+    <div class="modal-header" style="margin-bottom: var(--spacing-lg);">
+      <h3 style="margin: 0; color: var(--fg-default);">Reset Password</h3>
+      <button type="button" onclick="hideResetModal()" style="background: none; border: none; color: var(--fg-muted); font-size: 1.5rem; cursor: pointer; position: absolute; right: 1rem; top: 1rem;">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="color: var(--fg-body); margin-bottom: var(--spacing-lg);">
+        Enter your email address and we'll send you a link to reset your password.
+      </p>
+      <div class="form-group">
+        <label for="reset_email_input" class="form-label">Email Address</label>
+        <input type="email" class="form-input" id="reset_email_input" placeholder="Enter your email">
+      </div>
+    </div>
+    <div class="modal-footer" style="display: flex; gap: var(--spacing-sm); justify-content: flex-end;">
+      <button type="button" class="btn btn-primary" onclick="hideResetModal()">Cancel</button>
+      <button type="button" class="btn btn-primary" onclick="sendResetEmail()">Send Reset Link</button>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='login-js.js') }}"></script>
+
+<script>
+// Functions for login page functionality
+function showResetModal() {
+  document.getElementById('resetModal').style.display = 'block';
+  document.getElementById('reset_email_input').value = document.getElementById('login_email').value || '';
+}
+
+function hideResetModal() {
+  document.getElementById('resetModal').style.display = 'none';
+}
+
+function sendResetEmail() {
+  const email = document.getElementById('reset_email_input').value;
+  if (!email) {
+    alert('Please enter an email address');
+    return;
+  }
+  
+  document.getElementById('reset_email').value = email;
+  document.getElementById('reset_form').submit();
+}
+
+function sendConfirmationEmail() {
+  const email = document.getElementById('login_email').value;
+  const password = document.getElementById('login_pwd').value;
+  
+  if (!email || !password) {
+    alert('Please enter both email and password');
+    return;
+  }
+  
+  document.getElementById('confirm_email').value = email;
+  document.getElementById('confirm_pwd').value = password;
+  document.getElementById('confirm_email_form').submit();
+}
+
+// Close modal when clicking outside
+document.getElementById('resetModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    hideResetModal();
+  }
+});
+</script>
+
+<style>
+.modal {
+  backdrop-filter: blur(5px);
+}
+</style>
+
+{% endblock %}

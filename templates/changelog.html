@@ -1,0 +1,491 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Change Log{% endblock %}
+
+{% block content %}
+
+<div class="accordion-container full-width">
+	
+	<!-- Version 1.0.0 - Initial Release -->
+	<div class="accordion-item" data-target="v1-0-0">
+	<div class="accordion-header">
+		<h3 class="accordion-title">
+		Version 1.0.0 - Initial Release
+		<span class="version-date">November 1, 2023</span>
+		</h3>
+		<i class="fas fa-chevron-down accordion-arrow"></i>
+	</div>
+	<div class="accordion-content" id="v1-0-0">
+		<div class="accordion-body">
+		<div class="info-box" style="background: rgba(220, 255, 30, 0.1); border-left-color: var(--yellow);">
+			<p><strong>Welcome to MTGO-DB!</strong> The first public release of the web-based MTGO data analytics platform.</p>
+		</div>
+		
+		<h4>Core Features</h4>
+		<div class="feature-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
+			<div class="feature-item">
+			<i class="fas fa-upload" style="color: var(--fg-brand);"></i>
+			<h5>Data Import</h5>
+			<p>Upload and process MTGO GameLog and DraftLog files</p>
+			</div>
+			<div class="feature-item">
+			<i class="fas fa-chart-line" style="color: var(--fg-brand);"></i>
+			<h5>Analytics Dashboard</h5>
+			<p>View match statistics and performance metrics</p>
+			</div>
+			<div class="feature-item">
+			<i class="fas fa-table" style="color: var(--fg-brand);"></i>
+			<h5>Data Tables</h5>
+			<p>Browse matches, games, drafts, and plays</p>
+			</div>
+			<div class="feature-item">
+			<i class="fas fa-download" style="color: var(--fg-brand);"></i>
+			<h5>Data Export</h5>
+			<p>Export your data as CSV files</p>
+			</div>
+		</div>
+		
+		<h4>Key Capabilities</h4>
+		<ul>
+			<li><strong>User Registration:</strong> Secure account creation and email verification</li>
+			<li><strong>GameLog Processing:</strong> Automated parsing of MTGO game files</li>
+			<li><strong>Draft Analysis:</strong> Track draft picks and performance</li>
+			<li><strong>Match History:</strong> Detailed match and game statistics</li>
+			<li><strong>Data Cleaning:</strong> Tools to improve and organize your data</li>
+			<li><strong>MTGO-Tracker Import:</strong> Migrate data from the desktop application</li>
+		</ul>
+		
+		<div class="link-card">
+			<div class="link-icon">
+			<i class="fas fa-play"></i>
+			</div>
+			<div class="link-content">
+			<h4><a href="/getting_started">Get Started</a></h4>
+			<p>Learn how to set up your account and import your first data</p>
+			</div>
+		</div>
+		</div>
+	</div>
+	</div>
+
+	<!-- Future Updates Section -->
+	<div class="accordion-item" data-target="future">
+	<div class="accordion-header">
+		<h3 class="accordion-title">
+		Planned Features & Roadmap
+		</h3>
+		<i class="fas fa-chevron-down accordion-arrow"></i>
+	</div>
+	<div class="accordion-content" id="future">
+		<div class="accordion-body">
+		<div class="info-box">
+			<p><strong>Coming Soon:</strong> We're constantly working on new features and improvements based on user feedback.</p>
+		</div>
+		
+		<h4>Potential Future Enhancements</h4>
+		<div class="steps-container">
+			<div class="step-card">
+				<div class="step-icon">
+					<i class="fas fa-mobile-alt"></i>
+				</div>
+				<div class="step-content">
+					<h4>Mobile Optimization</h4>
+					<p>Enhanced mobile experience for viewing data on the go</p>
+				</div>
+			</div>
+			<div class="step-card">
+				<div class="step-icon">
+					<i class="fas fa-chart-pie"></i>
+				</div>
+				<div class="step-content">
+					<h4>Advanced Analytics</h4>
+					<p>More detailed statistics and performance insights</p>
+				</div>
+			</div>
+			<div class="step-card">
+				<div class="step-icon">
+					<i class="fas fa-users"></i>
+				</div>
+				<div class="step-content">
+					<h4>Commander Support</h4>
+					<p>Expanded format support for multiplayer games</p>
+				</div>
+			</div>
+			<div class="step-card">
+				<div class="step-icon">
+					<i class="fas fa-api"></i>
+				</div>
+				<div class="step-content">
+					<h4>API Access</h4>
+					<p>Programmatic access to your data for custom applications</p>
+				</div>
+			</div>
+		</div>
+		
+		<div class="link-card" style="margin-top: var(--spacing-md);">
+			<div class="link-icon">
+			<i class="fas fa-lightbulb"></i>
+			</div>
+			<div class="link-content">
+			<h4><a href="/contact">Suggest Features</a></h4>
+			<p>Have an idea? Let us know what features you'd like to see!</p>
+			</div>
+		</div>
+		</div>
+	</div>
+	</div>
+
+	<!-- Contributing Section -->
+	<div class="accordion-item" data-target="contribute">
+	<div class="accordion-header">
+		<h3 class="accordion-title">
+		How to Contribute
+		</h3>
+		<i class="fas fa-chevron-down accordion-arrow"></i>
+	</div>
+	<div class="accordion-content" id="contribute">
+		<div class="accordion-body">
+		<p>MTGO-DB is an open-source project and we welcome contributions from the community!</p>
+		
+		<h4>Ways to Help</h4>
+		<div class="feature-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
+			<div class="feature-item">
+			<i class="fas fa-bug" style="color: var(--redis-red);"></i>
+			<h5>Report Bugs</h5>
+			<p>Help us find and fix issues</p>
+			</div>
+			<div class="feature-item">
+			<i class="fas fa-code" style="color: var(--fg-brand);"></i>
+			<h5>Contribute Code</h5>
+			<p>Submit pull requests with improvements</p>
+			</div>
+			<div class="feature-item">
+			<i class="fas fa-comments" style="color: var(--sky-blue);"></i>
+			<h5>Provide Feedback</h5>
+			<p>Share your user experience and suggestions</p>
+			</div>
+			<div class="feature-item">
+			<i class="fas fa-share" style="color: var(--yellow);"></i>
+			<h5>Spread the Word</h5>
+			<p>Tell other MTGO players about the platform</p>
+			</div>
+		</div>
+		
+		<div class="link-card">
+			<div class="link-icon">
+			<i class="fab fa-github"></i>
+			</div>
+			<div class="link-content">
+			<h4><a href="https://github.com/cderickson/MTGO-DB" target="_blank">View on GitHub</a></h4>
+			<p>Check out the source code and contribute to the project</p>
+			</div>
+		</div>
+		</div>
+	</div>
+	</div>
+
+</div>
+
+<style>
+/* Redis.io Inspired Accordion Styles */
+.accordion-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.accordion-item {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+.accordion-item:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.accordion-header:hover {
+  background: var(--bg-default-hover);
+}
+
+.accordion-title {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--fg-default);
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.version-date {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--fg-muted);
+  background: var(--bg-default);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.accordion-arrow {
+  color: var(--fg-muted);
+  transition: transform var(--transition-fast);
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.accordion-item.active .accordion-arrow {
+  transform: rotate(180deg);
+}
+
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height var(--transition-normal) ease-out;
+}
+
+.accordion-item.active .accordion-content {
+  max-height: 2500px;
+}
+
+.accordion-body {
+  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-lg);
+  color: var(--fg-body);
+  line-height: 1.6;
+}
+
+.accordion-body h4 {
+  margin: var(--spacing-lg) 0 var(--spacing-md) 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--fg-default);
+}
+
+.accordion-body h4:first-child {
+  margin-top: 0;
+}
+
+.accordion-body p {
+  margin-bottom: var(--spacing-md);
+}
+
+.accordion-body ul {
+  margin: var(--spacing-md) 0;
+  padding-left: var(--spacing-lg);
+}
+
+.accordion-body li {
+  margin-bottom: var(--spacing-sm);
+}
+
+.accordion-body a {
+  color: var(--fg-brand);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.accordion-body a:hover {
+  color: var(--hyper-04);
+  text-decoration: underline;
+}
+
+/* Step Cards for Changelog */
+.steps-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.step-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: var(--bg-default);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.step-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.step-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--fg-brand);
+  color: var(--base-white);
+  border-radius: var(--radius-md);
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.step-content h4 {
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--fg-default);
+}
+
+.step-content p {
+  margin: 0;
+  color: var(--fg-body);
+}
+
+/* Link Cards */
+.link-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: var(--bg-default);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin: var(--spacing-md) 0;
+  transition: all var(--transition-fast);
+}
+
+.link-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.link-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--fg-brand);
+  color: var(--base-white);
+  border-radius: var(--radius-md);
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.link-content h4 {
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.link-content h4 a {
+  color: var(--fg-default);
+  text-decoration: none;
+}
+
+.link-content h4 a:hover {
+  color: var(--fg-brand);
+}
+
+.link-content p {
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 0.9rem;
+}
+
+/* Info Boxes */
+.info-box {
+  background: rgba(128, 219, 255, 0.1);
+  border-left: 4px solid var(--sky-blue);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-lg);
+  margin: var(--spacing-lg) 0;
+}
+
+.info-box p {
+  margin: 0;
+  color: var(--fg-body);
+}
+
+/* Feature Grid */
+.feature-item {
+  text-align: center;
+  padding: var(--spacing-lg);
+  background: var(--bg-default);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.feature-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.feature-item i {
+  font-size: 2rem;
+  margin-bottom: var(--spacing-md);
+  display: block;
+}
+
+.feature-item h5 {
+  margin: 0 0 var(--spacing-sm) 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--fg-default);
+}
+
+.feature-item p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .accordion-header {
+    padding: var(--spacing-md);
+  }
+  
+  .accordion-body {
+    padding: var(--spacing-md) var(--spacing-md) var(--spacing-md);
+  }
+  
+  .accordion-title {
+    font-size: 1.125rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .version-date {
+    align-self: flex-start;
+  }
+  
+  .step-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .link-card {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+</style>
+
+{% endblock %}

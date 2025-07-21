@@ -1,14 +1,54 @@
+# Python
 __pycache__/
-website/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Local development
+local_database.db
+local-dev/data/uploads/
+local-dev/data/logs/
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
 
 # UTILITY FILES
 instance/
 instance/database.db
+
 # AUXILIARY FILES
-website/export/*.zip
+export/*.zip
 gamelogs/*
 draftlogs/*
 upload/*
 export/*
 query_script.py
-# website/config.cfg
+
+# Configuration (uncomment if you want to exclude config files)
+# local-dev/local_config.cfg

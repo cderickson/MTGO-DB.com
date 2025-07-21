@@ -1,0 +1,137 @@
+/*th {
+  font-size: 12pt;
+}
+td {
+  font-size: 12pt;
+}*/
+th.match-history {
+  font-size: 12pt;
+  width: 150px;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+td.match-history {
+  font-size: 12pt;
+  width: 150px;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+th.match-stats {
+  font-size: 12pt;
+  width: 150px;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+td.match-stats {
+  font-size: 12pt;
+  width: 150px;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+th.die-roll {
+  font-size: 12pt;
+  width: 250px;
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+td.die-roll {
+  font-size: 12pt;
+  width: 250px;
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+th.game-stats {
+  font-size: 14pt;
+  width: 125px;
+  max-width: 125px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+td.game-stats {
+  font-size: 12pt;
+  width: 125px;
+  max-width: 125px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+th.play-stats {
+  font-size: 12pt;
+  width: 125px;
+  max-width: 125px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+td.play-stats {
+  font-size: 12pt;
+  width: 125px;
+  max-width: 125px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+th.card-stats {
+  font-size: 12pt;
+  width: 150px;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+td.card-data {
+  font-size: 12pt;
+  width: 150px;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/*th[scope="row"]{
+  font-size: 12pt;
+}
+th[scope="col"]{
+  font-size: 14pt;
+}*/
+table tr.rowGreen {
+  background: #a3ffb1;
+}
+table tr.rowRed {
+  background: #ffa3a3;
+}
+table tr {
+  background: #CBCBCB;
+}
+table tr.rowWhite {
+  background: #ffffff;
+}
+.card {
+  width: auto;
+  max-height: 800px;
+  overflow-y: scroll;
+}
+.card-body {
+  overflow-x: auto;
+}
+.dash-filter {
+  width: 175px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.row-gap {
+  margin-bottom: 20px;
+}

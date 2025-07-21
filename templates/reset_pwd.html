@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+  <div class="container">
+    <div class="row justify-content-md-center">
+      <div class="col-lg-8 mb-3">
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="row">
+
+                <form action="/change_pwd" method="POST">
+                  <input type="hidden" name="email" id="email" value="{{ inputs.0 }}">
+                  <div class="mb-3">
+                    <h4><p><b><center>{{ inputs.0 }}</center></b></p></h4>
+                  </div>
+                  <div class="mb-3">
+                    <label for="reg_pwd" class="form-label">New Password</label>
+                    <input type="password" class="form-control" id="new_pwd" name="new_pwd" placeholder="Password" value="">
+                  </div>
+                  <div class="mb-3">
+                    <label for="reg_pwd" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" id="new_pwd_confirm" name="new_pwd_confirm" placeholder="Confirm Password" value="">
+                  </div>
+                  <button type="submit" class="btn btn-dark modal-button">Submit</button>
+                </form>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> 
+
+{% endblock %}

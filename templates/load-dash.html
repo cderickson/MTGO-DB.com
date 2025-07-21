@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<script>
+var dynamicUrl = "{{ dash_name }}"
+window.directLink = true
+console.log("in load_dash.html:" + dynamicUrl)
+console.log("in load_dash.html:" + window.directLink)
+</script>
+
+{% endblock %}

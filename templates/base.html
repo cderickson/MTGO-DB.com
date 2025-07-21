@@ -1,0 +1,980 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MTGO-DB - Magic: The Gathering Online Database</title>
+    <link rel="icon" href="{{ url_for('static', filename='icon_1.png') }}" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='base-style.css') }}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script src="{{ url_for('static', filename='base-js.js') }}" defer></script>
+    <script>var directLink = false</script>
+  </head>
+  
+  <body>
+    <!-- Unified Header -->
+    <header class="unified-header">
+      <div class="header-left">
+        <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+          <i class="fas fa-bars"></i>
+        </button>
+        <a href="{{ url_for('views.index') }}" class="header-brand">
+          <img src="{{ url_for('static', filename='icon2.png') }}" width="32" height="32" class="brand-icon">
+          <span class="brand-text">MTGO-DB</span>
+        </a>
+      </div>
+      <div class="header-center">
+        <h1 class="page-title section-title">{% block page_title %}MTGO-DB{% endblock %}</h1>
+      </div>
+      <div class="header-right">
+        <!-- Space for future header actions -->
+      </div>
+    </header>
+
+    <div id="loadBlock" class="app-layout">
+      <!-- Sidebar Navigation -->
+      <nav class="sidebar" id="sidebar">
+
+        <div class="sidebar-content">
+          <div class="nav-section">
+            <h3 class="nav-section-title">MTGO-DB</h3>
+            <ul class="nav-list">
+              <li class="nav-item">
+                <a href="{{ url_for('views.getting_started') }}" class="nav-link">
+                  <i class="fas fa-play-circle nav-icon"></i>
+                  <span class="nav-text">Getting Started</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('views.faq') }}" class="nav-link">
+                  <i class="fas fa-question-circle nav-icon"></i>
+                  <span class="nav-text">FAQ</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('views.changelog') }}" class="nav-link">
+                  <i class="fas fa-history nav-icon"></i>
+                  <span class="nav-text">Change Log</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('views.contact') }}" class="nav-link">
+                  <i class="fas fa-envelope nav-icon"></i>
+                  <span class="nav-text">Contact/Links</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('views.data_dict') }}" class="nav-link">
+                  <i class="fas fa-book nav-icon"></i>
+                  <span class="nav-text">Data Dictionary</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" onclick="showZipLogsModal()">
+                  <i class="fas fa-file-archive nav-icon"></i>
+                  <span class="nav-text">Zip-MTGO-Logs Script</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {% if user.is_authenticated %}
+          <div class="nav-section">
+            <h3 class="nav-section-title">Tables</h3>
+            <ul class="nav-list">
+              <li class="nav-item">
+                <a href="{{ url_for('views.table', table_name='matches', page_num=1) }}" class="nav-link">
+                  <i class="fas fa-chess-board nav-icon"></i>
+                  <span class="nav-text">Matches</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('views.table', table_name='drafts', page_num=1) }}" class="nav-link">
+                  <i class="fas fa-cube nav-icon"></i>
+                  <span class="nav-text">Drafts</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+          
+          <div class="nav-section">
+            <h3 class="nav-section-title">Data Cleaning</h3>
+            <ul class="nav-list">
+              <li class="nav-item">
+                <a href="#" class="nav-link" onclick="showBestGuessModal()">
+                  <i class="fas fa-magic nav-icon"></i>
+                  <span class="nav-text">Best Guess Deck Names</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" id="getMissingMenuButton" onclick="initGetWinner()">
+                  <i class="fas fa-trophy nav-icon"></i>
+                  <span class="nav-text">Get Missing Game Winners</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" id="applyDraftIdMenuButton" onclick="initGetDraftId()">
+                  <i class="fas fa-link nav-icon"></i>
+                  <span class="nav-text">Apply Associated Draft_IDs</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+          
+          <div class="nav-section">
+            <h3 class="nav-section-title">Processing</h3>
+            <ul class="nav-list">
+              <li class="nav-item">
+                <a href="#" class="nav-link" onclick="showImportModal()">
+                  <i class="fas fa-upload nav-icon"></i>
+                  <span class="nav-text">Import GameLogs</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" onclick="showImportAppModal()">
+                  <i class="fas fa-download nav-icon"></i>
+                  <span class="nav-text">Import from MTGO-Tracker</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" onclick="showReprocessModal()">
+                  <i class="fas fa-redo nav-icon"></i>
+                  <span class="nav-text">Reprocess Archived Files</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('views.export') }}" class="nav-link">
+                  <i class="fas fa-file-csv nav-icon"></i>
+                  <span class="nav-text">Export to CSV</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+          
+          <div class="nav-section">
+            <h3 class="nav-section-title">Dashboards</h3>
+            <ul class="nav-list">
+              <li class="nav-item">
+                <a href="{{ url_for('views.load_dash', dash_name='match-history') }}" class="nav-link">
+                  <i class="fas fa-history nav-icon"></i>
+                  <span class="nav-text">Match History</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('views.load_dash', dash_name='match-stats') }}" class="nav-link">
+                  <i class="fas fa-chart-bar nav-icon"></i>
+                  <span class="nav-text">Match Stats</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('views.load_dash', dash_name='game-stats') }}" class="nav-link">
+                  <i class="fas fa-gamepad nav-icon"></i>
+                  <span class="nav-text">Game Stats</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('views.load_dash', dash_name='play-stats') }}" class="nav-link">
+                  <i class="fas fa-list nav-icon"></i>
+                  <span class="nav-text">Play Stats</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('views.load_dash', dash_name='card-data') }}" class="nav-link">
+                  <i class="fas fa-cards nav-icon"></i>
+                  <span class="nav-text">Card Data</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+          {% endif %}
+        </div>
+
+        {% if user.is_authenticated %}
+        <div class="sidebar-footer">
+          <div class="user-menu">
+            <div class="user-info" onclick="toggleUserDropdown()">
+              <i class="fas fa-user-circle user-avatar"></i>
+              <div class="user-details">
+                <span class="user-email">{{ user.email }}</span>
+                <i class="fas fa-chevron-up user-chevron"></i>
+              </div>
+            </div>
+            <div class="user-dropdown" id="user-dropdown">
+              <a href="{{ url_for('views.profile') }}" class="user-dropdown-item">
+                <i class="fas fa-user nav-icon"></i>
+                Profile
+              </a>
+              <a href="{{ url_for('views.logout') }}" class="user-dropdown-item">
+                <i class="fas fa-sign-out-alt nav-icon"></i>
+                Logout
+              </a>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div class="sidebar-footer">
+          <div class="auth-buttons">
+            <a href="{{ url_for('views.login') }}" class="auth-btn login-btn">
+              <i class="fas fa-sign-in-alt nav-icon"></i>
+              <span class="nav-text">Login</span>
+            </a>
+            <a href="{{ url_for('views.register') }}" class="auth-btn register-btn">
+              <i class="fas fa-user-plus nav-icon"></i>
+              <span class="nav-text">Register</span>
+            </a>
+          </div>
+        </div>
+        {% endif %}
+      </nav>
+
+      <!-- Main Content Area -->
+      <div class="main-content" id="main-content">
+        <!-- Page Content -->
+        <main class="content-wrapper">
+          {% block content %}{% endblock %}
+        </main>
+      </div>
+    </div>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+      <!-- Game Winner Modal -->
+      <div id="GameWinnerModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 800px; width: 90%;">
+          <div class="modal-header">
+            <h3>Missing Game_Winners</h3>
+            <button type="button" class="modal-close" onclick="hideGameWinnerModal()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div id="GameWinnerModalDate" class="text-center mb-3">
+              Date
+            </div>
+            <hr>
+            <div id="EndGameActions">
+              Game Action 1<br>
+              Game Action 2<br>
+              Game Action 3<br>
+              Game Action 4<br>
+              Game Action 5<br>
+              Game Action 6<br>
+              Game Action 7<br>
+              Game Action 8<br>
+              Game Action 9<br>
+              Game Action 10<br>
+              Game Action 11<br>
+              Game Action 12<br>
+              Game Action 13<br>
+              Game Action 14<br>
+              Game Action 15<br>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <div id="GameWinnerMessage" class="text-center mb-3">
+              <strong>Game_Winner could not be automatically determined. Please choose manually.</strong>
+            </div>
+            <div class="d-flex gap-3 justify-content-center">
+              <button type="button" class="button secondary" onclick="applyGetWinner('0')">Skip</button>
+              <button type="button" class="button primary" onclick="applyGetWinner('P1')">Player 1</button>
+              <button type="button" class="button primary" onclick="applyGetWinner('P2')">Player 2</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Draft ID Modal -->
+      <div id="DraftIdModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 900px; width: 90%;">
+          <div class="modal-header">
+            <h3>Apply Associated Draft_ID</h3>
+            <button type="button" class="modal-close" onclick="hideDraftIdModal()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div id="DraftIdModalDate" class="text-center mb-3">
+            </div>
+            <hr>
+            <div class="d-grid grid-3 gap-4">
+              <div id="DraftIdLands"></div>
+              <div id="DraftIdSpells"></div>
+              <div id="DraftIdSpells2"></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <div id="DraftIdMessage" class="text-center mb-3">
+              <strong>Choose the Draft_ID that should be associated with this Match.</strong>
+            </div>
+            <div class="d-flex gap-3 justify-content-center">
+              <div class="dropdown">
+                <button class="button secondary dropdown-toggle" type="button" id="DraftIdButton" onclick="toggleDropdown(event, 'DraftIdMenu')">
+                  Associated Draft_ID
+                </button>
+                <ul class="dropdown-menu" id="DraftIdMenu"></ul>
+              </div>
+              <button type="button" class="button secondary" onclick="applyGetDraftId(true)">Skip</button>
+              <button type="button" class="button primary" onclick="applyGetDraftId(false)">Apply</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Best Guess Modal -->
+      <div id="BestGuessModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px; width: 90%;">
+          <div class="modal-header">
+            <h3>Best Guess Deck Names</h3>
+            <button type="button" class="modal-close" onclick="hideBestGuessModal()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="getBestGuessModal" action="/best_guess" method="POST">
+              <input type="hidden" name="BG_Match_Set" id="BG_Match_Set" value="All Matches">
+              <input type="hidden" name="BG_Replace" id="BG_Replace" value="NA">
+              
+              <div class="form-group">
+                <label class="form-label">Match Set</label>
+                <select class="form-input" id="BG_Match_Set_Select" onchange="updateBestGuessForm()">
+                  <option value="All Matches">All Matches</option>
+                  <option value="Unnamed Matches">Unnamed Matches Only</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Replace Strategy</label>
+                <select class="form-input" id="BG_Replace_Select" onchange="updateBestGuessForm()">
+                  <option value="NA">Don't Replace Existing Names</option>
+                  <option value="Replace">Replace All Existing Names</option>
+                </select>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <div class="d-flex gap-3 justify-content-end">
+              <button type="button" class="button secondary" onclick="hideBestGuessModal()">Cancel</button>
+              <button type="submit" class="button primary" form="getBestGuessModal">Apply Best Guess</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Import Modal -->
+      <div id="ImportModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px; width: 90%;">
+          <div class="modal-header">
+            <h3>Import GameLogs</h3>
+            <button type="button" class="modal-close" onclick="hideImportModal()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="importForm" action="/load" method="POST" enctype="multipart/form-data">
+              <div class="form-group">
+                <label class="form-label">Select GameLog Files</label>
+                <input type="file" class="form-input" name="file" accept=".zip" required>
+                <small style="color: var(--fg-muted);">Select the .zip file created by the Zip-MTGO-Logs script</small>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <div class="d-flex gap-3 justify-content-end">
+              <button type="button" class="button secondary" onclick="hideImportModal()">Cancel</button>
+              <button type="submit" class="button primary" form="importForm">Import Files</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Processing Modal -->
+      <div id="processingModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 400px; width: 90%;">
+          <div class="modal-body text-center">
+            <div class="spinner" style="width: 40px; height: 40px; margin: 0 auto 20px;"></div>
+            <h4>Processing...</h4>
+            <p id="processingMessage">Please wait while we process your request.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Zip Logs Modal -->
+      <div id="ZipLogsModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 650px; width: 90%;">
+          <div class="modal-header">
+            <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+              <div>
+                <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Zip-MTGO-Logs Script</h3>
+                <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Prepare your GameLogs for import</p>
+              </div>
+            </div>
+            <button type="button" class="modal-close" onclick="hideZipLogsModal()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+              <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-md);">
+                <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
+                <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Get Started</h4>
+              </div>
+              <p style="margin: 0; color: var(--fg-body); line-height: 1.6;">Download and run the <strong><a href="https://github.com/cderickson/Scripts/raw/main/Zip-MTGO-Logs.exe" target="_blank" rel="noopener noreferrer" style="color: var(--sky-blue); text-decoration: none; font-weight: 600;">Zip-MTGO-Logs</a></strong> script to automatically package your MTGO files.</p>
+            </div>
+            
+            <div style="margin-bottom: var(--spacing-lg);">
+              <h4 style="color: var(--fg-default); font-size: 1rem; font-weight: 600; margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm);">
+                <i class="fas fa-cog" style="color: var(--fg-muted); font-size: 0.875rem;"></i>
+                What this script does
+              </h4>
+              <div style="display: grid; gap: var(--spacing-md);">
+                <div style="display: flex; align-items: start; gap: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-subtle); border-radius: var(--radius-md); border: 1px solid var(--border);">
+                  <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: rgba(34, 197, 94, 0.1); border-radius: var(--radius-md); color: #22c562; flex-shrink: 0;">
+                    <i class="fas fa-file-archive" style="font-size: 0.875rem;"></i>
+                  </div>
+                  <div>
+                    <p style="margin: 0; color: var(--fg-default); font-weight: 500;">Creates a .zip file</p>
+                    <p style="margin: 0; color: var(--fg-body); font-size: 0.875rem; line-height: 1.5;">Automatically packages your GameLog and DraftLog files into a single archive.</p>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: start; gap: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-subtle); border-radius: var(--radius-md); border: 1px solid var(--border);">
+                  <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: rgba(168, 85, 247, 0.1); border-radius: var(--radius-md); color: #a855f7; flex-shrink: 0;">
+                    <i class="fas fa-upload" style="font-size: 0.875rem;"></i>
+                  </div>
+                  <div>
+                    <p style="margin: 0; color: var(--fg-default); font-weight: 500;">Ready for import</p>
+                    <p style="margin: 0; color: var(--fg-body); font-size: 0.875rem; line-height: 1.5;">Upload the generated file using <strong>Processing → Import GameLogs</strong>.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <div class="d-flex gap-3 justify-content-end">
+              <button type="button" class="button secondary" onclick="hideZipLogsModal()">
+                <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
+                Close
+              </button>
+              <a href="https://github.com/cderickson/Scripts/raw/main/Zip-MTGO-Logs.exe" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">
+                <button type="button" class="button primary">
+                  <i class="fas fa-download" style="margin-right: var(--spacing-sm);"></i>
+                  Download Script
+                </button>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <style>
+    /* Additional Redis.io Dropdown Styles */
+    .nav-link.dropdown-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .nav-link.dropdown-toggle i {
+      font-size: 0.75rem;
+      transition: transform var(--transition-fast);
+    }
+    
+    .nav-link.dropdown-toggle.active i {
+      transform: rotate(180deg);
+    }
+    
+    /* Modal Styles - Ensure these don't conflict with image-modal */
+    .modal:not(.image-modal) {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      background: rgba(0, 0, 0, 0.5) !important;
+      z-index: 10000 !important;
+      backdrop-filter: blur(5px) !important;
+      display: none !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    
+    /* Show modal when explicitly displayed */
+    .modal:not(.image-modal)[style*="display: flex"] {
+      display: flex !important;
+    }
+    
+    .modal-content {
+      position: relative !important;
+      background: var(--bg-subtle) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: var(--radius-lg) !important;
+      max-height: 90vh !important;
+      width: 90% !important;
+      max-width: 600px !important;
+      overflow-y: auto !important;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    /* Specific modal widths */
+    #GameWinnerModal .modal-content {
+      max-width: 800px !important;
+    }
+    
+    #DraftIdModal .modal-content {
+      max-width: 900px !important;
+    }
+    
+    #BestGuessModal .modal-content {
+      max-width: 600px !important;
+    }
+    
+    #ImportModal .modal-content {
+      max-width: 600px !important;
+    }
+    
+    #processingModal .modal-content {
+      max-width: 400px !important;
+      width: 90% !important;
+    }
+    
+    /* Mobile responsiveness for modals */
+    @media (max-width: 768px) {
+      .modal-content {
+        width: 95% !important;
+        max-width: none !important;
+      }
+      
+      #GameWinnerModal .modal-content,
+      #DraftIdModal .modal-content,
+      #BestGuessModal .modal-content,
+      #ImportModal .modal-content,
+      #processingModal .modal-content {
+        max-width: none !important;
+        width: 95% !important;
+      }
+    }
+    
+    .modal-header {
+      padding: var(--spacing-lg) !important;
+      border-bottom: 1px solid var(--stroke-divider) !important;
+      position: relative !important;
+    }
+    
+    .modal-header h3 {
+      margin: 0 !important;
+      color: var(--fg-default) !important;
+      font-size: 1.25rem !important;
+      font-weight: 600 !important;
+    }
+    
+    .modal-body {
+      padding: var(--spacing-lg) !important;
+    }
+    
+    .modal-footer {
+      padding: var(--spacing-lg) !important;
+      border-top: 1px solid var(--stroke-divider) !important;
+    }
+    
+    .modal-close {
+      position: absolute !important;
+      right: var(--spacing-lg) !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      background: none !important;
+      border: none !important;
+      color: var(--fg-muted) !important;
+      font-size: 1.25rem !important;
+      cursor: pointer !important;
+      padding: 0 !important;
+      width: 30px !important;
+      height: 30px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-radius: var(--radius-sm) !important;
+      transition: all var(--transition-fast) !important;
+    }
+    
+    .modal-close:hover {
+      background: var(--bg-default-hover) !important;
+      color: var(--fg-default) !important;
+    }
+    
+    /* Button Styles for Modals */
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-sm) var(--spacing-lg);
+      font-size: 0.875rem;
+      font-weight: 500;
+      border-radius: var(--radius-md);
+      text-decoration: none;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      border: 1px solid transparent;
+      font-family: inherit;
+      min-height: 36px;
+      gap: var(--spacing-sm);
+    }
+    
+    .button.primary {
+      background: var(--primary-button-bg);
+      color: var(--primary-button-fg);
+      border-color: var(--primary-button-border);
+    }
+    
+    .button.primary:hover {
+      background: var(--primary-button-bg-hover);
+      border-color: var(--primary-button-border-hover);
+    }
+    
+    .button.secondary {
+      background: var(--secondary-button-bg);
+      color: var(--secondary-button-fg);
+      border-color: var(--secondary-button-border);
+    }
+    
+    .button.secondary:hover {
+      background: var(--secondary-button-bg-hover);
+      border-color: var(--secondary-button-border-hover);
+    }
+    
+    /* Dropdown Styles */
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .dropdown-toggle {
+      background: var(--secondary-button-bg);
+      color: var(--secondary-button-fg);
+      border: 1px solid var(--secondary-button-border);
+      padding: var(--spacing-sm) var(--spacing-lg);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+    
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: var(--dropdown-bg);
+      border: 1px solid var(--dropdown-border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      min-width: 200px;
+      z-index: 1000;
+      max-height: 200px;
+      overflow-y: auto;
+      display: none;
+    }
+    
+    .dropdown-menu.show {
+      display: block;
+    }
+    
+    .dropdown-menu li {
+      list-style: none;
+      padding: var(--spacing-sm) var(--spacing-md);
+      cursor: pointer;
+      transition: background var(--transition-fast);
+    }
+    
+    .dropdown-menu li:hover {
+      background: var(--dropdown-item-hover);
+    }
+    
+    /* Utility Classes */
+    .d-flex { display: flex !important; }
+    .gap-3 { gap: var(--spacing-md) !important; }
+    .justify-content-center { justify-content: center !important; }
+    .justify-content-end { justify-content: flex-end !important; }
+    .text-center { text-align: center !important; }
+    .mb-3 { margin-bottom: var(--spacing-md) !important; }
+    .d-grid { display: grid !important; }
+    .grid-3 { grid-template-columns: repeat(3, 1fr) !important; }
+    .gap-4 { gap: var(--spacing-lg) !important; }
+    
+    /* Form Styles for Modals */
+    .form-group {
+      margin-bottom: var(--spacing-lg);
+    }
+    
+    .form-label {
+      display: block;
+      font-weight: 500;
+      color: var(--fg-default);
+      margin-bottom: var(--spacing-sm);
+      font-size: 0.875rem;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: var(--spacing-sm) var(--spacing-md);
+      font-size: 0.875rem;
+      background: var(--form-input-bg);
+      border: 1px solid var(--form-input-border);
+      border-radius: var(--radius-md);
+      color: var(--form-input-fg);
+      transition: all var(--transition-fast);
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: var(--form-input-focused-border);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    /* Spinner Animation */
+    .spinner {
+      border: 3px solid var(--border);
+      border-top: 3px solid var(--sky-blue);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+       
+    /* Alert Styles */
+    .alert {
+      position: relative;
+      padding-right: 3rem;
+    }
+    
+    .alert-close {
+      position: absolute;
+      right: var(--spacing-md);
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      padding: 0;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      transition: all var(--transition-fast);
+    }
+    
+    .alert-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav-menu {
+        display: none;
+      }
+      
+      .dropdown-menu {
+        position: static;
+        box-shadow: none;
+        border: none;
+        background: transparent;
+      }
+    }
+    </style>
+
+    <script>
+    // Modal Dropdown functionality
+    function toggleDropdown(event, dropdownId) {
+      event.preventDefault();
+      const dropdown = document.getElementById(dropdownId);
+      const toggle = event.currentTarget;
+      const isVisible = dropdown.classList.contains('show');
+      
+      // Close all dropdowns and reset toggles
+      document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        menu.classList.remove('show');
+      });
+      document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+        toggle.classList.remove('active');
+      });
+      
+      // Toggle current dropdown
+      if (!isVisible) {
+        dropdown.classList.add('show');
+        toggle.classList.add('active');
+      }
+    }
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+      if (!event.target.closest('.nav-item') && !event.target.closest('.dropdown')) {
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+          menu.classList.remove('show');
+        });
+        document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+          toggle.classList.remove('active');
+        });
+      }
+    });
+    
+    // Modal functions - Updated to work with new CSS
+    function showGameWinnerModal() {
+      const modal = document.getElementById('GameWinnerModal');
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function hideGameWinnerModal() {
+      const modal = document.getElementById('GameWinnerModal');
+      modal.style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }
+    
+    function showDraftIdModal() {
+      const modal = document.getElementById('DraftIdModal');
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function hideDraftIdModal() {
+      const modal = document.getElementById('DraftIdModal');
+      modal.style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }
+    
+    function showBestGuessModal() {
+      const modal = document.getElementById('BestGuessModal');
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function hideBestGuessModal() {
+      const modal = document.getElementById('BestGuessModal');
+      modal.style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }
+    
+    function showImportModal() {
+      const modal = document.getElementById('ImportModal');
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function hideImportModal() {
+      const modal = document.getElementById('ImportModal');
+      modal.style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }
+    
+    function showImportAppModal() {
+      // TODO: Implement MTGO-Tracker import modal
+      alert('MTGO-Tracker import functionality coming soon!');
+    }
+    
+    function showReprocessModal() {
+      // TODO: Implement reprocess modal
+      alert('Reprocess functionality coming soon!');
+    }
+    
+    function showZipLogsModal() {
+      const modal = document.getElementById('ZipLogsModal');
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function hideZipLogsModal() {
+      const modal = document.getElementById('ZipLogsModal');
+      modal.style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }
+    
+    function showProcessingModal(message = 'Please wait while we process your request.') {
+      const modal = document.getElementById('processingModal');
+      document.getElementById('processingMessage').textContent = message;
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function hideProcessingModal() {
+      const modal = document.getElementById('processingModal');
+      modal.style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }
+    
+    // Form update functions
+    function updateBestGuessForm() {
+      document.getElementById('BG_Match_Set').value = document.getElementById('BG_Match_Set_Select').value;
+      document.getElementById('BG_Replace').value = document.getElementById('BG_Replace_Select').value;
+    }
+    
+    // Close modals when clicking outside or pressing Escape
+    document.addEventListener('click', function(event) {
+      if (event.target.classList.contains('modal') && !event.target.classList.contains('image-modal')) {
+        event.target.style.display = 'none';
+        document.body.style.overflow = 'auto';
+      }
+    });
+    
+    // Keyboard support for modals
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        // Close any open modals (except image modal which has its own handler)
+        const modals = document.querySelectorAll('.modal:not(.image-modal)');
+        modals.forEach(modal => {
+          if (modal.style.display === 'flex') {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+          }
+        });
+      }
+    });
+    
+    // Initialize existing functions (placeholders for compatibility)
+    function initGetWinner() {
+      showGameWinnerModal();
+    }
+    
+    function initGetDraftId() {
+      showDraftIdModal();
+    }
+    
+    function applyGetWinner(winner) {
+      // TODO: Implement winner application
+      console.log('Applying winner:', winner);
+      hideGameWinnerModal();
+    }
+    
+    function applyGetDraftId(skip) {
+      // TODO: Implement draft ID application
+      console.log('Applying draft ID, skip:', skip);
+      hideDraftIdModal();
+    }
+    </script>
+
+    <!-- Image Modal - Global -->
+    <div id="imageModal" class="image-modal" onclick="closeImageModal()">
+      <div class="image-modal-content" onclick="event.stopPropagation()">
+        <span class="image-modal-close" onclick="closeImageModal()">&times;</span>
+        <div class="image-modal-image-container">
+          <img id="modalImage" src="" alt="" class="modal-image">
+        </div>
+        <div class="image-modal-caption">
+          <h3 id="modalTitle"></h3>
+          <p id="modalDescription"></p>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>

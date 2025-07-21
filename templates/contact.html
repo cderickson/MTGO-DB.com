@@ -1,0 +1,353 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Contact & Links{% endblock %}
+
+{% block content %}
+
+<div class="accordion-container full-width">
+	
+	<!-- Questions/Info Section -->
+	<div class="accordion-item" data-target="questions">
+    <div class="accordion-header">
+      <h3 class="accordion-title">
+      Questions/Info
+      </h3>
+      <i class="fas fa-chevron-down accordion-arrow"></i>
+    </div>
+    <div class="accordion-content" id="questions">
+      <div class="accordion-body">
+        <p>Message me on <a href="https://twitter.com/Sundodger04" target="_blank">Twitter</a> or <a href="https://www.reddit.com/user/Sundodger04/" target="_blank">Reddit</a> if you have any questions or critiques (even feature requests). I'm happy to respond when I have time.</p>
+        
+        <div class="link-card">
+          <div class="link-icon">
+          <i class="fab fa-github"></i>
+          </div>
+          <div class="link-content">
+          <h4><a href="https://github.com/cderickson/MTGO-DB" target="_blank">MTGO-DB GitHub Repository</a></h4>
+          <p>View the source code, contribute, or star the project</p>
+          </div>
+        </div>
+      </div>
+    </div>
+	</div>
+
+	<!-- Bug Reports Section -->
+	<div class="accordion-item" data-target="bugs">
+    <div class="accordion-header">
+      <h3 class="accordion-title">
+      Bug Reports
+      </h3>
+      <i class="fas fa-chevron-down accordion-arrow"></i>
+    </div>
+    <div class="accordion-content" id="bugs">
+      <div class="accordion-body">
+        <p>Please open a <a href="https://github.com/cderickson/MTGO-DB/issues" target="_blank">New Issue on GitHub</a> if you happen to have an account. Otherwise, messaging me on any social media is okay.</p>
+        
+        <div class="info-box">
+          <h4>Helpful Information to Include:</h4>
+          <ul>
+          <li>Screenshots of the issue</li>
+          <li>Step-by-step reproduction instructions</li>
+          <li>Browser and operating system details</li>
+          <li>Any error messages you see</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+	</div>
+
+	<!-- MTGO-Tracker Section -->
+	<div class="accordion-item" data-target="tracker">
+    <div class="accordion-header">
+      <h3 class="accordion-title">
+      MTGO-Tracker
+      </h3>
+      <i class="fas fa-chevron-down accordion-arrow"></i>
+    </div>
+    <div class="accordion-content" id="tracker">
+      <div class="accordion-body">
+        <p><strong>MTGO-Tracker</strong> is a local, offline Windows application with much of the same functionality as this web application.</p>
+        
+        <div class="feature-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
+          <div class="feature-item">
+          <i class="fas fa-download" style="color: var(--fg-brand);"></i>
+          <h5>Offline Access</h5>
+          <p>Works without internet connection</p>
+          </div>
+          <div class="feature-item">
+          <i class="fas fa-shield-alt" style="color: var(--fg-brand);"></i>
+          <h5>Local Data</h5>
+          <p>Your data stays on your machine</p>
+          </div>
+        </div>
+        
+        <div class="link-card">
+          <div class="link-icon">
+          <i class="fas fa-external-link-alt"></i>
+          </div>
+          <div class="link-content">
+          <h4><a href="https://cderickson.io/mtgo-tracker/" target="_blank">Project Page</a></h4>
+          <p>Download links, updates, and documentation</p>
+          </div>
+        </div>
+        
+        <div class="link-card">
+          <div class="link-icon">
+          <i class="fab fa-github"></i>
+          </div>
+          <div class="link-content">
+          <h4><a href="https://github.com/cderickson/MTGO-Tracker" target="_blank">GitHub Repository</a></h4>
+          <p>Source code and project wiki</p>
+          </div>
+        </div>
+      </div>
+    </div>
+	</div>
+
+	<!-- Crossposting Section -->
+	<div class="accordion-item" data-target="crosspost">
+    <div class="accordion-header">
+      <h3 class="accordion-title">
+      Crossposting
+      </h3>
+      <i class="fas fa-chevron-down accordion-arrow"></i>
+    </div>
+    <div class="accordion-content" id="crosspost">
+      <div class="accordion-body">
+        <p>If you want to cross-post this tool to other communities you think might be interested, feel free!</p>
+        
+        <div class="info-box" style="background: rgba(220, 255, 30, 0.1); border-left-color: var(--yellow);">
+          <p><strong>Share the Love:</strong> Help other Magic players discover MTGO-DB by sharing it in communities, forums, or social media where it might be useful.</p>
+        </div>
+      </div>
+    </div>
+	</div>
+
+</div>
+
+<style>
+/* Redis.io Inspired Accordion Styles */
+.accordion-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.accordion-item {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+.accordion-item:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.accordion-header:hover {
+  background: var(--bg-default-hover);
+}
+
+.accordion-title {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--fg-default);
+}
+
+.accordion-arrow {
+  color: var(--fg-muted);
+  transition: transform var(--transition-fast);
+  font-size: 0.875rem;
+}
+
+.accordion-item.active .accordion-arrow {
+  transform: rotate(180deg);
+}
+
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height var(--transition-normal) ease-out;
+}
+
+.accordion-item.active .accordion-content {
+  max-height: 1000px;
+}
+
+.accordion-body {
+  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-lg);
+  color: var(--fg-body);
+  line-height: 1.6;
+}
+
+.accordion-body p {
+  margin-bottom: var(--spacing-md);
+}
+
+.accordion-body a {
+  color: var(--fg-brand);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.accordion-body a:hover {
+  color: var(--hyper-04);
+  text-decoration: underline;
+}
+
+/* Link Cards */
+.link-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: var(--bg-default);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin: var(--spacing-md) 0;
+  transition: all var(--transition-fast);
+}
+
+.link-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.link-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--fg-brand);
+  color: var(--base-white);
+  border-radius: var(--radius-md);
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.link-content h4 {
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.link-content h4 a {
+  color: var(--fg-default);
+  text-decoration: none;
+}
+
+.link-content h4 a:hover {
+  color: var(--fg-brand);
+}
+
+.link-content p {
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 0.9rem;
+}
+
+/* Info Boxes */
+.info-box {
+  background: rgba(128, 219, 255, 0.1);
+  border-left: 4px solid var(--sky-blue);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-lg);
+  margin: 0 !important;
+}
+
+.info-box h4 {
+  margin: 0 0 var(--spacing-sm) 0 !important;
+  color: var(--fg-default);
+  font-size: 1.125rem;
+}
+
+.info-box ul {
+  margin: 0 !important;
+  padding-left: var(--spacing-lg);
+}
+
+.info-box li {
+  margin: 0 !important;
+  color: var(--fg-body);
+}
+
+.info-box p {
+  margin: 0 !important;
+}
+
+/* Feature Grid */
+.feature-item {
+  text-align: center;
+  padding: var(--spacing-lg);
+  background: var(--bg-default);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.feature-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.feature-item i {
+  font-size: 2rem;
+  margin-bottom: var(--spacing-md);
+  display: block;
+}
+
+.feature-item h5 {
+  margin: 0 0 var(--spacing-sm) 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--fg-default);
+}
+
+.feature-item p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .accordion-header {
+    padding: var(--spacing-md);
+  }
+  
+  .accordion-body {
+    padding: var(--spacing-md) var(--spacing-md) var(--spacing-md);
+  }
+  
+  .accordion-title {
+    font-size: 1.125rem;
+  }
+  
+  .link-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
+{% endblock %}

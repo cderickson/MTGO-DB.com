@@ -1,0 +1,469 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Getting Started{% endblock %}
+
+{% block content %}
+
+<div class="accordion-container full-width">
+	
+	<!-- Registration Section -->
+	<div class="accordion-item" data-target="registration">
+		<div class="accordion-header">
+			<h3 class="accordion-title">
+			Registration
+			</h3>
+			<i class="fas fa-chevron-down accordion-arrow"></i>
+		</div>
+		<div class="accordion-content" id="registration">
+			<div class="accordion-body">
+				<div class="step-card">
+					<div class="step-number">1</div>
+					<div class="step-content">
+					<h4><a href="/register">Register</a> for an account</h4>
+					<p>Create your MTGO-DB account with a valid email address</p>
+					</div>
+				</div>
+				<div class="step-card">
+					<div class="step-number">2</div>
+					<div class="step-content">
+					<h4>Confirm your email</h4>
+					<p>Check your inbox and click the confirmation link we send you</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Import from GameLogs Section -->
+	<div class="accordion-item" data-target="gamelogs">
+	<div class="accordion-header">
+		<h3 class="accordion-title">
+		Import from GameLogs
+		</h3>
+		<i class="fas fa-chevron-down accordion-arrow"></i>
+	</div>
+	<div class="accordion-content" id="gamelogs">
+		<div class="accordion-body">
+			<div class="info-box">
+				<p><strong>Recommended for new users:</strong> Use this option if you are importing data for the first time.</p>
+			</div>
+			
+			<div class="step-card">
+				<div class="step-number">1</div>
+				<div class="step-content">
+					<h4>Download the Zip Script</h4>
+					<p>Download and run the <a href="https://github.com/cderickson/Scripts/raw/main/Zip-MTGO-Logs.exe" target="_blank">Zip-MTGO-Logs</a> script. A .zip file containing your GameLog and DraftLog files will be generated.</p>
+				</div>
+			</div>
+			
+			<div class="step-card">
+				<div class="step-number">2</div>
+				<div class="step-content">
+					<h4>Navigate to Import</h4>
+					<p>Click on <strong>Processing → Import GameLogs</strong> in the navigation menu.</p>
+				</div>
+				</div>
+			
+			<div class="step-card">
+				<div class="step-number">3</div>
+				<div class="step-content">
+					<h4>Upload Your Files</h4>
+					<p>Navigate to the .zip file created in Step 1 and upload it.</p>
+					<div class="note">
+					<i class="fas fa-info-circle"></i>
+					<span>Your browser may ask you to confirm your upload.</span>
+					</div>
+				</div>
+			</div>
+			
+			<div class="step-card">
+				<div class="step-number">4</div>
+				<div class="step-content">
+					<h4>Process Data</h4>
+					<p>Click <strong>Import</strong>. Your files will be processed in the background and a Load Report will be emailed to you upon completion.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+	</div>
+
+	<!-- Import from MTGO-Tracker Section -->
+	<div class="accordion-item" data-target="tracker">
+		<div class="accordion-header">
+			<h3 class="accordion-title">
+			Import from MTGO-Tracker
+			</h3>
+			<i class="fas fa-chevron-down accordion-arrow"></i>
+		</div>
+		<div class="accordion-content" id="tracker">
+			<div class="accordion-body">
+				<div class="info-box" style="background: rgba(220, 255, 30, 0.1); border-left-color: var(--yellow);">
+					<p><strong>For existing MTGO-Tracker users:</strong> Use this option if you have previously used the MTGO-Tracker desktop application and would like to upload your saved data.</p>
+				</div>
+			
+				<div class="step-card">
+					<div class="step-number">1</div>
+					<div class="step-content">
+						<h4>Locate Your Data</h4>
+						<p>Find your MTGO-Tracker database file (usually named <code>mtgo_tracker.db</code>).</p>
+					</div>
+				</div>
+				
+				<div class="step-card">
+					<div class="step-number">2</div>
+					<div class="step-content">
+						<h4>Navigate to Import</h4>
+						<p>Click on <strong>Processing → Import from MTGO-Tracker</strong> in the navigation menu.</p>
+					</div>
+				</div>
+				
+				<div class="step-card">
+					<div class="step-number">3</div>
+					<div class="step-content">
+						<h4>Upload Database</h4>
+						<p>Upload your MTGO-Tracker database file to import your existing data and manual revisions.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Next Steps Section -->
+	<div class="accordion-item" data-target="nextsteps">
+	<div class="accordion-header">
+		<h3 class="accordion-title">
+		Next Steps
+		</h3>
+		<i class="fas fa-chevron-down accordion-arrow"></i>
+	</div>
+	<div class="accordion-content" id="nextsteps">
+		<div class="accordion-body">
+		<p>Once your data is imported, you can:</p>
+		
+		<div class="feature-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
+			<div class="feature-item">
+			<i class="fas fa-chart-line" style="color: var(--fg-brand);"></i>
+			<h5>View Analytics</h5>
+			<p>Explore your match history and performance statistics</p>
+			</div>
+			<div class="feature-item">
+			<i class="fas fa-table" style="color: var(--fg-brand);"></i>
+			<h5>Browse Data</h5>
+			<p>Search and filter your games, drafts, and plays</p>
+			</div>
+			<div class="feature-item">
+			<i class="fas fa-download" style="color: var(--fg-brand);"></i>
+			<h5>Export Data</h5>
+			<p>Download your data in various formats</p>
+			</div>
+		</div>
+		
+		<div class="link-card">
+			<div class="link-icon">
+			<i class="fas fa-question-circle"></i>
+			</div>
+			<div class="link-content">
+			<h4><a href="/faq">Check the FAQ</a></h4>
+			<p>Find answers to common questions about using MTGO-DB</p>
+			</div>
+		</div>
+		</div>
+	</div>
+	</div>
+
+</div>
+
+<style>
+/* Redis.io Inspired Accordion Styles */
+.accordion-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.accordion-item {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+.accordion-item:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.accordion-header:hover {
+  background: var(--bg-default-hover);
+}
+
+.accordion-title {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--fg-default);
+}
+
+.accordion-arrow {
+  color: var(--fg-muted);
+  transition: transform var(--transition-fast);
+  font-size: 0.875rem;
+}
+
+.accordion-item.active .accordion-arrow {
+  transform: rotate(180deg);
+}
+
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height var(--transition-normal) ease-out;
+}
+
+.accordion-item.active .accordion-content {
+  max-height: 2000px;
+}
+
+.accordion-body {
+  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-lg);
+  color: var(--fg-body);
+  line-height: 1.6;
+}
+
+.accordion-body p {
+  margin-bottom: var(--spacing-md);
+}
+
+.accordion-body a {
+  color: var(--fg-brand);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.accordion-body a:hover {
+  color: var(--hyper-04);
+  text-decoration: underline;
+}
+
+/* Step Cards */
+.steps-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.step-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: var(--bg-default);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  margin-bottom: var(--spacing-md);
+  margin-top: 0 !important;
+}
+
+.step-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--fg-brand);
+  color: var(--base-white);
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.step-content h4 {
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--fg-default);
+}
+
+.step-content p {
+  margin: 0;
+  color: var(--fg-body);
+}
+
+.step-content code {
+  background: var(--bg-muted);
+  padding: 0.2em 0.4em;
+  border-radius: var(--radius-sm);
+  font-family: var(--mono-font);
+  font-size: 0.875em;
+  color: var(--fg-default);
+}
+
+.note {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  background: rgba(128, 219, 255, 0.1);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}
+
+.note i {
+  color: var(--sky-blue);
+}
+
+/* Link Cards */
+.link-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: var(--bg-default);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin: var(--spacing-md) 0;
+  transition: all var(--transition-fast);
+}
+
+.link-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.link-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--fg-brand);
+  color: var(--base-white);
+  border-radius: var(--radius-md);
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.link-content h4 {
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.link-content h4 a {
+  color: var(--fg-default);
+  text-decoration: none;
+}
+
+.link-content h4 a:hover {
+  color: var(--fg-brand);
+}
+
+.link-content p {
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 0.9rem;
+}
+
+/* Info Boxes */
+.info-box {
+  background: rgba(128, 219, 255, 0.1);
+  border-left: 4px solid var(--sky-blue);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-lg);
+  margin: var(--spacing-lg) 0;
+}
+
+.info-box p {
+  margin: 0;
+  color: var(--fg-body);
+}
+
+/* Feature Grid */
+.feature-item {
+  text-align: center;
+  padding: var(--spacing-lg);
+  background: var(--bg-default);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.feature-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.feature-item i {
+  font-size: 2rem;
+  margin-bottom: var(--spacing-md);
+  display: block;
+}
+
+.feature-item h5 {
+  margin: 0 0 var(--spacing-sm) 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--fg-default);
+}
+
+.feature-item p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .accordion-header {
+    padding: var(--spacing-md);
+  }
+  
+  .accordion-body {
+    padding: var(--spacing-md) var(--spacing-md) var(--spacing-md);
+  }
+  
+  .accordion-title {
+    font-size: 1.125rem;
+  }
+  
+  .step-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .link-card {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+</style>
+
+{% endblock %}

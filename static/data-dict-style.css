@@ -1,0 +1,28 @@
+th {
+  overflow: auto;
+  white-space: normal;
+}
+
+th.top {
+  text-align: center;
+}
+
+th.col-name {
+  width: 150px;
+}
+
+th.desc {
+  width: 300px;
+}
+
+th.data-type {
+  width: 125px;
+}
+
+th.note {
+  width: 625px;
+}
+
+td.data-type {
+  text-align: center;
+}

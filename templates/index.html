@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block page_title %}{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<!-- <div class="section">
+  <div class="container">
+    <div class="section-header">
+      <h1 class="section-title">YOUR MTGO DATA IS ABOUT<br>TO GET FASTER</h1>
+      <p class="section-subtitle">Build analytics with more speed, memory, and accuracy. Process Magic: The Gathering Online logs and unlock powerful insights into your gameplay.</p>
+      <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
+        <a href="/getting_started" class="btn btn-primary">Get Started</a>
+        <a href="/register" class="btn btn-secondary">Try MTGO-DB for Free</a>
+      </div>
+    </div>
+  </div>
+</div> -->
+
+<!-- Features Section -->
+<div class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">The features you need all in one place</h2>
+      <p class="section-subtitle">Build the way you want. We manage scaling so everything just works.</p>
+    </div>
+
+    <!-- Feature Cards Grid -->
+    <div class="features-container">
+      <!-- Match History Card -->
+      <div class="card feature-card" 
+           data-image="/static/images/match_history_big.png" 
+           data-title="Match History" 
+           data-description="View and analyze your complete match history with detailed statistics, win/loss ratios, and performance trends over time." 
+           style="cursor: pointer;">
+        <div class="card-header">
+          <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+            <div style="width: 48px; height: 48px; background: var(--sky-blue); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
+              <i class="fas fa-history" style="font-size: 1.5rem;"></i>
+            </div>
+            <div>
+              <h3 class="card-title" style="margin-bottom: 0.25rem;">Match History</h3>
+              <p class="card-subtitle" style="margin: 0;">Track your complete match history</p>
+            </div>
+          </div>
+        </div>
+        <div style="text-align: center; margin-bottom: 1rem;">
+          <img src="/static/images/match_history.png" alt="Match History" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+        </div>
+        <p style="color: var(--fg-body); margin: 0;">Get 99.999% uptime and local sub-millisecond latency for your match tracking needs.</p>
+      </div>
+
+      <!-- Detailed Entries Card -->
+      <div class="card feature-card" 
+           data-image="/static/images/detailed_entries_big.png" 
+           data-title="Detailed Entries" 
+           data-description="Explore comprehensive game data with detailed entry logs, timestamps, and complete match information." 
+           style="cursor: pointer;">
+        <div class="card-header">
+          <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+            <div style="width: 48px; height: 48px; background: var(--redis-red); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
+              <i class="fas fa-list-alt" style="font-size: 1.5rem;"></i>
+            </div>
+            <div>
+              <h3 class="card-title" style="margin-bottom: 0.25rem;">Detailed Entries</h3>
+              <p class="card-subtitle" style="margin: 0;">Comprehensive game breakdowns</p>
+            </div>
+          </div>
+        </div>
+        <div style="text-align: center; margin-bottom: 1rem;">
+          <img src="/static/images/detailed_entries.png" alt="Detailed Entries" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+        </div>
+        <p style="color: var(--fg-body); margin: 0;">Dive deep into individual games with comprehensive play-by-play analysis.</p>
+      </div>
+
+      <!-- Performance Stats Card -->
+      <div class="card feature-card" 
+           data-image="/static/images/perf_stats_big.png" 
+           data-title="Performance Statistics" 
+           data-description="Track your gameplay performance with detailed metrics, trend analysis, and insights to improve your competitive play." 
+           style="cursor: pointer;">
+        <div class="card-header">
+          <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+            <div style="width: 48px; height: 48px; background: var(--yellow); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
+              <i class="fas fa-chart-line" style="font-size: 1.5rem;"></i>
+            </div>
+            <div>
+              <h3 class="card-title" style="margin-bottom: 0.25rem;">Performance Stats</h3>
+              <p class="card-subtitle" style="margin: 0;">Advanced analytics dashboard</p>
+            </div>
+          </div>
+        </div>
+        <div style="text-align: center; margin-bottom: 1rem;">
+          <img src="/static/images/perf_stats.png" alt="Performance Stats" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+        </div>
+        <p style="color: var(--fg-body); margin: 0;">Track win rates, deck performance, and identify trends in your gameplay.</p>
+      </div>
+
+      <!-- Play Stats Card -->
+      <div class="card feature-card" 
+           data-image="/static/images/play_stats_big.png" 
+           data-title="Play Statistics" 
+           data-description="Advanced gameplay statistics including play patterns, decision analysis, and strategic performance metrics." 
+           style="cursor: pointer;">
+        <div class="card-header">
+          <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+            <div style="width: 48px; height: 48px; background: var(--violet-90); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
+              <i class="fas fa-gamepad" style="font-size: 1.5rem;"></i>
+            </div>
+            <div>
+              <h3 class="card-title" style="margin-bottom: 0.25rem;">Play Stats</h3>
+              <p class="card-subtitle" style="margin: 0;">Game action analysis</p>
+            </div>
+          </div>
+        </div>
+        <div style="text-align: center; margin-bottom: 1rem;">
+          <img src="/static/images/play_stats.png" alt="Play Stats" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+        </div>
+        <p style="color: var(--fg-body); margin: 0;">Analyze your play patterns, mana curves, and strategic decisions.</p>
+      </div>
+
+      <!-- Card Stats Card -->
+      <div class="card feature-card" 
+           data-image="/static/images/card_stats_big.png" 
+           data-title="Card Statistics" 
+           data-description="Comprehensive card performance analytics including play rates, win rates, and meta analysis across different formats." 
+           style="cursor: pointer;">
+        <div class="card-header">
+          <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+            <div style="width: 48px; height: 48px; background: var(--sky-blue); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
+              <i class="fas fa-cards" style="font-size: 1.5rem;"></i>
+            </div>
+            <div>
+              <h3 class="card-title" style="margin-bottom: 0.25rem;">Card Stats</h3>
+              <p class="card-subtitle" style="margin: 0;">Individual card performance</p>
+            </div>
+          </div>
+        </div>
+        <div style="text-align: center; margin-bottom: 1rem;">
+          <img src="/static/images/card_stats.png" alt="Card Stats" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+        </div>
+        <p style="color: var(--fg-body); margin: 0;">Track the performance of individual cards across all your games.</p>
+      </div>
+
+      <!-- Data Cleaning Card -->
+      <div class="card feature-card" 
+           data-image="/static/images/datacleaning_big.png" 
+           data-title="Data Cleaning" 
+           data-description="Automated data processing and cleaning tools to ensure accurate and reliable game statistics and analysis." 
+           style="cursor: pointer;">
+        <div class="card-header">
+          <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+            <div style="width: 48px; height: 48px; background: var(--redis-red); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
+              <i class="fas fa-broom" style="font-size: 1.5rem;"></i>
+            </div>
+            <div>
+              <h3 class="card-title" style="margin-bottom: 0.25rem;">Data Cleaning</h3>
+              <p class="card-subtitle" style="margin: 0;">Automated data processing</p>
+            </div>
+          </div>
+        </div>
+        <div style="text-align: center; margin-bottom: 1rem;">
+          <img src="/static/images/datacleaning.png" alt="Data Cleaning" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+        </div>
+        <p style="color: var(--fg-body); margin: 0;">Intelligent data cleaning and normalization for accurate analysis.</p>
+      </div>
+    </div>
+
+    <!-- Quick Start Section -->
+    <div class="card" style="text-align: center; padding: 3rem;">
+      <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem; color: var(--fg-default);">Ready to get started?</h2>
+      <p style="font-size: 1.125rem; color: var(--fg-body); margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+        Join thousands of Magic players who are already using MTGO-DB to improve their game. 
+        Get started in minutes with our comprehensive guide.
+      </p>
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="/getting_started" class="btn btn-primary" style="padding: 1rem 2rem;">Get Started Now</a>
+        <a href="/data_dictionary" class="btn btn-secondary" style="padding: 1rem 2rem;">View Documentation</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
