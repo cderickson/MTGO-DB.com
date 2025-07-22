@@ -26,14 +26,6 @@ def main():
         processes.append(('Celery Worker', celery_process))
         time.sleep(2)  # Give it time to start
         
-        # Start Flower Monitor
-        print("🌸 Starting Flower Monitor...")
-        flower_process = subprocess.Popen([
-            sys.executable, 'local-dev/start_flower.py'
-        ], cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        processes.append(('Flower Monitor', flower_process))
-        time.sleep(2)  # Give it time to start
-        
         # Start Flask App
         print("🌐 Starting Flask App...")
         flask_process = subprocess.Popen([
@@ -45,7 +37,6 @@ def main():
         print("✅ All services started!")
         print("=" * 50)
         print("🌐 Flask App:    http://localhost:8000")
-        print("🌸 Flower:       http://localhost:5555")
         print("📊 Task Monitor: http://localhost:8000/tasks")
         print("=" * 50)
         print("\n💡 Press Ctrl+C to stop all services")

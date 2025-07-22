@@ -13,12 +13,7 @@
       <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1rem;">
         <button onclick="location.reload()" class="btn btn-secondary">
           <i class="fas fa-sync-alt"></i> Refresh Status
-        </button>
-        {% if current_user.uid == 1 %}
-        <a href="http://localhost:5555" target="_blank" class="btn btn-primary">
-          <i class="fas fa-external-link-alt"></i> Open Flower Dashboard
-        </a>
-        {% endif %}
+                </button>
       </div>
       
       <!-- Info/Error Messages -->
@@ -173,23 +168,13 @@
       <h4 style="margin: 0 0 1rem 0; color: #2563eb;">
         <i class="fas fa-info-circle"></i> How to Monitor Tasks
       </h4>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-        <div>
-          <h5 style="margin: 0 0 0.5rem 0; color: var(--fg-default);">For Better Monitoring:</h5>
-          <ol style="margin: 0; padding-left: 1.5rem; color: var(--fg-body); line-height: 1.6;">
-            <li>Install Flower: <code>pip install flower</code></li>
-            <li>Run: <code>python local-dev/start_flower.py</code></li>
-            <li>Open <a href="http://localhost:5555" target="_blank">http://localhost:5555</a></li>
-          </ol>
-        </div>
-        <div>
-          <h5 style="margin: 0 0 0.5rem 0; color: var(--fg-default);">Running Celery Worker:</h5>
-          <ol style="margin: 0; padding-left: 1.5rem; color: var(--fg-body); line-height: 1.6;">
-            <li>Make sure Redis is running</li>
-            <li>Run: <code>python local-dev/start_celery.py</code></li>
-            <li>Check worker logs in the terminal</li>
-          </ol>
-        </div>
+            <div>
+        <h5 style="margin: 0 0 0.5rem 0; color: var(--fg-default);">Running Celery Worker:</h5>
+        <ol style="margin: 0; padding-left: 1.5rem; color: var(--fg-body); line-height: 1.6;">
+          <li>Make sure Redis is running</li>
+          <li>Run: <code>python local-dev/start_celery.py</code></li>
+          <li>Check worker logs in the terminal</li>
+        </ol>
       </div>
     </div>
 

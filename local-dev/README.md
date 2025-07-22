@@ -23,12 +23,12 @@ local/
 ```bash
 python local-dev/start_all.py
 ```
-This starts Flask app, Celery worker, and Flower monitor in one command!
+This starts Flask app and Celery worker in one command!
 
 ### Option 2: Manual Start (3 separate terminals)
 1. **Celery Worker**: `python local-dev/start_celery.py` 
 2. **Flask App**: `python app.py`
-3. **Flower Monitor**: `python local-dev/start_flower.py` (optional)
+
 
 ## Configuration
 

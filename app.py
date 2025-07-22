@@ -8,7 +8,7 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadTimeSignat
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from modules.extensions import db, mail, login_manager
-from debug_routes import debug_bp
+from modules.debug_routes import debug_bp
 
 DB_NAME = 'database.db'
 

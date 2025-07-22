@@ -317,7 +317,7 @@ def show_recent_activity():
 """
 To use these debug routes, add this to your app.py:
 
-from debug_routes import debug_bp
+from modules.debug_routes import debug_bp
 app.register_blueprint(debug_bp)
 
 Then visit:
