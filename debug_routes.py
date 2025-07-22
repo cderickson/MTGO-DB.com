@@ -5,9 +5,9 @@ Add these routes to your Flask app for easy database inspection during testing.
 
 from flask import Blueprint, jsonify, render_template_string
 from modules.extensions import db
-from modules.models import Player, Match, Game, Play, Pick, Draft, GameActions, Removed, CardsPlayed
+from modules.models import Player, Match, Game, Play, Pick, Draft, GameActions, Removed, CardsPlayed, TaskHistory
 
-debug_bp = Blueprint('debug', __name__, url_prefix='/debug')
+debug_bp = Blueprint('debug', __name__, url_prefix='')
 
 @debug_bp.route('/db')
 def inspect_database():
@@ -28,7 +28,7 @@ def inspect_database():
         </style>
     </head>
     <body>
-        <h1>🔍 MTGO-DB Database Inspector</h1>
+        <h1>MTGO-DB Database Inspector</h1>
         <p><em>Real-time view of your database contents</em></p>
         
         {% for table_info in tables %}
@@ -52,10 +52,11 @@ def inspect_database():
         <hr>
         <p><strong>Quick Actions:</strong></p>
         <ul>
-            <li><a href="/debug/db/json">View as JSON</a></li>
-            <li><a href="/debug/db/players">View Players Only</a></li>
-            <li><a href="/debug/db/matches">View Matches Only</a></li>
-            <li><a href="/debug/recent">View Recent Activity</a></li>
+            <li><a href="/db/json">View as JSON</a></li>
+            <li><a href="/db/players">View Players Only</a></li>
+            <li><a href="/db/matches">View Matches Only</a></li>
+            <li><a href="/db/task_history">View Task History</a></li>
+            <li><a href="/recent">View Recent Activity</a></li>
         </ul>
     </body>
     </html>
@@ -70,8 +71,9 @@ def inspect_database():
         ("Picks", Pick),
         ("Drafts", Draft),
         ("Game Actions", GameActions),
-        ("Removed Cards", Removed),
-        ("Cards Played", CardsPlayed)
+        ("Removed Games", Removed),
+        ("Cards Played", CardsPlayed),
+        ("Task History", TaskHistory)
     ]
     
     tables = []
@@ -95,7 +97,7 @@ def inspect_database():
                             record_data[column.name] = getattr(record, column.name, None)
                         formatted = "\n".join([f"  {key}: {value}" for key, value in record_data.items()])
                     
-                    record_details.append(f"Record {record.uid if hasattr(record, 'uid') else 'ID'}:\n{formatted}")
+                    record_details.append(f"Record {record.uid if hasattr(record, 'uid') else getattr(record, 'task_id', 'ID')}:\n{formatted}")
                 
                 samples = "\n\n".join(record_details)
                 if count > 3:
@@ -129,7 +131,8 @@ def inspect_database_json():
         ("drafts", Draft),
         ("game_actions", GameActions),
         ("removed_cards", Removed),
-        ("cards_played", CardsPlayed)
+        ("cards_played", CardsPlayed),
+        ("task_history", TaskHistory)
     ]
     
     result = {}
@@ -176,7 +179,8 @@ def inspect_specific_table(table_name):
         'drafts': Draft,
         'game_actions': GameActions,
         'removed_cards': Removed,
-        'cards_played': CardsPlayed
+        'cards_played': CardsPlayed,
+        'task_history': TaskHistory
     }
     
     model = model_map.get(table_name.lower())
@@ -251,8 +255,17 @@ def show_recent_activity():
         </div>
         {% endif %}
         
+        {% if recent_tasks %}
+        <div class="activity">
+            <h3>📋 Recent Tasks</h3>
+            {% for task in recent_tasks %}
+            <div class="record">{{ task }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
         <hr>
-        <p><a href="/debug/db">← Back to Database Inspector</a></p>
+        <p><a href="/db">← Back to Database Inspector</a></p>
     </body>
     </html>
     """
@@ -261,6 +274,7 @@ def show_recent_activity():
         recent_players = Player.query.order_by(Player.uid.desc()).limit(10).all()
         recent_matches = Match.query.limit(10).all()  # Match doesn't have single ID column
         recent_games = Game.query.limit(10).all()     # Game doesn't have single ID column
+        recent_tasks = TaskHistory.query.order_by(TaskHistory.task_id.desc()).limit(10).all()
         
         # Format players with complete data
         formatted_players = []
@@ -284,10 +298,18 @@ def show_recent_activity():
                 game_data = game.as_dict()
                 formatted_games.append(f"Game {game.match_id}-{game.game_num}: {game_data}")
         
+        # Format tasks with complete data
+        formatted_tasks = []
+        for task in recent_tasks:
+            if hasattr(task, 'as_dict'):
+                task_data = task.as_dict()
+                formatted_tasks.append(f"Task {task.task_id}: {task_data}")
+        
         return render_template_string(html, 
                                     recent_players=formatted_players,
                                     recent_matches=formatted_matches,
-                                    recent_games=formatted_games)
+                                    recent_games=formatted_games,
+                                    recent_tasks=formatted_tasks)
     except Exception as e:
         return f"Error: {str(e)}", 500
 
@@ -299,8 +321,9 @@ from debug_routes import debug_bp
 app.register_blueprint(debug_bp)
 
 Then visit:
-- http://localhost:8000/debug/db - Web interface for database inspection
-- http://localhost:8000/debug/db/json - JSON API for database data
-- http://localhost:8000/debug/recent - Recent activity view
-- http://localhost:8000/debug/db/players - View players table
+- http://localhost:8000/db - Web interface for database inspection
+- http://localhost:8000/db/json - JSON API for database data
+- http://localhost:8000/recent - Recent activity view
+- http://localhost:8000/db/players - View players table
+- http://localhost:8000/db/task_history - View task history table
 """ 

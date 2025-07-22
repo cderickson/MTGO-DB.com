@@ -26,6 +26,26 @@ from azure.core.exceptions import ResourceNotFoundError
 import pytz
 import json
 
+# Debug logging function
+def debug_log(message):
+	"""Log debug messages to both console and file"""
+	timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+	log_message = f"[{timestamp}] {message}"
+	
+	# Print to console
+	print(log_message)
+	
+	# Write to log file
+	try:
+		log_dir = os.path.join('local-dev', 'data', 'logs')
+		os.makedirs(log_dir, exist_ok=True)
+		log_file = os.path.join(log_dir, 'debug_log.txt')
+		
+		with open(log_file, 'a', encoding='utf-8') as f:
+			f.write(log_message + '\n')
+	except Exception as e:
+		debug_log(f"Warning: Could not write to log file: {e}")
+
 page_size = 25
 
 # Initialize Azure clients only if connection string is available
@@ -39,12 +59,12 @@ try:
         blob_service_client = None
         log_container_client = None
         export_container_client = None
-        print("Azure connection string not found - running in local mode")
+        debug_log("Azure connection string not found - running in local mode")
 except Exception as e:
     blob_service_client = None
     log_container_client = None
     export_container_client = None
-    print(f"Failed to initialize Azure clients: {e}")
+    debug_log(f"Failed to initialize Azure clients: {e}")
 
 s = URLSafeTimedSerializer(os.environ.get("URL_SAFETIMEDSERIALIZER", "dev-secret-key"))
 views = Blueprint('views', __name__)
@@ -56,7 +76,7 @@ def get_input_options():
 	input_options = {}
 	x = ""
 	y = []
-	print(os.getcwd())
+	debug_log(os.getcwd())
 	with requests.get(url_input) as r:
 		initial = r.content.decode('utf-8', errors='ignore')
 		initial = initial.replace('\x00','')
@@ -99,42 +119,81 @@ def get_all_decks():
 			return {}
 	return all_decks
 def build_cards_played_db(uid):
-	query = db.session.query(Match.match_id).filter_by(uid=uid).distinct()
-	match_ids = [value[0] for value in query.all()]
-	for i in match_ids:
-		if CardsPlayed.query.filter_by(uid=uid, match_id=i).first():
-			continue
-		players = [value[0] for value in db.session.query(Play.casting_player).filter_by(uid=uid, match_id=i).distinct().all()]
-
-		query = db.session.query(Play.primary_card).filter_by(uid=uid, match_id=i, casting_player=players[0], action='Casts').distinct()
-		plays1 = [value[0] for value in query.all()]
-		plays1 = modo.clean_card_set(set(plays1),multifaced)
-
-		query = db.session.query(Play.primary_card).filter_by(uid=uid, match_id=i, casting_player=players[1], action='Casts').distinct()
-		plays2 = [value[0] for value in query.all()]
-		plays2 = modo.clean_card_set(set(plays2),multifaced)
-
-		query = db.session.query(Play.primary_card).filter_by(uid=uid, match_id=i, casting_player=players[0], action='Land Drop').distinct()
-		lands1 = [value[0] for value in query.all()]
-		lands1 = modo.clean_card_set(set(lands1),multifaced)
-
-		query = db.session.query(Play.primary_card).filter_by(uid=uid, match_id=i, casting_player=players[1], action='Land Drop').distinct()
-		lands2 = [value[0] for value in query.all()]
-		lands2 = modo.clean_card_set(set(lands2),multifaced)
-
-		cards_played = CardsPlayed(uid=uid,
-									match_id=i,
-									casting_player1=players[0],
-									casting_player2=players[1],
-									plays1=sorted(list(plays1),reverse=False),
-									plays2=sorted(list(plays2),reverse=False),
-									lands1=sorted(list(lands1),reverse=False),
-									lands2=sorted(list(lands2),reverse=False))
-		db.session.add(cards_played)
+	debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Building cards played database for user {uid}")
+	
 	try:
-		db.session.commit()
-	except:
-		db.session.rollback()
+		# Ensure global variables are loaded
+		ensure_data_loaded()
+		debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Global variables loaded")
+		
+		query = db.session.query(Match.match_id).filter_by(uid=uid).distinct()
+		match_ids = [value[0] for value in query.all()]
+		debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Found {len(match_ids)} unique match IDs")
+		
+		cards_added = 0
+		for i in match_ids:
+			debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Processing match {i}")
+			
+			if CardsPlayed.query.filter_by(uid=uid, match_id=i).first():
+				debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Match {i} already exists, skipping")
+				continue
+				
+			try:
+				players = [value[0] for value in db.session.query(Play.casting_player).filter_by(uid=uid, match_id=i).distinct().all()]
+				
+				if len(players) < 2:
+					debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Match {i} has insufficient players ({len(players)}), skipping")
+					continue
+
+				query = db.session.query(Play.primary_card).filter_by(uid=uid, match_id=i, casting_player=players[0], action='Casts').distinct()
+				plays1 = [value[0] for value in query.all()]
+				plays1 = modo.clean_card_set(set(plays1),multifaced)
+
+				query = db.session.query(Play.primary_card).filter_by(uid=uid, match_id=i, casting_player=players[1], action='Casts').distinct()
+				plays2 = [value[0] for value in query.all()]
+				plays2 = modo.clean_card_set(set(plays2),multifaced)
+
+				query = db.session.query(Play.primary_card).filter_by(uid=uid, match_id=i, casting_player=players[0], action='Land Drop').distinct()
+				lands1 = [value[0] for value in query.all()]
+				lands1 = modo.clean_card_set(set(lands1),multifaced)
+
+				query = db.session.query(Play.primary_card).filter_by(uid=uid, match_id=i, casting_player=players[1], action='Land Drop').distinct()
+				lands2 = [value[0] for value in query.all()]
+				lands2 = modo.clean_card_set(set(lands2),multifaced)
+
+				cards_played = CardsPlayed(uid=uid,
+											match_id=i,
+											casting_player1=players[0],
+											casting_player2=players[1],
+											plays1=sorted(list(plays1),reverse=False),
+											plays2=sorted(list(plays2),reverse=False),
+											lands1=sorted(list(lands1),reverse=False),
+											lands2=sorted(list(lands2),reverse=False))
+				db.session.add(cards_played)
+				cards_added += 1
+				debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Added cards played for match {i}")
+				
+			except Exception as e:
+				debug_log(f"🔍 BUILD CARDS PLAYED ERROR: Failed to process match {i}: {e}")
+				continue
+		
+		# Single commit at the end for better performance
+		if cards_added > 0:
+			try:
+				db.session.commit()
+				debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Successfully committed {cards_added} cards played records")
+			except Exception as e:
+				debug_log(f"🔍 BUILD CARDS PLAYED ERROR: Failed to commit: {e}")
+				db.session.rollback()
+		else:
+			debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: No new cards played records to add")
+			
+	except Exception as e:
+		debug_log(f"🔍 BUILD CARDS PLAYED CRITICAL ERROR: {e}")
+		try:
+			db.session.rollback()
+		except:
+			pass
 def update_draft_win_loss(uid, username, draft_id):
 	if draft_id != 'NA':
 		draft_record = Draft.query.filter_by(uid=uid, draft_id=draft_id, hero=username).first()
@@ -164,36 +223,111 @@ def process_logs(self, data):
 		new_files = []
 		replaced_files = []
 		skipped_files = []
+		
+		# Create local storage directory if it doesn't exist
+		if log_container_client is None:  # Local mode
+			local_storage_dir = os.path.join('local-dev', 'data', 'uploads', str(data['user_id']))
+			os.makedirs(local_storage_dir, exist_ok=True)
+			debug_log(f"🔍 EXTRACT DEBUG: Using local storage: {local_storage_dir}")
+		
+		debug_log(f"🔍 EXTRACT DEBUG: Processing {len(zip_ref.infolist())} files from zip")
 		for member in zip_ref.infolist():
+			debug_log(f"🔍 EXTRACT DEBUG: Processing zip member: {member.filename}")
+			
+			logtype = get_logtype_from_filename(member.filename)
+			debug_log(f"🔍 EXTRACT DEBUG: File {member.filename} has logtype: {logtype}")
+			
 			if get_logtype_from_filename(member.filename) == 'NA':
+				debug_log(f"🔍 EXTRACT DEBUG: Skipping {member.filename} - logtype is NA")
 				skipped += 1
 				continue
-			extracted_file_name = path + member.filename
-			blob_client = log_container_client.get_blob_client(extracted_file_name)
-			try:
-				# File exists in Azure Blob Storage.
-				existing_mtime = blob_client.get_blob_properties()['metadata']['original_mod_time']
+			
+			if log_container_client is None:  # Local file storage
+				# Local file storage logic
+				local_file_path = os.path.join(local_storage_dir, member.filename)
 				new_mtime = time.strftime('%Y%m%d%H%M', member.date_time + (0, 0, -1))
-				if new_mtime >= existing_mtime:
-					skipped_files.append(member.filename.split('/')[-1])
-					skipped += 1
+				debug_log(f"🔍 EXTRACT DEBUG: Local file path: {local_file_path}")
+				debug_log(f"🔍 EXTRACT DEBUG: New file mtime: {new_mtime}")
+				
+				# Check if file exists locally
+				if os.path.exists(local_file_path):
+					debug_log(f"🔍 EXTRACT DEBUG: File exists locally: {local_file_path}")
+					# Read existing metadata from a companion .meta file
+					meta_file = local_file_path + '.meta'
+					if os.path.exists(meta_file):
+						with open(meta_file, 'r') as f:
+							existing_mtime = f.read().strip()
+						debug_log(f"🔍 EXTRACT DEBUG: Existing mtime: {existing_mtime}, New mtime: {new_mtime}")
+						if new_mtime >= existing_mtime:
+							debug_log(f"🔍 EXTRACT DEBUG: Skipping {member.filename} - new mtime >= existing mtime")
+							skipped_files.append(member.filename.split('/')[-1])
+							skipped += 1
+							continue
+						else:
+							debug_log(f"🔍 EXTRACT DEBUG: Replacing {member.filename} - new mtime < existing mtime")
+							# Replace with newer file
+							zip_ref.extract(member, local_storage_dir)
+							# Move file to final location and save metadata
+							extracted_path = os.path.join(local_storage_dir, member.filename)
+							if extracted_path != local_file_path:
+								os.rename(extracted_path, local_file_path)
+							with open(meta_file, 'w') as f:
+								f.write(new_mtime)
+							replaced_files.append(member.filename.split('/')[-1])
+							uploaded += 1
+					else:
+						debug_log(f"🔍 EXTRACT DEBUG: File exists but no metadata - replacing {member.filename}")
+						# File exists but no metadata, replace it
+						zip_ref.extract(member, local_storage_dir)
+						extracted_path = os.path.join(local_storage_dir, member.filename)
+						if extracted_path != local_file_path:
+							os.rename(extracted_path, local_file_path)
+						with open(local_file_path + '.meta', 'w') as f:
+							f.write(new_mtime)
+						replaced_files.append(member.filename.split('/')[-1])
+						uploaded += 1
 				else:
-					# Replace newer file with older file
+					debug_log(f"🔍 EXTRACT DEBUG: New file - extracting {member.filename}")
+					# New file
+					zip_ref.extract(member, local_storage_dir)
+					extracted_path = os.path.join(local_storage_dir, member.filename)
+					if extracted_path != local_file_path:
+						os.rename(extracted_path, local_file_path)
+					with open(local_file_path + '.meta', 'w') as f:
+						f.write(new_mtime)
+					new_files.append(member.filename.split('/')[-1])
+					uploaded += 1
+			else:  # Azure Blob Storage logic (original)
+				extracted_file_name = path + member.filename
+				blob_client = log_container_client.get_blob_client(extracted_file_name)
+				try:
+					# File exists in Azure Blob Storage.
+					existing_mtime = blob_client.get_blob_properties()['metadata']['original_mod_time']
+					new_mtime = time.strftime('%Y%m%d%H%M', member.date_time + (0, 0, -1))
+					if new_mtime >= existing_mtime:
+						skipped_files.append(member.filename.split('/')[-1])
+						skipped += 1
+					else:
+						# Replace newer file with older file
+						zip_ref.extract(member, os.getcwd())
+						with open(member.filename, 'rb') as file_to_upload:
+							blob_client.upload_blob(file_to_upload, metadata={'original_mod_time':new_mtime}, overwrite=True)
+						replaced_files.append(member.filename.split('/')[-1])
+						os.remove(member.filename)
+						uploaded += 1
+				except ResourceNotFoundError:
+					# New file.
+					file_mod_time = time.strftime('%Y%m%d%H%M', member.date_time + (0, 0, -1))
 					zip_ref.extract(member, os.getcwd())
 					with open(member.filename, 'rb') as file_to_upload:
-						blob_client.upload_blob(file_to_upload, metadata={'original_mod_time':new_mtime}, overwrite=True)
-					replaced_files.append(member.filename.split('/')[-1])
+						blob_client.upload_blob(file_to_upload, metadata={'original_mod_time':file_mod_time})
+					new_files.append(member.filename.split('/')[-1])
 					os.remove(member.filename)
 					uploaded += 1
-			except ResourceNotFoundError:
-				# New file.
-				file_mod_time = time.strftime('%Y%m%d%H%M', member.date_time + (0, 0, -1))
-				zip_ref.extract(member, os.getcwd())
-				with open(member.filename, 'rb') as file_to_upload:
-					blob_client.upload_blob(file_to_upload, metadata={'original_mod_time':file_mod_time})
-				new_files.append(member.filename.split('/')[-1])
-				os.remove(member.filename)
-				uploaded += 1
+		debug_log(f"🔍 EXTRACT DEBUG: Extraction complete - skipped: {skipped}, uploaded: {uploaded}")
+		debug_log(f"🔍 EXTRACT DEBUG: new_files: {new_files}")
+		debug_log(f"🔍 EXTRACT DEBUG: replaced_files: {replaced_files}")
+		debug_log(f"🔍 EXTRACT DEBUG: skipped_files: {skipped_files}")
 		return {'skipped':skipped,'uploaded':uploaded, 'new_files':new_files, 'replaced_files':replaced_files, 'skipped_files':skipped_files}
 	
 	counts = {
@@ -227,262 +361,359 @@ def process_logs(self, data):
 		upload_dict = extract_zip_file(zip_ref, str(uid) + '\\')
 	
 	try:
-		for blob in log_container_client.list_blobs():
-			filename = blob.name.split('/')[-1]
-			if filename in upload_dict['skipped_files']:
-				continue
-			try:
-				blob_uid = blob.name.split('/')[0]
-			except:
-				blob_uid = 0
-
-			if (get_logtype_from_filename(filename) == 'GameLog') and (str(uid) == blob_uid):
-				blob_client = blob_service_client.get_blob_client(container=os.environ.get('LOG_CONTAINER_NAME'), blob=blob.name)
-				blob_properties = blob_client.get_blob_properties()
-
-				initial = blob_client.download_blob().readall().decode('utf-8', errors='ignore')
-				initial = initial.replace('\x00','')
-
-				fname = filename.split('_')[-1].split('.dat')[0]
-				mtime = blob_properties['metadata']['original_mod_time']
-
-				if Removed.query.filter_by(uid=uid, match_id=fname).first():
-					counts['gamelogs_skipped_removed'] += 1
-					continue
-
-				try:
-					parsed_data = modo.get_all_data(initial,mtime,fname)
-					parsed_data_inverted = modo.invert_join([[parsed_data[0]], parsed_data[1], parsed_data[2], parsed_data[3], parsed_data[4]])
-					counts['total_gamelogs'] += 1
-				except Exception as error:
-					counts['gamelogs_skipped_error'] += 1
-					if str(error) in game_errors:
-						game_errors[str(error)] += 1
-					else:
-						game_errors[str(error)] = 0
-					continue
-
-				if len(parsed_data_inverted[2]) == 0:
-					newIgnore = Removed(uid=uid, match_id=fname, reason='Empty')
-					db.session.add(newIgnore)
-					counts['gamelogs_skipped_empty'] += 1
-					continue
-
-				for match in parsed_data_inverted[0]:
-					if Match.query.filter_by(uid=uid, match_id=match[0], p1=match[2]).first():
-						existing = Match.query.filter_by(uid=uid, match_id=match[0], p1=match[2]).first()
-						existing.p2 = match[5]
-						existing.p1_roll = match[8]
-						existing.p2_roll = match[9]
-						existing.roll_winner = match[10]
-						existing.date = match[17]
-						Play.query.filter_by(uid=uid, match_id=match[0]).delete()
-						try:
-							db.session.commit()
-						except:
-							db.session.rollback()
-						counts['matches_replaced'] += 1
-					else:
-						new_match = Match(uid=uid,
-										match_id=match[0],
-										draft_id=match[1],
-										p1=match[2],
-										p1_arch=match[3],
-										p1_subarch=match[4],
-										p2=match[5],
-										p2_arch=match[6],
-										p2_subarch=match[7],
-										p1_roll=match[8],
-										p2_roll=match[9],
-										roll_winner=match[10],
-										p1_wins=match[11],
-										p2_wins=match[12],
-										match_winner=match[13],
-										format=match[14],
-										limited_format=match[15],
-										match_type=match[16],
-										date=match[17])
-						db.session.add(new_match)
-						counts['new_matches'] += 1
-				for game in parsed_data_inverted[1]:
-					if Game.query.filter_by(uid=uid, match_id=game[0], game_num=game[3], p1=game[1]).first():
-						existing = Game.query.filter_by(uid=uid, match_id=game[0], game_num=game[3], p1=game[1]).first()
-						existing.p2=game[2]
-						existing.pd_selector=game[4]
-						existing.pd_choice=game[5]
-						existing.on_play=game[6]
-						existing.on_draw=game[7]
-						existing.p1_mulls=game[8]
-						existing.p2_mulls=game[9]
-						existing.turns=game[10]
-						try:
-							db.session.commit()
-						except:
-							db.session.rollback()
-						counts['games_replaced'] += 1
-						# continue
-					else:
-						new_game = Game(uid=uid,
-										match_id=game[0],
-										p1=game[1],
-										p2=game[2],
-										game_num=game[3],
-										pd_selector=game[4],
-										pd_choice=game[5],
-										on_play=game[6],
-										on_draw=game[7],
-										p1_mulls=game[8],
-										p2_mulls=game[9],
-										turns=game[10],
-										game_winner=game[11])
-						db.session.add(new_game)
-						counts['new_games'] += 1
-				for play in parsed_data_inverted[2]:
-					if Play.query.filter_by(uid=uid, match_id=play[0], game_num=play[1], play_num=play[2]).first():
+		# Get list of files to process based on storage type
+		files_to_process = []
+		
+		if log_container_client is None:  # Local file storage
+			local_storage_dir = os.path.join('local-dev', 'data', 'uploads', str(uid))
+			debug_log(f"🔍 DEBUG: Looking for files in: {local_storage_dir}")
+			debug_log(f"🔍 DEBUG: Directory exists: {os.path.exists(local_storage_dir)}")
+			if os.path.exists(local_storage_dir):
+				all_files = os.listdir(local_storage_dir)
+				debug_log(f"🔍 DEBUG: Found {len(all_files)} total files: {all_files}")
+				debug_log(f"🔍 DEBUG: Skipped files from upload_dict: {upload_dict['skipped_files']}")
+				for filename in all_files:
+					debug_log(f"🔍 DEBUG: Processing file: {filename}")
+					if filename.endswith('.meta'):  # Skip metadata files
+						debug_log(f"🔍 DEBUG: Skipping {filename} (metadata file)")
 						continue
-					new_play = Play(uid=uid,
-									match_id=play[0],
-									game_num=play[1],
-									play_num=play[2],
-									turn_num=play[3],
-									casting_player=play[4],
-									action=play[5],
-									primary_card=play[6],
-									target1=play[7],
-									target2=play[8],
-									target3=play[9],
-									opp_target=play[10],
-									self_target=play[11],
-									cards_drawn=play[12],
-									attackers=play[13],
-									active_player=play[14],
-									non_active_player=play[15])
-					db.session.add(new_play)
-					counts['new_plays'] += 1
-				for game in parsed_data_inverted[3]:
-					if GameActions.query.filter_by(uid=uid, match_id=game[:-2], game_num=game[-1]).first():
+					if filename in upload_dict['skipped_files']:
+						debug_log(f"🔍 DEBUG: Skipping {filename} (in skipped_files)")
 						continue
-					new_ga15 = GameActions(uid=uid,
-										match_id=game[:-2],
-										game_num=game[-1],
-										game_actions='\n'.join(parsed_data_inverted[3][game][-15:]))
-					db.session.add(new_ga15)
+					
+					local_file_path = os.path.join(local_storage_dir, filename)
+					meta_file_path = local_file_path + '.meta'
+					
+					# Read metadata
+					if os.path.exists(meta_file_path):
+						with open(meta_file_path, 'r') as f:
+							mtime = f.read().strip()
+					else:
+						mtime = '202301010000'  # Default fallback
+					
+					log_type = get_logtype_from_filename(filename)
+					debug_log(f"🔍 DEBUG: File {filename} detected as log_type: '{log_type}'")
+					if log_type in ['GameLog', 'DraftLog']:
+						debug_log(f"🔍 DEBUG: Adding {filename} to files_to_process")
+						files_to_process.append({
+							'filename': filename,
+							'path': local_file_path,
+							'mtime': mtime,
+							'storage_type': 'local',
+							'log_type': log_type
+						})
+					else:
+						debug_log(f"🔍 DEBUG: Skipping {filename} - log_type '{log_type}' not in ['GameLog', 'DraftLog']")
+			else:
+				debug_log(f"🔍 DEBUG: Local storage directory does not exist: {local_storage_dir}")
+		else:  # Azure Blob Storage
+			for blob in log_container_client.list_blobs():
+				filename = blob.name.split('/')[-1]
+				if filename in upload_dict['skipped_files']:
+					continue
 				try:
-					db.session.commit()
+					blob_uid = blob.name.split('/')[0]
 				except:
-					db.session.rollback()
+					blob_uid = 0
+
+				if (get_logtype_from_filename(filename) in ['GameLog', 'DraftLog']) and (str(uid) == blob_uid):
+					blob_client = blob_service_client.get_blob_client(container=os.environ.get('LOG_CONTAINER_NAME'), blob=blob.name)
+					blob_properties = blob_client.get_blob_properties()
+					mtime = blob_properties['metadata']['original_mod_time']
+					
+					files_to_process.append({
+						'filename': filename,
+						'blob_client': blob_client,
+						'mtime': mtime,
+						'storage_type': 'azure',
+						'log_type': get_logtype_from_filename(filename)
+					})
+		
+		# Now process all files with unified logic
+		debug_log(f"🔍 Processing {len(files_to_process)} files")
+		
+		# Database and email operations - get Flask app from Celery BEFORE processing files
+		from app import create_app
+		app = create_app()
+		
+		with app.app_context():
+			for file_info in files_to_process:
+				filename = file_info['filename']
+				mtime = file_info['mtime']
+				log_type = file_info['log_type']
+				
+				# Read file content based on storage type
+				if file_info['storage_type'] == 'local':
+					with open(file_info['path'], 'r', encoding='utf-8', errors='ignore') as f:
+						initial = f.read().replace('\x00','')
+				else:  # Azure
+					if log_type == 'DraftLog':
+						initial = file_info['blob_client'].download_blob().readall().decode('utf-8').replace('\r','')
+					else:  # GameLog
+						initial = file_info['blob_client'].download_blob().readall().decode('utf-8', errors='ignore')
+						initial = initial.replace('\x00','')
+
+				# Process based on log type
+				if log_type == 'GameLog':
+					fname = filename.split('_')[-1].split('.dat')[0]
+					
+					if Removed.query.filter_by(uid=uid, match_id=fname).first():
+						counts['gamelogs_skipped_removed'] += 1
+						continue
+
+					try:
+						parsed_data = modo.get_all_data(initial,mtime,fname)
+						parsed_data_inverted = modo.invert_join([[parsed_data[0]], parsed_data[1], parsed_data[2], parsed_data[3], parsed_data[4]])
+						counts['total_gamelogs'] += 1
+					except Exception as error:
+						counts['gamelogs_skipped_error'] += 1
+						if str(error) in game_errors:
+							game_errors[str(error)] += 1
+						else:
+							game_errors[str(error)] = 0
+						continue
+
+					if len(parsed_data_inverted[2]) == 0:
+						newIgnore = Removed(uid=uid, match_id=fname, reason='Empty')
+						db.session.add(newIgnore)
+						counts['gamelogs_skipped_empty'] += 1
+						continue
+				
+				elif log_type == 'DraftLog':
+					debug_log(f"🔍 DRAFTLOG DEBUG: Processing DraftLog file: {filename}")
+					try:
+						parsed_data = modo.parse_draft_log(filename, initial)
+						debug_log(f"🔍 DRAFTLOG DEBUG: Successfully parsed {filename}")
+						debug_log(f"🔍 DRAFTLOG DEBUG: parsed_data[0] (drafts) length: {len(parsed_data[0])}")
+						debug_log(f"🔍 DRAFTLOG DEBUG: parsed_data[1] (picks) length: {len(parsed_data[1])}")
+						counts['total_draftlogs'] += 1
+					except Exception as error:
+						debug_log(f"🔍 DRAFTLOG DEBUG: Failed to parse {filename}: {error}")
+						counts['draftlogs_skipped_error'] += 1
+						if str(error) in draft_errors:
+							draft_errors[str(error)] += 1
+						else:
+							draft_errors[str(error)] = 0
+						continue
+
+				# Continue with processing parsed data for both GameLog and DraftLog
+				if log_type == 'GameLog':
+					# GameLog database operations
+					for match in parsed_data_inverted[0]:
+						if Match.query.filter_by(uid=uid, match_id=match[0], p1=match[2]).first():
+							existing = Match.query.filter_by(uid=uid, match_id=match[0], p1=match[2]).first()
+							existing.p2 = match[5]
+							existing.p1_roll = match[8]
+							existing.p2_roll = match[9]
+							existing.roll_winner = match[10]
+							existing.date = match[17]
+							Play.query.filter_by(uid=uid, match_id=match[0]).delete()
+							try:
+								db.session.commit()
+							except:
+								db.session.rollback()
+							counts['matches_replaced'] += 1
+						else:
+							new_match = Match(uid=uid,
+											match_id=match[0],
+											draft_id=match[1],
+											p1=match[2],
+											p1_arch=match[3],
+											p1_subarch=match[4],
+											p2=match[5],
+											p2_arch=match[6],
+											p2_subarch=match[7],
+											p1_roll=match[8],
+											p2_roll=match[9],
+											roll_winner=match[10],
+											p1_wins=match[11],
+											p2_wins=match[12],
+											match_winner=match[13],
+											format=match[14],
+											limited_format=match[15],
+											match_type=match[16],
+											date=match[17])
+							db.session.add(new_match)
+							counts['new_matches'] += 1
+					for game in parsed_data_inverted[1]:
+						if Game.query.filter_by(uid=uid, match_id=game[0], game_num=game[3], p1=game[1]).first():
+							existing = Game.query.filter_by(uid=uid, match_id=game[0], game_num=game[3], p1=game[1]).first()
+							existing.p2=game[2]
+							existing.pd_selector=game[4]
+							existing.pd_choice=game[5]
+							existing.on_play=game[6]
+							existing.on_draw=game[7]
+							existing.p1_mulls=game[8]
+							existing.p2_mulls=game[9]
+							existing.turns=game[10]
+							try:
+								db.session.commit()
+							except:
+								db.session.rollback()
+							counts['games_replaced'] += 1
+						else:
+							new_game = Game(uid=uid,
+											match_id=game[0],
+											p1=game[1],
+											p2=game[2],
+											game_num=game[3],
+											pd_selector=game[4],
+											pd_choice=game[5],
+											on_play=game[6],
+											on_draw=game[7],
+											p1_mulls=game[8],
+											p2_mulls=game[9],
+											turns=game[10],
+											game_winner=game[11])
+							db.session.add(new_game)
+							counts['new_games'] += 1
+					for play in parsed_data_inverted[2]:
+						if Play.query.filter_by(uid=uid, match_id=play[0], game_num=play[1], play_num=play[2]).first():
+							continue
+						new_play = Play(uid=uid,
+										match_id=play[0],
+										game_num=play[1],
+										play_num=play[2],
+										turn_num=play[3],
+										casting_player=play[4],
+										action=play[5],
+										primary_card=play[6],
+										target1=play[7],
+										target2=play[8],
+										target3=play[9],
+										opp_target=play[10],
+										self_target=play[11],
+										cards_drawn=play[12],
+										attackers=play[13],
+										active_player=play[14],
+										non_active_player=play[15])
+						db.session.add(new_play)
+						counts['new_plays'] += 1
+					for game in parsed_data_inverted[3]:
+						if GameActions.query.filter_by(uid=uid, match_id=game[:-2], game_num=game[-1]).first():
+							continue
+						new_ga15 = GameActions(uid=uid,
+											match_id=game[:-2],
+											game_num=game[-1],
+											game_actions='\n'.join(parsed_data_inverted[3][game][-15:]))
+						db.session.add(new_ga15)
+					try:
+						db.session.commit()
+					except:
+						db.session.rollback()
+				elif log_type == 'DraftLog':
+					# DraftLog database operations
+					debug_log(f"🔍 DRAFTLOG DB: Processing DraftLog database operations for {filename}")
+					debug_log(f"🔍 DRAFTLOG DB: Number of drafts to process: {len(parsed_data[0])}")
+					for draft in parsed_data[0]:
+						debug_log(f"🔍 DRAFTLOG DB: Processing draft_id: {draft[0]}, hero: {draft[1]}")
+						if Draft.query.filter_by(uid=uid, draft_id=draft[0], hero=draft[1]).first():
+							debug_log(f"🔍 DRAFTLOG DB: Draft {draft[0]} already exists, updating...")
+							existing = Draft.query.filter_by(uid=uid, draft_id=draft[0], hero=draft[1]).first()
+							existing.player2 = draft[2]
+							existing.player3 = draft[3]
+							existing.player4 = draft[4]
+							existing.player5 = draft[5]
+							existing.player6 = draft[6]
+							existing.player7 = draft[7]
+							existing.player8 = draft[8]
+							existing.format = draft[11]
+							existing.date = draft[12]
+							Pick.query.filter_by(uid=uid, draft_id=draft[0]).delete()
+							counts['drafts_replaced'] += 1
+							try:
+								db.session.commit()
+							except:
+								db.session.rollback()
+						else:
+							debug_log(f"🔍 DRAFTLOG DB: Creating new draft {draft[0]}")
+							new_draft = Draft(uid=uid,
+											draft_id=draft[0],
+											hero=draft[1],
+											player2=draft[2],
+											player3=draft[3],
+											player4=draft[4],
+											player5=draft[5],
+											player6=draft[6],
+											player7=draft[7],
+											player8=draft[8],
+											match_wins=draft[9],
+											match_losses=draft[10],
+											format=draft[11],
+											date=draft[12])
+							db.session.add(new_draft)
+							counts['new_drafts'] += 1
+							debug_log(f"🔍 DRAFTLOG DB: Added new draft {draft[0]} to session")
+							
+					debug_log(f"🔍 DRAFTLOG DB: Number of picks to process: {len(parsed_data[1])}")
+					for pick in parsed_data[1]:
+						if Pick.query.filter_by(uid=uid, draft_id=pick[0], pick_ovr=pick[4]).first():
+							continue
+						p = pick
+						for index,i in enumerate(p):
+							if i == 'NA':
+								p[index] = ''
+						new_pick = Pick(uid=uid,
+										draft_id=pick[0],
+										card=pick[1],
+										pack_num=pick[2],
+										pick_num=pick[3],
+										pick_ovr=pick[4],
+										avail1=p[5],
+										avail2=p[6],
+										avail3=p[7],
+										avail4=p[8],
+										avail5=p[9],
+										avail6=p[10],
+										avail7=p[11],
+										avail8=p[12],
+										avail9=p[13],
+										avail10=p[14],
+										avail11=p[15],
+										avail12=p[16],
+										avail13=p[17],
+										avail14=p[18])
+						db.session.add(new_pick)
+						counts['new_picks'] += 1
+					debug_log(f"🔍 DRAFTLOG DB: Added {counts['new_picks']} picks to session for this file")
+					try:
+						db.session.commit()
+						debug_log(f"🔍 DRAFTLOG DB: Successfully committed {counts['new_drafts']} drafts and {counts['new_picks']} picks to database")
+					except Exception as e:
+						debug_log(f"🔍 DRAFTLOG DB: Failed to commit to database: {e}")
+						db.session.rollback()
+				if self.is_aborted():
+					return 'TASK STOPPED'
 			
-			if (get_logtype_from_filename(filename) == 'DraftLog') and (str(uid) == blob_uid):
-				blob_client = blob_service_client.get_blob_client(container=os.environ.get('LOG_CONTAINER_NAME'), blob=blob.name)
-				initial = blob_client.download_blob().readall().decode('utf-8').replace('\r','')
+			# TaskHistory creation and email operations (MOVED BEFORE build_cards_played_db)
+			complete_date = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific'))
+			curr_date = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific')).strftime('%Y-%m-%d')
+			curr_time = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific')).time().strftime('%H:%M')
+			
+			new_task_history = TaskHistory(
+				uid=data['user_id'],
+				curr_username=data['username'],
+				submit_date=submit_date,
+				complete_date=complete_date,
+				task_type='Import',
+				error_code=error_code
+			)
+			db.session.add(new_task_history)
+			try:
+				db.session.commit()
+			except:
+				db.session.rollback()
 
-				try:
-					parsed_data = modo.parse_draft_log(filename,initial)
-					counts['total_draftlogs'] += 1
-				except Exception as error:
-					counts['draftlogs_skipped_error'] += 1
-					if str(error) in draft_errors:
-						draft_errors[str(error)] += 1
-					else:
-						draft_errors[str(error)] = 0
-					continue
-
-				for draft in parsed_data[0]:
-					if Draft.query.filter_by(uid=uid, draft_id=draft[0], hero=draft[1]).first():
-						existing = Draft.query.filter_by(uid=uid, draft_id=draft[0], hero=draft[1]).first()
-						existing.player2 = draft[2]
-						existing.player3 = draft[3]
-						existing.player4 = draft[4]
-						existing.player5 = draft[5]
-						existing.player6 = draft[6]
-						existing.player7 = draft[7]
-						existing.player8 = draft[8]
-						existing.format = draft[11]
-						existing.date = draft[12]
-						Pick.query.filter_by(uid=uid, draft_id=draft[0]).delete()
-						counts['drafts_replaced'] += 1
-						try:
-							db.session.commit()
-						except:
-							db.session.rollback()
-					else:
-						new_draft = Draft(uid=uid,
-										draft_id=draft[0],
-										hero=draft[1],
-										player2=draft[2],
-										player3=draft[3],
-										player4=draft[4],
-										player5=draft[5],
-										player6=draft[6],
-										player7=draft[7],
-										player8=draft[8],
-										match_wins=draft[9],
-										match_losses=draft[10],
-										format=draft[11],
-										date=draft[12])
-						db.session.add(new_draft)
-						counts['new_drafts'] += 1
-				for pick in parsed_data[1]:
-					if Pick.query.filter_by(uid=uid, draft_id=pick[0], pick_ovr=pick[4]).first():
-						continue
-					p = pick
-					for index,i in enumerate(p):
-						if i == 'NA':
-							p[index] = ''
-					new_pick = Pick(uid=uid,
-									draft_id=pick[0],
-									card=pick[1],
-									pack_num=pick[2],
-									pick_num=pick[3],
-									pick_ovr=pick[4],
-									avail1=p[5],
-									avail2=p[6],
-									avail3=p[7],
-									avail4=p[8],
-									avail5=p[9],
-									avail6=p[10],
-									avail7=p[11],
-									avail8=p[12],
-									avail9=p[13],
-									avail10=p[14],
-									avail11=p[15],
-									avail12=p[16],
-									avail13=p[17],
-									avail14=p[18])
-					db.session.add(new_pick)
-					counts['new_picks'] += 1
-				try:
-					db.session.commit()
-				except:
-					db.session.rollback()
-			if self.is_aborted():
-				return 'TASK STOPPED'
-		build_cards_played_db(uid)
-	except Exception as e:
-		error_code = e
-
-	complete_date = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific'))
-	curr_date = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific')).strftime('%Y-%m-%d')
-	curr_time = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific')).time().strftime('%H:%M')
-	
-	new_task_history = TaskHistory(
-		uid=data['user_id'],
-		curr_username=data['username'],
-		submit_date=submit_date,
-		complete_date=complete_date,
-		task_type='Import',
-		error_code=error_code
-	)
-	db.session.add(new_task_history)
-	try:
-		db.session.commit()
-	except:
-		db.session.rollback()
-
-	mail = current_app.extensions['mail']
-	with current_app.app_context():
-		msg = Message(f'MTGO-DB Load Report #{new_task_history.task_id}', sender=current_app.config.get('MAIL_USERNAME'), recipients=[data['email']])
-		msg.html = f'''
+			# Email operations (within Flask app context)
+			debug_log("📧 LOAD REPORT: Starting email operations...")
+			debug_log(f"📧 LOAD REPORT: Recipient email: {data['email']}")
+			debug_log(f"📧 LOAD REPORT: Task ID: {new_task_history.task_id}")
+			
+			mail = app.extensions['mail']
+			msg = Message(f'MTGO-DB Load Report #{new_task_history.task_id}', sender=app.config.get('MAIL_USERNAME'), recipients=[data['email']])
+			debug_log("📧 LOAD REPORT: Message object created")
+			
+			msg.html = f'''
 		<h2 style="text-align: center">Load Report, Import GameLogs - #{new_task_history.task_id}<br></h2>
 		<h3 style="text-align: center">Completed: {curr_date} at {curr_time}<h3><br><br>
 
@@ -490,7 +721,7 @@ def process_logs(self, data):
 			<table>
 				<thead>
 					<tr>
-						<th style="font-size: 14pt; max-width: 225px; min-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">Load Result</th>
+						<th style="font-size: 14pt; max-width: 225px; min-width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">Load Result</th>
 						<th style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">Matches</th>
 						<th style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">Games</th>
 						<th style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">Plays</th>
@@ -500,7 +731,7 @@ def process_logs(self, data):
 				</thead>
 				<tbody>
 					<tr>
-						<th style="font-size: 14pt; max-width: 225px; min-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">New Records Loaded</th>
+						<th style="font-size: 14pt; max-width: 225px; min-width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">New Records Loaded</th>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['new_matches']}</td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['new_games']}</td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['new_plays']}</td>
@@ -508,31 +739,31 @@ def process_logs(self, data):
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['new_picks']}</td>
 					</tr>
 					<tr>
-						<th style="font-size: 14pt; max-width: 225px; min-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Records Replaced</th>
+						<th style="font-size: 14pt; max-width: 225px; min-width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Records Updated</th>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['matches_replaced']}</td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['games_replaced']}</td>
-						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['plays_replaced']}</td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['drafts_replaced']}</td>
-						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
-					</tr>		
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['picks_replaced']}</td>
+					</tr>
 					<tr>
-						<th style="font-size: 14pt; max-width: 225px; min-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Files Skipped (Error)</th>
-						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['gamelogs_skipped_error']}</td>
+						<th style="font-size: 14pt; max-width: 225px; min-width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Records Skipped (Already Loaded)</th>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
-						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['draftlogs_skipped_error']}</td>
-						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
-					</tr>	
-					<tr>
-						<th style="font-size: 14pt; max-width: 225px; min-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Files Skipped (Ignored)</th>
-						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['gamelogs_skipped_removed']}</td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
-						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['draftlogs_skipped_removed']}</td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
 					</tr>
 					<tr>
-						<th style="font-size: 14pt; max-width: 225px; min-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Files Skipped (Empty)</th>
+						<th style="font-size: 14pt; max-width: 225px; min-width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Gamelogs Skipped (Removed)</th>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['gamelogs_skipped_removed']}</td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+					</tr>
+					<tr>
+						<th style="font-size: 14pt; max-width: 225px; min-width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Gamelogs Skipped (Empty)</th>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['gamelogs_skipped_empty']}</td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
@@ -546,8 +777,24 @@ def process_logs(self, data):
 			<p style="text-align: center; font-style: italic;">Note: Two records are loaded and stored for each Match and Game.</p>
 		</div>
 		'''
-		mail.send(msg)
+			debug_log("📧 LOAD REPORT: About to send email...")
+			try:
+				mail.send(msg)
+				debug_log("📧 EMAIL SUCCESS: Load report email sent successfully!")
+			except Exception as e:
+				debug_log(f"📧 EMAIL ERROR: Failed to send load report email: {e}")
+				debug_log(f"📧 EMAIL DEBUG: MAIL_SERVER={app.config.get('MAIL_SERVER')}")
+				debug_log(f"📧 EMAIL DEBUG: MAIL_USERNAME={app.config.get('MAIL_USERNAME')}")
+				debug_log(f"📧 EMAIL DEBUG: MAIL_PORT={app.config.get('MAIL_PORT')}")
+				debug_log(f"📧 EMAIL DEBUG: MAIL_USE_TLS={app.config.get('MAIL_USE_TLS')}")
+				debug_log(f"📧 EMAIL DEBUG: MAIL_USE_SSL={app.config.get('MAIL_USE_SSL')}")
+			
+			# Now run build_cards_played_db (after email is sent)
+			build_cards_played_db(uid)
 	
+	except Exception as e:
+		error_code = e
+
 	return 'DONE'
 
 @shared_task(bind=True, base=AbortableTask)
@@ -788,7 +1035,7 @@ def process_from_app(self, data):
 			<table>
 				<thead>
 					<tr>
-						<th style="font-size: 14pt; max-width: 250px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">Load Result</th>
+						<th style="font-size: 14pt; max-width: 350px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">Load Result</th>
 						<th style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">Matches</th>
 						<th style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">Games</th>
 						<th style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">Plays</th>
@@ -798,7 +1045,7 @@ def process_from_app(self, data):
 				</thead>
 				<tbody>
 					<tr>
-						<th style="font-size: 14pt; max-width: 250px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">New Records Loaded</th>
+						<th style="font-size: 14pt; max-width: 350px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">New Records Loaded</th>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['new_matches']}</td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['new_games']}</td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['new_plays']}</td>
@@ -806,7 +1053,7 @@ def process_from_app(self, data):
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['new_picks']}</td>
 					</tr>
 					<tr>
-						<th style="font-size: 14pt; max-width: 250px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Records Updated</th>
+						<th style="font-size: 14pt; max-width: 350px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Records Updated</th>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['updated_matches']}</td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['updated_games']}</td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
@@ -814,7 +1061,7 @@ def process_from_app(self, data):
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
 					</tr>
 					<tr>
-						<th style="font-size: 14pt; max-width: 250px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Files Skipped (Ignored)</th>
+						<th style="font-size: 14pt; max-width: 350px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Files Skipped (Ignored)</th>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['gamelogs_skipped_removed']}</td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
@@ -822,7 +1069,7 @@ def process_from_app(self, data):
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
 					</tr>
 					<tr>
-						<th style="font-size: 14pt; max-width: 250px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Files Skipped (Duplicate)</th>
+						<th style="font-size: 14pt; max-width: 350px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Files Skipped (Duplicate)</th>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['skipped_plays']}</td>
@@ -836,7 +1083,8 @@ def process_from_app(self, data):
 			<p style="text-align: center; font-style: italic;">Note: Two records are loaded and stored for each Match and Game.</p>
 		</div>
 		'''
-		mail.send(msg)
+		# mail.send(msg)  # Temporarily disabled to focus on file processing issue
+		debug_log("📧 DEBUG: Email would be sent here (temporarily disabled)")
 
 	return 'DONE'
 
@@ -1193,7 +1441,8 @@ def reprocess_logs(self, data):
 			<p style="text-align: center; font-style: italic;">Note: Two records are loaded and stored for each Match and Game.</p>
 		</div>
 		'''
-		mail.send(msg)
+		# mail.send(msg)  # Temporarily disabled to focus on file processing issue
+		debug_log("📧 DEBUG: Email would be sent here (temporarily disabled)")
 
 	return 'DONE'
 
@@ -1203,6 +1452,39 @@ def test():
 	new_dict = {'1':db.session}
 	return json.dumps(new_dict)
 
+@views.route('/tasks', methods=['GET'])
+@login_required
+def task_monitor():
+	"""Monitor Celery background tasks"""
+	try:
+		# Get recent task history from database - this is reliable
+		recent_tasks = TaskHistory.query.filter_by(uid=current_user.uid).order_by(desc(TaskHistory.submit_date)).limit(10).all()
+		
+		# For now, skip live Celery monitoring to avoid app context issues
+		# Focus on database task history which is most useful
+		task_data = {
+			'active': {},
+			'scheduled': {},
+			'reserved': {},
+			'recent_history': [task.as_dict() for task in recent_tasks] if recent_tasks else [],
+			'info': 'Live task monitoring coming soon. For now, view recent task history below.'
+		}
+		
+		return render_template('task_monitor.html', user=current_user, task_data=task_data)
+		
+	except Exception as e:
+		debug_log(f"Error in task monitor: {e}")
+		# Fallback with error message
+		task_data = {
+			'active': {},
+			'scheduled': {},
+			'reserved': {},
+			'recent_history': [],
+			'error': f'Error loading task history: {str(e)}'
+		}
+		
+		return render_template('task_monitor.html', user=current_user, task_data=task_data)
+
 @views.route('/update_vars', methods=['GET'])
 @login_required
 def update_vars():
@@ -1210,11 +1492,14 @@ def update_vars():
 	if (current_user.uid != 1):
 		return 'Forbidden', 403
 	try:
-		options = get_input_options()
-		multifaced = get_multifaced_cards()
-		all_decks = get_all_decks()
-	except:
-		flash('Error loading auxiliary files.', category='error')
+		# Force reload by setting to None first
+		options = None
+		multifaced = None
+		all_decks = None
+		# Now load fresh data
+		ensure_data_loaded()
+	except Exception as e:
+		flash(f'Error loading auxiliary files: {e}', category='error')
 	flash('Loaded all auxiliary files successfully.', category='success')
 	return render_template('index.html', user=current_user)
 
@@ -1460,18 +1745,18 @@ def logout():
 def load():
 	if ('file' not in request.files):
 		flash('No file uploaded.', category='error')
-		return jsonify(redirect='/')
+		return redirect(url_for('views.index'))
 	uploaded_file = request.files['file']
 	if (uploaded_file.filename == ''):
 		flash('No file selected.', category='error')
-		return jsonify(redirect='/')
+		return redirect(url_for('views.index'))
 
 	file_stream = io.BytesIO(uploaded_file.read())
 
 	task = process_logs.delay({'email':current_user.email, 'file_stream':file_stream.getvalue(), 'user_id':current_user.uid, 'username':current_user.username})
 
 	flash(f'Your data is now being processed. This may take several minutes depending on the number of files. A Load Report will be emailed upon completion.', category='success')
-	return jsonify(redirect='/')
+	return redirect(url_for('views.index'))
 
 @views.route('/load_from_app', methods=['POST'])
 @login_required
@@ -1495,7 +1780,7 @@ def load_from_app():
 				all_data = modo.invert_join(all_data)
 			except pickle.UnpicklingError:
 				flash(f'Unable to read file: {i.filename}.', category='error')
-				return jsonify(redirect='/')
+				return redirect(url_for('views.index'))
 			process_total += len(all_data[0])
 			process_total += len(all_data[1])
 			process_total += len(all_data[2])
@@ -1505,24 +1790,24 @@ def load_from_app():
 				drafts_table = pickle.loads(i.read())
 			except pickle.UnpicklingError:
 				flash(f'Unable to read file: {i.filename}.', category='error')
-				return jsonify(redirect='/')
+				return redirect(url_for('views.index'))
 			process_total += len(drafts_table)
 		elif filename == 'PICKS_TABLE':
 			try:
 				picks_table = pickle.loads(i.read())
 			except pickle.UnpicklingError:
 				flash(f'Unable to read file: {i.filename}.', category='error')
-				return jsonify(redirect='/')
+				return redirect(url_for('views.index'))
 			process_total += len(picks_table)
 
 	if (len(all_data) == 0) and (len(drafts_table) == 0) and (len(picks_table) == 0):
 		flash('No MTGO-Tracker save data was found.', 'error')
-		return jsonify(redirect='/')
+		return redirect(url_for('views.index'))
 
 	task = process_from_app.delay({'all_data':all_data, 'drafts_table':drafts_table, 'picks_table':picks_table, 'user_id':current_user.uid, 'username':current_user.username, 'email':current_user.email})
 
 	flash(f'MTGO-Tracker save data is being processed. A Load Report will be emailed upon completion.', category='success')
-	return jsonify(redirect='/')
+	return redirect(url_for('views.index'))
 	
 @views.route('/table/<table_name>/<page_num>')
 @login_required
@@ -1984,6 +2269,7 @@ def apply_draft_id(match_id, draft_id):
 @views.route('/input_options')
 @login_required
 def input_options():
+	ensure_data_loaded()
 	return options
 
 @views.route('/export')
@@ -2048,6 +2334,9 @@ def export():
 @views.route('/best_guess', methods=['POST'])
 @login_required
 def best_guess():
+	# Ensure data is loaded before using global variables
+	ensure_data_loaded()
+	
 	bg_type = request.form.get('BG_Match_Set').strip()
 	replace_type = request.form.get('BG_Replace').strip()
 	con_count = 0
@@ -2133,7 +2422,7 @@ def best_guess():
 		return_str += 'es'
 	return_str += '.'
 	flash(return_str, category='success')
-	return jsonify(redirect='/table/matches/1')
+	return redirect(url_for('views.table', table_name='matches', page_num=1))
 
 @views.route('/remove', methods=['POST'])
 @login_required
@@ -2200,7 +2489,7 @@ def profile():
 		max_float = 0.0
 		max_games = 0
 		for i in table:
-			#print(i)
+			#debug_log(i)
 			if i[0] not in formats.keys():
 				formats[i[0]] = [0,0]
 			if i[1] == 'P1':
@@ -2271,6 +2560,9 @@ def edit_profile():
 @views.route('/load_dashboards/<dash_name>', methods=['POST'])
 @login_required
 def dashboards(dash_name):
+	# Ensure data is loaded before using global variables
+	ensure_data_loaded()
+	
 	def match_result(p1_wins, p2_wins):
 		if p1_wins == p2_wins:
 			return f'NA {p1_wins}-{p2_wins}'
@@ -2616,6 +2908,85 @@ def load_dash(dash_name):
 def data_dict():
 	return render_template('data-dict.html', user=current_user)
 
-options = get_input_options()
-multifaced = get_multifaced_cards()
-all_decks = get_all_decks()
+# Initialize these variables as None - they'll be loaded on demand
+options = None
+multifaced = None
+all_decks = None
+
+def ensure_data_loaded():
+	"""Load global data if not already loaded"""
+	global options, multifaced, all_decks
+	
+	if options is None:
+		try:
+			options = get_input_options()
+		except Exception as e:
+			debug_log(f"Warning: Could not load input options: {e}")
+			options = {}
+			
+	if multifaced is None:
+		try:
+			multifaced = get_multifaced_cards()
+		except Exception as e:
+			debug_log(f"Warning: Could not load multifaced cards: {e}")
+			multifaced = {}
+			
+	if all_decks is None:
+		try:
+			all_decks = get_all_decks()
+		except Exception as e:
+			debug_log(f"Warning: Could not load all decks: {e}")
+			all_decks = {}
+
+@views.route('/test_email')
+@login_required 
+def test_email():
+	"""Test email configuration"""
+	try:
+		from app import create_app
+		app = create_app()
+		
+		with app.app_context():
+			debug_log("🔍 Testing email configuration...")
+			debug_log(f"📧 MAIL_SERVER: {app.config.get('MAIL_SERVER')}")
+			debug_log(f"📧 MAIL_USERNAME: {app.config.get('MAIL_USERNAME')}")
+			debug_log(f"📧 MAIL_PORT: {app.config.get('MAIL_PORT')}")
+			debug_log(f"📧 MAIL_USE_TLS: {app.config.get('MAIL_USE_TLS')}")
+			debug_log(f"📧 MAIL_USE_SSL: {app.config.get('MAIL_USE_SSL')}")
+			
+			mail = app.extensions['mail']
+			msg = Message(
+				'MTGO-DB Test Email', 
+				sender=app.config.get('MAIL_USERNAME'), 
+				recipients=[current_user.email]
+			)
+			msg.body = 'This is a test email from MTGO-DB to verify email configuration.'
+			
+			try:
+				mail.send(msg)
+				debug_log("📧 Test email sent successfully!")
+				flash('Test email sent successfully! Check your inbox.', 'success')
+			except Exception as e:
+				debug_log(f"📧 Test email failed: {e}")
+				flash(f'Email test failed: {e}', 'error')
+				
+	except Exception as e:
+		debug_log(f"📧 Email test error: {e}")
+		flash(f'Email test error: {e}', 'error')
+	
+	return redirect(url_for('views.profile'))
+
+@views.route('/view_debug_log')
+@login_required
+def view_debug_log():
+	"""View debug log file"""
+	try:
+		log_file = os.path.join('local-dev', 'data', 'logs', 'debug_log.txt')
+		if os.path.exists(log_file):
+			with open(log_file, 'r', encoding='utf-8') as f:
+				log_content = f.read()
+			return f"<pre>{log_content}</pre>"
+		else:
+			return "Debug log file not found."
+	except Exception as e:
+		return f"Error reading debug log: {e}"

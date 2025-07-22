@@ -13,6 +13,7 @@ blinker==1.6.2
 boto==2.49.0
 bs4==0.0.1
 celery==5.3.1
+flower==2.0.1
 certifi==2023.5.7
 cffi==1.15.1
 charset-normalizer==3.1.0

@@ -19,9 +19,16 @@ local/
 
 ## Quick Start
 
-1. **Setup**: Run `python local/setup_local.py` from the project root
-2. **Start App**: Run `python app.py` from the project root
-3. **Start Celery**: Run `python local/start_celery.py` from the project root
+### Option 1: Start Everything at Once (Recommended)
+```bash
+python local-dev/start_all.py
+```
+This starts Flask app, Celery worker, and Flower monitor in one command!
+
+### Option 2: Manual Start (3 separate terminals)
+1. **Celery Worker**: `python local-dev/start_celery.py` 
+2. **Flask App**: `python app.py`
+3. **Flower Monitor**: `python local-dev/start_flower.py` (optional)
 
 ## Configuration
 

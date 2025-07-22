@@ -158,3 +158,6 @@ class TaskHistory(db.Model):
 	complete_date = db.Column(db.DateTime, nullable=True)
 	task_type = db.Column(db.String(35))
 	error_code = db.Column(db.String(50), nullable=True)
+	
+	def as_dict(self):
+		return {c.name: getattr(self, c.name) for c in self.__table__.columns}

@@ -13,12 +13,13 @@ def main():
     # Set environment for local development
     os.environ['FLASK_ENV'] = 'local'
     
-    # Start Celery worker
+    # Start Celery worker with better compatibility settings
     try:
         subprocess.run([
             'celery', '-A', 'app.celery', 'worker',
             '--loglevel=info',
-            '--concurrency=1'
+            '--concurrency=1',
+            '--pool=solo'  # Use solo pool for Windows compatibility
         ], check=True)
     except KeyboardInterrupt:
         print("\nCelery worker stopped.")

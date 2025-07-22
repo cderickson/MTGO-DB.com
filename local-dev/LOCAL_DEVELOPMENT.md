@@ -107,7 +107,10 @@ The local configuration uses SQLite, which is perfect for development:
 The app uses Celery for background tasks. For local development:
 - Redis is used as the message broker
 - Tasks run locally
-- You can monitor tasks in the Celery worker logs
+- You can monitor tasks in several ways:
+  1. **Web Interface**: Visit `/tasks` in your app for basic monitoring
+  2. **Flower Dashboard**: Run `python local-dev/start_flower.py` then visit http://localhost:5555
+  3. **Worker Logs**: Check the Celery worker logs in the terminal
 
 ## Development Workflow
 
@@ -148,10 +151,20 @@ The app supports file uploads:
 
 ### Background Tasks
 
-To test background tasks:
+To test background tasks, you need both Flask and Celery worker running:
+
+#### Option 1: All-in-One Start (Recommended)
+```bash
+python local-dev/start_all.py
+```
+
+#### Option 2: Manual Start
 1. Ensure Redis is running
-2. Start a Celery worker: `celery -A app.celery worker --loglevel=info`
-3. Tasks will be processed in the background
+2. Start Celery worker: `python local-dev/start_celery.py`
+3. Start Flask app: `python app.py` 
+4. (Optional) Start Flower: `python local-dev/start_flower.py`
+
+Tasks will be processed in the background automatically.
 
 ## Troubleshooting
 

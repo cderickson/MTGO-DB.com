@@ -96,6 +96,12 @@
                   <span class="nav-text">Drafts</span>
                 </a>
               </li>
+              <li class="nav-item">
+                <a href="/db" class="nav-link">
+                  <i class="fas fa-database nav-icon"></i>
+                  <span class="nav-text">Database Inspector</span>
+                </a>
+              </li>
             </ul>
           </div>
           
@@ -231,6 +237,33 @@
 
       <!-- Main Content Area -->
       <div class="main-content" id="main-content">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-messages" style="padding: var(--spacing-lg) var(--spacing-lg) 0;">
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" role="alert">
+                  <div class="alert-content">
+                    {% if category == 'success' %}
+                      <i class="fas fa-check-circle" style="margin-right: var(--spacing-sm); color: #22c562;"></i>
+                    {% elif category == 'error' %}
+                      <i class="fas fa-exclamation-circle" style="margin-right: var(--spacing-sm); color: #ef4444;"></i>
+                    {% elif category == 'warning' %}
+                      <i class="fas fa-exclamation-triangle" style="margin-right: var(--spacing-sm); color: #f59e0b;"></i>
+                    {% else %}
+                      <i class="fas fa-info-circle" style="margin-right: var(--spacing-sm); color: #3b82f6;"></i>
+                    {% endif %}
+                    {{ message }}
+                  </div>
+                  <button type="button" class="alert-close" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+        
         <!-- Page Content -->
         <main class="content-wrapper">
           {% block content %}{% endblock %}
@@ -749,33 +782,87 @@
       100% { transform: rotate(360deg); }
     }
        
-    /* Alert Styles */
+    /* Flash Message Alert Styles */
+    .flash-messages {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
     .alert {
       position: relative;
-      padding-right: 3rem;
+      padding: var(--spacing-md) var(--spacing-lg);
+      margin-bottom: var(--spacing-md);
+      border-radius: var(--radius-md);
+      border: 1px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      animation: slideInFromTop 0.3s ease-out;
+    }
+    
+    .alert-content {
+      display: flex;
+      align-items: center;
+      flex: 1;
+    }
+    
+    .alert-success {
+      background: rgba(34, 197, 98, 0.1);
+      border-color: rgba(34, 197, 98, 0.3);
+      color: #16a34a;
+    }
+    
+    .alert-error {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #dc2626;
+    }
+    
+    .alert-warning {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.3);
+      color: #d97706;
+    }
+    
+    .alert-info {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: rgba(59, 130, 246, 0.3);
+      color: #2563eb;
     }
     
     .alert-close {
-      position: absolute;
-      right: var(--spacing-md);
-      top: 50%;
-      transform: translateY(-50%);
       background: none;
       border: none;
       color: inherit;
       cursor: pointer;
-      padding: 0;
-      width: 20px;
-      height: 20px;
+      padding: var(--spacing-xs);
+      width: 28px;
+      height: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
       border-radius: var(--radius-sm);
       transition: all var(--transition-fast);
+      margin-left: var(--spacing-md);
+      opacity: 0.7;
     }
     
     .alert-close:hover {
-      background: rgba(255, 255, 255, 0.1);
+      opacity: 1;
+      background: rgba(0, 0, 0, 0.05);
+    }
+    
+    @keyframes slideInFromTop {
+      from {
+        transform: translateY(-10px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
     }
     
     /* Responsive */

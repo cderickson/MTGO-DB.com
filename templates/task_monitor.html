@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Task Monitor{% endblock %}
+
+{% block content %}
+<div class="section">
+  <div class="container" style="max-width: 1200px;">
+    
+    <!-- Header -->
+    <div class="section-header">
+      <h2 class="section-title">Background Task Monitor</h2>
+      <p class="section-subtitle">Monitor the status of your Celery background tasks</p>
+      <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1rem;">
+        <button onclick="location.reload()" class="btn btn-secondary">
+          <i class="fas fa-sync-alt"></i> Refresh Status
+        </button>
+        {% if current_user.uid == 1 %}
+        <a href="http://localhost:5555" target="_blank" class="btn btn-primary">
+          <i class="fas fa-external-link-alt"></i> Open Flower Dashboard
+        </a>
+        {% endif %}
+      </div>
+      
+      <!-- Info/Error Messages -->
+      {% if task_data.info %}
+      <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: var(--radius-md); padding: 1rem; margin-top: 1rem;">
+        <div style="display: flex; align-items: center; color: #2563eb;">
+          <i class="fas fa-info-circle" style="margin-right: 0.5rem;"></i>
+          {{ task_data.info }}
+        </div>
+      </div>
+      {% endif %}
+      
+      {% if task_data.error %}
+      <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--radius-md); padding: 1rem; margin-top: 1rem;">
+        <div style="display: flex; align-items: center; color: #dc2626;">
+          <i class="fas fa-exclamation-circle" style="margin-right: 0.5rem;"></i>
+          {{ task_data.error }}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Active Tasks -->
+    <div class="card" style="margin-bottom: 2rem;">
+      <div class="card-header">
+        <h3 style="margin: 0; color: var(--fg-default);">
+          <i class="fas fa-play-circle" style="color: #22c562; margin-right: 0.5rem;"></i>
+          Active Tasks
+        </h3>
+      </div>
+      <div class="card-content">
+        {% if task_data.active %}
+          {% for worker, tasks in task_data.active.items() %}
+            {% if tasks %}
+              <div style="margin-bottom: 1rem;">
+                <h4 style="color: var(--fg-muted); font-size: 0.875rem; margin-bottom: 0.5rem;">{{ worker }}</h4>
+                {% for task in tasks %}
+                <div style="background: rgba(34, 197, 98, 0.1); border: 1px solid rgba(34, 197, 98, 0.3); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 0.5rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <strong style="color: #16a34a;">{{ task.name }}</strong>
+                    <span style="background: #22c562; color: white; padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); font-size: 0.75rem;">RUNNING</span>
+                  </div>
+                  <div style="font-size: 0.875rem; color: var(--fg-muted);">
+                    <div><strong>Task ID:</strong> {{ task.id }}</div>
+                    <div><strong>Started:</strong> {{ task.time_start }}</div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            {% endif %}
+          {% endfor %}
+        {% else %}
+          <p style="color: var(--fg-muted); text-align: center; padding: 2rem;">
+            <i class="fas fa-check-circle" style="color: #22c562; font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+            No active tasks running
+          </p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Scheduled Tasks -->
+    <div class="card" style="margin-bottom: 2rem;">
+      <div class="card-header">
+        <h3 style="margin: 0; color: var(--fg-default);">
+          <i class="fas fa-clock" style="color: #f59e0b; margin-right: 0.5rem;"></i>
+          Scheduled Tasks
+        </h3>
+      </div>
+      <div class="card-content">
+        {% if task_data.scheduled %}
+          {% for worker, tasks in task_data.scheduled.items() %}
+            {% if tasks %}
+              <div style="margin-bottom: 1rem;">
+                <h4 style="color: var(--fg-muted); font-size: 0.875rem; margin-bottom: 0.5rem;">{{ worker }}</h4>
+                {% for task in tasks %}
+                <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 0.5rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <strong style="color: #d97706;">{{ task.name }}</strong>
+                    <span style="background: #f59e0b; color: white; padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); font-size: 0.75rem;">SCHEDULED</span>
+                  </div>
+                  <div style="font-size: 0.875rem; color: var(--fg-muted);">
+                    <div><strong>Task ID:</strong> {{ task.id }}</div>
+                    <div><strong>ETA:</strong> {{ task.eta }}</div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            {% endif %}
+          {% endfor %}
+        {% else %}
+          <p style="color: var(--fg-muted); text-align: center; padding: 2rem;">
+            <i class="fas fa-calendar-times" style="color: #f59e0b; font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+            No scheduled tasks
+          </p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Recent Task History -->
+    <div class="card">
+      <div class="card-header">
+        <h3 style="margin: 0; color: var(--fg-default);">
+          <i class="fas fa-history" style="color: #3b82f6; margin-right: 0.5rem;"></i>
+          Recent Task History (Last 10)
+        </h3>
+      </div>
+      <div class="card-content">
+        {% if task_data.recent_history %}
+          <div class="table-responsive">
+            <table style="width: 100%; border-collapse: collapse;">
+              <thead>
+                                 <tr style="border-bottom: 2px solid var(--border); background: var(--bg-subtle);">
+                   <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--fg-default);">Task ID</th>
+                   <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--fg-default);">Type</th>
+                   <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--fg-default);">Status</th>
+                   <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--fg-default);">Started</th>
+                   <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--fg-default);">Completed</th>
+                   <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: var(--fg-default);">Error</th>
+                 </tr>
+              </thead>
+                             <tbody>
+                 {% for task in task_data.recent_history %}
+                 <tr style="border-bottom: 1px solid var(--border);">
+                   <td style="padding: 0.75rem; font-family: monospace; font-size: 0.8rem;">{{ task.task_id }}</td>
+                   <td style="padding: 0.75rem;">{{ task.task_type or 'N/A' }}</td>
+                   <td style="padding: 0.75rem;">
+                     {% if task.complete_date %}
+                       <span style="background: #22c562; color: white; padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); font-size: 0.75rem;">COMPLETED</span>
+                     {% else %}
+                       <span style="background: #f59e0b; color: white; padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); font-size: 0.75rem;">RUNNING</span>
+                     {% endif %}
+                   </td>
+                   <td style="padding: 0.75rem; font-size: 0.875rem;">{{ task.submit_date.strftime('%Y-%m-%d %H:%M:%S') if task.submit_date else 'N/A' }}</td>
+                   <td style="padding: 0.75rem; font-size: 0.875rem;">{{ task.complete_date.strftime('%Y-%m-%d %H:%M:%S') if task.complete_date else 'N/A' }}</td>
+                   <td style="padding: 0.75rem; font-size: 0.875rem;">{{ task.error_code or 'Success' }}</td>
+                 </tr>
+                 {% endfor %}
+               </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p style="color: var(--fg-muted); text-align: center; padding: 2rem;">
+            <i class="fas fa-inbox" style="color: #6b7280; font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+            No task history available
+          </p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Instructions -->
+    <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: var(--radius-md); padding: 1.5rem; margin-top: 2rem;">
+      <h4 style="margin: 0 0 1rem 0; color: #2563eb;">
+        <i class="fas fa-info-circle"></i> How to Monitor Tasks
+      </h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div>
+          <h5 style="margin: 0 0 0.5rem 0; color: var(--fg-default);">For Better Monitoring:</h5>
+          <ol style="margin: 0; padding-left: 1.5rem; color: var(--fg-body); line-height: 1.6;">
+            <li>Install Flower: <code>pip install flower</code></li>
+            <li>Run: <code>python local-dev/start_flower.py</code></li>
+            <li>Open <a href="http://localhost:5555" target="_blank">http://localhost:5555</a></li>
+          </ol>
+        </div>
+        <div>
+          <h5 style="margin: 0 0 0.5rem 0; color: var(--fg-default);">Running Celery Worker:</h5>
+          <ol style="margin: 0; padding-left: 1.5rem; color: var(--fg-body); line-height: 1.6;">
+            <li>Make sure Redis is running</li>
+            <li>Run: <code>python local-dev/start_celery.py</code></li>
+            <li>Check worker logs in the terminal</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.table-responsive {
+  overflow-x: auto;
+}
+
+@media (max-width: 768px) {
+  .table-responsive table {
+    font-size: 0.8rem;
+  }
+  
+  .table-responsive th, 
+  .table-responsive td {
+    padding: 0.5rem !important;
+  }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: var(--primary-button-bg);
+  color: var(--primary-button-fg);
+  border: 1px solid var(--primary-button-border);
+}
+
+.btn-primary:hover {
+  background: var(--primary-button-bg-hover);
+}
+
+.btn-secondary {
+  background: var(--secondary-button-bg);
+  color: var(--secondary-button-fg);
+  border: 1px solid var(--secondary-button-border);
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: var(--secondary-button-bg-hover);
+}
+</style>
+
+<script>
+// Auto-refresh every 30 seconds if there are active tasks
+document.addEventListener('DOMContentLoaded', function() {
+  // Check if there are any running status badges (indicating active tasks)
+  const runningBadges = document.querySelectorAll('[style*="background: #22c562"]');
+  const hasActiveTasks = runningBadges.length > 0;
+  
+  if (hasActiveTasks) {
+    setTimeout(function() {
+      location.reload();
+    }, 30000); // 30 seconds
+  }
+});
+</script>
+
+{% endblock %} 

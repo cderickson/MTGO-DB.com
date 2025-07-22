@@ -18,7 +18,21 @@ def make_celery(app):
 		backend=app.config['CELERY_RESULT_BACKEND'],
 		broker=app.config['CELERY_BROKER_URL']
 	)
-	celery.conf.update(app.config)
+	
+	# Simplified Celery configuration to avoid conflicts
+	celery_config = {
+		'broker_url': app.config.get('CELERY_BROKER_URL'),
+		'result_backend': app.config.get('CELERY_RESULT_BACKEND'),
+		'task_serializer': 'pickle',  # Changed to pickle for better compatibility
+		'accept_content': ['pickle', 'json'],  # Allow both
+		'result_serializer': 'pickle',
+		'timezone': 'UTC',
+		'enable_utc': True,
+		'worker_prefetch_multiplier': 1,  # Process one task at a time
+		'task_acks_late': True,  # Acknowledge tasks only after completion
+		'worker_hijack_root_logger': False,  # Don't interfere with logging
+	}
+	celery.conf.update(celery_config)
 
 	class ContextTask(celery.Task):
 		def __call__(self, *args, **kwargs):
@@ -53,6 +67,19 @@ def create_app():
 	app.config['EMAIL_CONFIRMATION_SALT'] = os.environ.get("EMAIL_CONFIRMATION_SALT", app.config.get('EMAIL_CONFIRMATION_SALT'))
 	app.config['RESET_PASSWORD_SALT'] = os.environ.get("RESET_PASSWORD_SALT", app.config.get('RESET_PASSWORD_SALT'))
 
+	# Reset debug log file on app startup
+	try:
+		log_dir = os.path.join('local-dev', 'data', 'logs')
+		os.makedirs(log_dir, exist_ok=True)
+		log_file = os.path.join(log_dir, 'debug_log.txt')
+		
+		# Clear the debug log file
+		with open(log_file, 'w', encoding='utf-8') as f:
+			f.write(f"=== MTGO-DB Debug Log - Started {datetime.now()} ===\n")
+		print(f"Debug log reset: {log_file}")
+	except Exception as e:
+		print(f"Warning: Could not reset debug log file: {e}")
+
 	# Initialize extensions
 	mail.init_app(app)
 	db.init_app(app)
@@ -80,8 +107,15 @@ def create_app():
 
 app = create_app()
 celery = make_celery(app)
+
+# Register tasks by importing the module
+try:
+	import modules.views
+	print(f"Tasks registered: {len(celery.tasks)} tasks found")
+except Exception as e:
+	print(f"Warning: Could not import tasks: {e}")
+
 celery.set_default()
-app.app_context().push()
 
 #mail = Mail(app)
 
