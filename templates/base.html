@@ -183,8 +183,8 @@
               </li>
               <li class="nav-item">
                 <a href="{{ url_for('views.export') }}" class="nav-link">
-                  <i class="fas fa-file-csv nav-icon"></i>
-                  <span class="nav-text">Export to CSV</span>
+                  <i class="fas fa-file-excel nav-icon"></i>
+                  <span class="nav-text">Export to Excel</span>
                 </a>
               </li>
             </ul>
@@ -469,7 +469,7 @@
           <div class="modal-footer">
             <div class="d-flex gap-3 justify-content-end">
               <button type="button" class="button secondary" onclick="hideImportAppModal()">Cancel</button>
-              <button type="submit" class="button primary" form="importAppForm" id="importAppSubmitBtn" disabled>Apply</button>
+              <button type="submit" class="button primary" form="importAppForm" id="importAppSubmitBtn" disabled>Import Data</button>
             </div>
           </div>
         </div>
@@ -486,28 +486,26 @@
           </div>
           <div class="modal-body">
             <form id="reprocessForm" action="/reprocess" method="POST">
-              <div style="margin-bottom: var(--spacing-lg);">
-                <p style="color: var(--fg-body); line-height: 1.6; margin-bottom: var(--spacing-lg);">
-                  Your archived GameLog and DraftLog files will be <strong>re-parsed</strong>.<br><br>
-                  Any manual revisions you have made <strong>will not</strong> be lost.
-                </p>
-                <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg);">
-                  <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
-                    <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
-                    <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Processing Details</h4>
-                  </div>
-                  <ul style="margin: 0; padding-left: var(--spacing-lg); color: var(--fg-body); line-height: 1.6;">
-                    <li style="margin-bottom: var(--spacing-sm);">This may take several minutes depending on how many archived files you have to reprocess.</li>
-                    <li>A load report will be emailed upon completion.</li>
-                  </ul>
+              <p style="color: var(--fg-body); line-height: 1.6; margin-bottom: var(--spacing-lg);">
+                Your archived GameLog and DraftLog files will be <strong>re-parsed</strong>. Use this function if <strong>MTGO-Tracker</strong> parsing rules have changed.<br><br>
+                Any manual revisions you have made (such as deck names) <strong><u>will not</u></strong> be lost.
+              </p>
+              <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg) 0;">
+                <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
+                  <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
+                  <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Processing Details</h4>
                 </div>
+                <ul style="margin: 0; padding-left: var(--spacing-lg); color: var(--fg-body); line-height: 1.6;">
+                  <li style="margin-bottom: var(--spacing-sm);">This may take several minutes depending on how many archived files you have to reprocess.</li>
+                  <li>A load report will be emailed upon completion.</li>
+                </ul>
               </div>
             </form>
           </div>
           <div class="modal-footer">
             <div class="d-flex gap-3 justify-content-end">
               <button type="button" class="button secondary" onclick="hideReprocessModal()">Cancel</button>
-              <button type="submit" class="button primary" form="reprocessForm">Reprocess</button>
+              <button type="submit" class="button primary" form="reprocessForm">Re-Process</button>
             </div>
           </div>
         </div>

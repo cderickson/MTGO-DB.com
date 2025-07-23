@@ -68,17 +68,17 @@ def create_app():
 	app.config['RESET_PASSWORD_SALT'] = os.environ.get("RESET_PASSWORD_SALT", app.config.get('RESET_PASSWORD_SALT'))
 
 	# Reset debug log file on app startup
-	try:
-		log_dir = os.path.join('local-dev', 'data', 'logs')
-		os.makedirs(log_dir, exist_ok=True)
-		log_file = os.path.join(log_dir, 'debug_log.txt')
+	# try:
+	# 	log_dir = os.path.join('local-dev', 'data', 'logs')
+	# 	os.makedirs(log_dir, exist_ok=True)
+	# 	log_file = os.path.join(log_dir, 'debug_log.txt')
 		
-		# Clear the debug log file
-		with open(log_file, 'w', encoding='utf-8') as f:
-			f.write(f"=== MTGO-DB Debug Log - Started {datetime.now()} ===\n")
-		print(f"Debug log reset: {log_file}")
-	except Exception as e:
-		print(f"Warning: Could not reset debug log file: {e}")
+	# 	# Clear the debug log file
+	# 	with open(log_file, 'w', encoding='utf-8') as f:
+	# 		f.write(f"=== MTGO-DB Debug Log - Started {datetime.now()} ===\n")
+	# 	print(f"Debug log reset: {log_file}")
+	# except Exception as e:
+	# 	print(f"Warning: Could not reset debug log file: {e}")
 
 	# Initialize extensions
 	mail.init_app(app)

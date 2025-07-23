@@ -1,4 +1,4 @@
-from flask import render_template, request, Blueprint, flash, redirect, send_file, Response, jsonify, redirect, url_for, current_app, session
+from flask import render_template, request, Blueprint, flash, redirect, send_file, Response, jsonify, redirect, url_for, current_app, session, after_this_request
 from flask_mail import Mail, Message
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func, create_engine, desc, select, and_, asc
@@ -13,6 +13,8 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadTimeSignat
 import os
 import io
 import time
+import tempfile
+import shutil
 from modules import modo
 import pickle
 import math 
@@ -25,6 +27,10 @@ from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient, g
 from azure.core.exceptions import ResourceNotFoundError
 import pytz
 import json
+import logging
+import threading
+#logging.getLogger("smtplib").setLevel(logging.ERROR)
+#logging.getLogger("celery").setLevel(logging.ERROR)
 
 # Debug logging function
 def debug_log(message):
@@ -119,30 +125,30 @@ def get_all_decks():
 			return {}
 	return all_decks
 def build_cards_played_db(uid):
-	debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Building cards played database for user {uid}")
+	#debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Building cards played database for user {uid}")
 	
 	try:
 		# Ensure global variables are loaded
 		ensure_data_loaded()
-		debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Global variables loaded")
+		#debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Global variables loaded")
 		
 		query = db.session.query(Match.match_id).filter_by(uid=uid).distinct()
 		match_ids = [value[0] for value in query.all()]
-		debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Found {len(match_ids)} unique match IDs")
+		#debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Found {len(match_ids)} unique match IDs")
 		
 		cards_added = 0
 		for i in match_ids:
-			debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Processing match {i}")
+			#debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Processing match {i}")
 			
 			if CardsPlayed.query.filter_by(uid=uid, match_id=i).first():
-				debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Match {i} already exists, skipping")
+				#debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Match {i} already exists, skipping")
 				continue
 				
 			try:
 				players = [value[0] for value in db.session.query(Play.casting_player).filter_by(uid=uid, match_id=i).distinct().all()]
 				
 				if len(players) < 2:
-					debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Match {i} has insufficient players ({len(players)}), skipping")
+					#debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Match {i} has insufficient players ({len(players)}), skipping")
 					continue
 
 				query = db.session.query(Play.primary_card).filter_by(uid=uid, match_id=i, casting_player=players[0], action='Casts').distinct()
@@ -171,25 +177,25 @@ def build_cards_played_db(uid):
 											lands2=sorted(list(lands2),reverse=False))
 				db.session.add(cards_played)
 				cards_added += 1
-				debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Added cards played for match {i}")
+				#debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Added cards played for match {i}")
 				
 			except Exception as e:
-				debug_log(f"🔍 BUILD CARDS PLAYED ERROR: Failed to process match {i}: {e}")
+				#debug_log(f"🔍 BUILD CARDS PLAYED ERROR: Failed to process match {i}: {e}")
 				continue
 		
 		# Single commit at the end for better performance
 		if cards_added > 0:
 			try:
 				db.session.commit()
-				debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Successfully committed {cards_added} cards played records")
+				#debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Successfully committed {cards_added} cards played records")
 			except Exception as e:
-				debug_log(f"🔍 BUILD CARDS PLAYED ERROR: Failed to commit: {e}")
+				#debug_log(f"🔍 BUILD CARDS PLAYED ERROR: Failed to commit: {e}")
 				db.session.rollback()
 		else:
 			debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: No new cards played records to add")
 			
 	except Exception as e:
-		debug_log(f"🔍 BUILD CARDS PLAYED CRITICAL ERROR: {e}")
+		#debug_log(f"🔍 BUILD CARDS PLAYED CRITICAL ERROR: {e}")
 		try:
 			db.session.rollback()
 		except:
@@ -813,6 +819,7 @@ def process_from_app(self, data):
 		'skipped_plays':0,
 		'skipped_drafts':0,
 		'skipped_picks':0,
+		'gamelogs_skipped_digit':0,
 		'gamelogs_skipped_error':0,
 		'gamelogs_skipped_removed':0,
 		'gamelogs_skipped_empty':0,
@@ -827,144 +834,169 @@ def process_from_app(self, data):
 	submit_date = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific'))
 	error_code = None
 
-	try:
-		for match in data['all_data'][0]:
-			new_match_dict[match[0]] = False
-			if match[0][0:12].isdigit():
-				continue
-			if Removed.query.filter_by(uid=uid, match_id=match[0]).first():
-				counts['gamelogs_skipped_removed'] += 1
-				continue
-			if Match.query.filter_by(uid=uid, match_id=match[0], p1=match[2]).first():
-				existing_match = Match.query.filter_by(uid=uid, match_id=match[0], p1=match[2]).first()
-				existing_match.p1_arch = match[3]
-				existing_match.p1_subarch = match[4]
-				existing_match.p2_arch = match[6]
-				existing_match.p2_subarch = match[7]
-				existing_match.p1_wins = match[11]
-				existing_match.p2_wins = match[12]
-				existing_match.match_winner = match[13]
-				existing_match.format = match[14]
-				existing_match.limited_format = match[15]
-				existing_match.match_type = match[16]
-				merged_match = db.session.merge(existing_match)
-				db.session.add(merged_match)
-				counts['updated_matches'] += 1
-			else:
-				new_match_dict[match[0]] = True
-				new_match = Match(uid=uid,
-								match_id=match[0],
-								draft_id='NA',
-								p1=match[2],
-								p1_arch=match[3],
-								p1_subarch=match[4],
-								p2=match[5],
-								p2_arch=match[6],
-								p2_subarch=match[7],
-								p1_roll=match[8],
-								p2_roll=match[9],
-								roll_winner=match[10],
-								p1_wins=match[11],
-								p2_wins=match[12],
-								match_winner=match[13],
-								format=match[14],
-								limited_format=match[15],
-								match_type=match[16],
-								date=match[17])
-				db.session.add(new_match)
-				counts['new_matches'] += 1
-		for game in data['all_data'][1]:
-			if game[0][0:12].isdigit():
-				continue
-			if Removed.query.filter_by(uid=uid, match_id=game[0]).first():
-				continue
-			if Game.query.filter_by(uid=uid, match_id=game[0], game_num=game[3], p1=game[1]).first():
-				existing_game = Game.query.filter_by(uid=uid, match_id=game[0], game_num=game[3], p1=game[1]).first()
-				existing_game.game_winner = game[11]
-				merged_game = db.session.merge(existing_game)
-				db.session.add(merged_game)
-				counts['updated_games'] += 1
-			else:
-				new_game = Game(uid=uid,
-								match_id=game[0],
-								p1=game[1],
-								p2=game[2],
-								game_num=game[3],
-								pd_selector=game[4],
-								pd_choice=game[5],
-								on_play=game[6],
-								on_draw=game[7],
-								p1_mulls=game[8],
-								p2_mulls=game[9],
-								turns=game[10],
-								game_winner=game[11])
-				db.session.add(new_game)
-				counts['new_games'] += 1
-		for play in data['all_data'][2]:
-			if play[0][0:12].isdigit():
-				continue
-			if new_match_dict[play[0]] == False:
-				continue
-			if Removed.query.filter_by(uid=uid, match_id=play[0]).first():
-				continue
-			if Play.query.filter_by(uid=uid, match_id=play[0], game_num=play[1], play_num=play[2]).first():
-				counts['skipped_plays'] += 1
-				continue
-			else:
-				new_play = Play(uid=uid,
-								match_id=play[0],
-								game_num=play[1],
-								play_num=play[2],
-								turn_num=play[3],
-								casting_player=play[4],
-								action=play[5],
-								primary_card=play[6],
-								target1=play[7],
-								target2=play[8],
-								target3=play[9],
-								opp_target=play[10],
-								self_target=play[11],
-								cards_drawn=play[12],
-								attackers=play[13],
-								active_player=play[14],
-								non_active_player=play[15])
-				db.session.add(new_play)
-				counts['new_plays'] += 1
-		for game in data['all_data'][3]:
-			if game[0][0:12].isdigit():
-				continue
-			if GameActions.query.filter_by(uid=uid, match_id=game[:-2], game_num=game[-1]).first():
-				continue
-			new_ga15 = GameActions(uid=uid,
-								match_id=game[:-2],
-								game_num=game[-1],
-								game_actions='\n'.join(data['all_data'][3][game]))
-			db.session.add(new_ga15)
-		
-		if (len(data['drafts_table']) > 0) and (len(data['picks_table']) > 0):
-			for draft in data['drafts_table']:
-				if Removed.query.filter_by(uid=uid, match_id=draft[0]).first():
-					counts['draftlogs_skipped_removed'] += 1
+	# Get Flask app from Celery BEFORE processing files
+	from app import create_app
+	app = create_app()
+	debug_log(f'App Created')
+	with app.app_context():
+		debug_log(f'App Context')
+		try:
+			debug_log(f'Starting Match Loop')
+			debug_log(f'Match Loop Length: {len(data["all_data"][0])}')
+			for match in data['all_data'][0]:
+				new_match_dict[match[0]] = False
+				if match[0][0:12].isdigit():
+					debug_log(f'Skipping Match: {match[0]} is digit')
+					counts['gamelogs_skipped_digit'] += 1
 					continue
-				if Draft.query.filter_by(uid=uid, draft_id=draft[0], hero=draft[1]).first():
-					counts['skipped_drafts'] += 1
+				if Removed.query.filter_by(uid=uid, match_id=match[0]).first():
+					debug_log(f'Skipping Match: {match[0]} is in removed table')
+					counts['gamelogs_skipped_removed'] += 1
+					continue
+				if Match.query.filter_by(uid=uid, match_id=match[0], p1=match[2]).first():
+					debug_log(f'Updating Match: {match[0]} is in match table')
+					existing_match = Match.query.filter_by(uid=uid, match_id=match[0], p1=match[2]).first()
+					existing_match.p1_arch = match[3]
+					existing_match.p1_subarch = match[4]
+					existing_match.p2_arch = match[6]
+					existing_match.p2_subarch = match[7]
+					existing_match.p1_wins = match[11]
+					existing_match.p2_wins = match[12]
+					existing_match.match_winner = match[13]
+					existing_match.format = match[14]
+					existing_match.limited_format = match[15]
+					existing_match.match_type = match[16]
+					merged_match = db.session.merge(existing_match)
+					db.session.add(merged_match)
+					counts['updated_matches'] += 1
 				else:
-					new_draft = Draft(uid=uid,
-									draft_id=draft[0],
-									hero=draft[1],
-									player2=draft[2],
-									player3=draft[3],
-									player4=draft[4],
-									player5=draft[5],
-									player6=draft[6],
-									player7=draft[7],
-									player8=draft[8],
-									match_wins=draft[9],
-									match_losses=draft[10],
-									format=draft[11],
-									date=draft[12])
-					db.session.add(new_draft)
-					counts['new_drafts'] += 1
+					debug_log(f'Adding Match: {match[0]} is not in match table')
+					new_match = Match(uid=uid,
+									match_id=match[0],
+									date=match[1],
+									p1=match[2],
+									p1_arch=match[3],
+									p1_subarch=match[4],
+									p2=match[5],
+									p2_arch=match[6],
+									p2_subarch=match[7],
+									p1_score=match[8],
+									p2_score=match[9],
+									p1_ties=match[10],
+									p1_wins=match[11],
+									p2_wins=match[12],
+									match_winner=match[13],
+									format=match[14],
+									limited_format=match[15],
+									match_type=match[16])
+					db.session.add(new_match)
+					new_match_dict[match[0]] = True
+					counts['new_matches'] += 1
+			debug_log(f'Starting Game Loop')
+			for game in data['all_data'][1]:
+				if game[0][0:12].isdigit():
+					continue
+				if Removed.query.filter_by(uid=uid, match_id=game[0]).first():
+					continue
+				if Game.query.filter_by(uid=uid, match_id=game[0], game_num=game[3], p1=game[1]).first():
+					existing_game = Game.query.filter_by(uid=uid, match_id=game[0], game_num=game[3], p1=game[1]).first()
+					existing_game.game_winner = game[11]
+					merged_game = db.session.merge(existing_game)
+					db.session.add(merged_game)
+					counts['updated_games'] += 1
+				else:
+					new_game = Game(uid=uid,
+									match_id=game[0],
+									p1=game[1],
+									p2=game[2],
+									game_num=game[3],
+									pd_selector=game[4],
+									pd_choice=game[5],
+									on_play=game[6],
+									on_draw=game[7],
+									p1_mulls=game[8],
+									p2_mulls=game[9],
+									turns=game[10],
+									game_winner=game[11])
+					db.session.add(new_game)
+					counts['new_games'] += 1
+			debug_log(f'Starting Play Loop')
+			for play in data['all_data'][2]:
+				if play[0][0:12].isdigit():
+					continue
+				if new_match_dict[play[0]] == False:
+					continue
+				if Removed.query.filter_by(uid=uid, match_id=play[0]).first():
+					continue
+				if Play.query.filter_by(uid=uid, match_id=play[0], game_num=play[1], play_num=play[2]).first():
+					counts['skipped_plays'] += 1
+					continue
+				else:
+					new_play = Play(uid=uid,
+									match_id=play[0],
+									game_num=play[1],
+									play_num=play[2],
+									turn_num=play[3],
+									casting_player=play[4],
+									action=play[5],
+									primary_card=play[6],
+									target1=play[7],
+									target2=play[8],
+									target3=play[9],
+									opp_target=play[10],
+									self_target=play[11],
+									cards_drawn=play[12],
+									attackers=play[13],
+									active_player=play[14],
+									non_active_player=play[15])
+					db.session.add(new_play)
+					counts['new_plays'] += 1
+			debug_log(f'Starting Game Action Loop')
+			for action in data['all_data'][3]:
+				if action[0][0:12].isdigit():
+					continue
+				if new_match_dict[action[0]] == False:
+					continue
+				if Removed.query.filter_by(uid=uid, match_id=action[0]).first():
+					continue
+				if GameActions.query.filter_by(uid=uid, match_id=action[0], game_num=action[1], action_id=action[2]).first():
+					continue
+				else:
+					new_action = GameActions(uid=uid,
+											match_id=action[0],
+											game_num=action[1],
+											action_id=action[2],
+											turn_num=action[3],
+											event_type=action[4],
+											details=action[5],
+											event_num=action[6])
+					db.session.add(new_action)
+			debug_log(f'Starting Draft Loop')
+			if len(data['drafts_table']) > 0:
+				for draft in data['drafts_table']:
+					if Removed.query.filter_by(uid=uid, match_id=draft[0]).first():
+						continue
+					if Draft.query.filter_by(uid=uid, draft_id=draft[0]).first():
+						existing_draft = Draft.query.filter_by(uid=uid, draft_id=draft[0]).first()
+						existing_draft.date = draft[1]
+						existing_draft.format = draft[2]
+						existing_draft.picks = draft[3]
+						existing_draft.wins = draft[4]
+						existing_draft.losses = draft[5]
+						merged_draft = db.session.merge(existing_draft)
+						db.session.add(merged_draft)
+						counts['updated_drafts'] += 1
+					else:
+						new_draft = Draft(uid=uid,
+										draft_id=draft[0],
+										date=draft[1],
+										format=draft[2],
+										picks=draft[3],
+										wins=draft[4],
+										losses=draft[5])
+						db.session.add(new_draft)
+						counts['new_drafts'] += 1
+			debug_log(f'Starting Pick Loop')
 			for pick in data['picks_table']:
 				if Removed.query.filter_by(uid=uid, match_id=pick[0]).first():
 					continue
@@ -998,35 +1030,38 @@ def process_from_app(self, data):
 									avail14=p[18])
 					db.session.add(new_pick)
 					counts['new_picks'] += 1
+			try:
+				debug_log(f'Committing to DB')
+				db.session.commit()
+			except:
+				debug_log(f'DBError: {e}')
+				db.session.rollback()
+			debug_log(f'counts: {counts}')
+			build_cards_played_db(uid)
+		except Exception as e:
+			debug_log(f'Error: {e}')
+			error_code = e
+
+		complete_date = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific'))
+		curr_date = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific')).strftime('%Y-%m-%d')
+		curr_time = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific')).time().strftime('%H:%M')
+
+		new_task_history = TaskHistory(
+			uid=data['user_id'],
+			curr_username=data['username'],
+			submit_date=submit_date,
+			complete_date=complete_date,
+			task_type='Import From MTGO-Tracker',
+			error_code=error_code
+		)
+		db.session.add(new_task_history)
 		try:
 			db.session.commit()
 		except:
 			db.session.rollback()
-		build_cards_played_db(uid)
-	except Exception as e:
-		error_code = e
 
-	complete_date = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific'))
-	curr_date = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific')).strftime('%Y-%m-%d')
-	curr_time = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific')).time().strftime('%H:%M')
-
-	new_task_history = TaskHistory(
-		uid=data['user_id'],
-		curr_username=data['username'],
-		submit_date=submit_date,
-		complete_date=complete_date,
-		task_type='Import From MTGO-Tracker',
-		error_code=error_code
-	)
-	db.session.add(new_task_history)
-	try:
-		db.session.commit()
-	except:
-		db.session.rollback()
-
-	mail = current_app.extensions['mail'] 
-	with current_app.app_context():
-		msg = Message(f'MTGO-DB Load Report #{new_task_history.task_id}', sender=current_app.config.get('MAIL_USERNAME'), recipients=[data['email']])
+		mail = app.extensions['mail']
+		msg = Message(f'MTGO-DB Load Report #{new_task_history.task_id}', sender=app.config.get('MAIL_USERNAME'), recipients=[data['email']])
 		msg.html = f'''
 		<h2 style="text-align: center">Load Report, Import from MTGO-Tracker - #{new_task_history.task_id}<br></h2>
 		<h3 style="text-align: center">Completed: {curr_date} at {curr_time}<h3><br><br>
@@ -1061,6 +1096,14 @@ def process_from_app(self, data):
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
 					</tr>
 					<tr>
+						<th style="font-size: 14pt; max-width: 350px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Files Skipped (Outdated*)</th>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['gamelogs_skipped_digit']}</td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+					</tr>
+					<tr>
 						<th style="font-size: 14pt; max-width: 350px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Files Skipped (Ignored)</th>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['gamelogs_skipped_removed']}</td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
@@ -1080,11 +1123,12 @@ def process_from_app(self, data):
 			</table>
 		</div>
 		<div style="display: flex; justify-content: center;">
-			<p style="text-align: center; font-style: italic;">Note: Two records are loaded and stored for each Match and Game.</p>
+			<p style="text-align: center; font-style: italic;">Note: Two records are loaded and stored for each Match and Game.<br>
+			*Outdated records were parsed using an outdated version of MTGO-Tracker.</p>
 		</div>
 		'''
-		# mail.send(msg)  # Temporarily disabled to focus on file processing issue
-		debug_log("📧 DEBUG: Email would be sent here (temporarily disabled)")
+		mail.send(msg)
+		debug_log("📧 DEBUG: Email sent here")
 
 	return 'DONE'
 
@@ -1116,276 +1160,331 @@ def reprocess_logs(self, data):
 	submit_date = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific'))
 	error_code = None
 
-	try:
-		for blob in log_container_client.list_blobs():
-			filename = blob.name.split('/')[-1]
-			try:
-				blob_uid = blob.name.split('/')[0]
-			except:
-				blob_uid = 0
-
-			if (get_logtype_from_filename(filename) == 'GameLog') and (str(uid) == blob_uid):
-				blob_client = blob_service_client.get_blob_client(container=os.environ.get('LOG_CONTAINER_NAME'), blob=blob.name)
-				blob_properties = blob_client.get_blob_properties()
-
-				initial = blob_client.download_blob().readall().decode('utf-8', errors='ignore')
-				initial = initial.replace('\x00','')
-
-				fname = filename.split('_')[-1].split('.dat')[0]
-				mtime = blob_properties['metadata']['original_mod_time']
-
-				if Removed.query.filter_by(uid=uid, match_id=fname).first():
-					counts['gamelogs_skipped_removed'] += 1
-					continue
-
-				try:
-					parsed_data = modo.get_all_data(initial,mtime,fname)
-					parsed_data_inverted = modo.invert_join([[parsed_data[0]], parsed_data[1], parsed_data[2], parsed_data[3], parsed_data[4]])
-					counts['total_gamelogs'] += 1
-				except Exception as error:
-					counts['gamelogs_skipped_error'] += 1
-					if str(error) in game_errors:
-						game_errors[str(error)] += 1
-					else:
-						game_errors[str(error)] = 0
-					continue
-
-				if len(parsed_data_inverted[2]) == 0:
-					newIgnore = Removed(uid=uid, match_id=fname, reason='Empty')
-					db.session.add(newIgnore)
-					counts['gamelogs_skipped_empty'] += 1
-					continue
-
-				for match in parsed_data_inverted[0]:
-					existing = Match.query.filter_by(uid=uid, match_id=match[0], p1=match[2]).first()
-					if existing:
-						existing.p2 = match[5]
-						existing.p1_roll = match[8]
-						existing.p2_roll = match[9]
-						existing.roll_winner = match[10]
-						existing.date = match[17]
-						counts['matches_skipped_dupe'] += 1
-						Play.query.filter_by(uid=uid, match_id=fname).delete()
-						try:
-							db.session.commit()
-						except:
-							db.session.rollback()
-					else:
-						new_match = Match(uid=uid,
-										match_id=match[0],
-										draft_id=match[1],
-										p1=match[2],
-										p1_arch=match[3],
-										p1_subarch=match[4],
-										p2=match[5],
-										p2_arch=match[6],
-										p2_subarch=match[7],
-										p1_roll=match[8],
-										p2_roll=match[9],
-										roll_winner=match[10],
-										p1_wins=match[11],
-										p2_wins=match[12],
-										match_winner=match[13],
-										format=match[14],
-										limited_format=match[15],
-										match_type=match[16],
-										date=match[17])
-						db.session.add(new_match)
-						counts['new_matches'] += 1
-				for game in parsed_data_inverted[1]:
-					existing = Game.query.filter_by(uid=uid, match_id=game[0], game_num=game[3], p1=game[1]).first()
-					if existing:
-						existing.p2=game[2]
-						existing.pd_selector=game[4]
-						existing.pd_choice=game[5]
-						existing.on_play=game[6]
-						existing.on_draw=game[7]
-						existing.p1_mulls=game[8]
-						existing.p2_mulls=game[9]
-						existing.turns=game[10]
-						counts['games_skipped_dupe'] += 1
-						try:
-							db.session.commit()
-						except:
-							db.session.rollback()
-					else:
-						new_game = Game(uid=uid,
-										match_id=game[0],
-										p1=game[1],
-										p2=game[2],
-										game_num=game[3],
-										pd_selector=game[4],
-										pd_choice=game[5],
-										on_play=game[6],
-										on_draw=game[7],
-										p1_mulls=game[8],
-										p2_mulls=game[9],
-										turns=game[10],
-										game_winner=game[11])
-						db.session.add(new_game)
-						counts['new_games'] += 1
-				for play in parsed_data_inverted[2]:
-					existing = Play.query.filter_by(uid=uid, match_id=play[0], game_num=play[1], play_num=play[2]).first()
-					if existing:
-						counts['plays_skipped_dupe'] += 1
-						continue
-					else:
-						new_play = Play(uid=uid,
-										match_id=play[0],
-										game_num=play[1],
-										play_num=play[2],
-										turn_num=play[3],
-										casting_player=play[4],
-										action=play[5],
-										primary_card=play[6],
-										target1=play[7],
-										target2=play[8],
-										target3=play[9],
-										opp_target=play[10],
-										self_target=play[11],
-										cards_drawn=play[12],
-										attackers=play[13],
-										active_player=play[14],
-										non_active_player=play[15])
-						db.session.add(new_play)
-						counts['new_plays'] += 1
-				for game in parsed_data_inverted[3]:
-					existing = GameActions.query.filter_by(uid=uid, match_id=game[:-2], game_num=game[-1]).first()
-					if existing:
-						existing.game_actions = '\n'.join(parsed_data_inverted[3][game][-15:])
-					else:
-						new_ga15 = GameActions(uid=uid,
-											match_id=game[:-2],
-											game_num=game[-1],
-											game_actions='\n'.join(parsed_data_inverted[3][game][-15:]))
-						db.session.add(new_ga15)
-				try:
-					db.session.commit()
-				except:
-					db.session.rollback()
+	# Get Flask app from Celery BEFORE processing files
+	from app import create_app
+	app = create_app()
+	
+	with app.app_context():
+		try:
+			# Get list of files to process based on storage type
+			files_to_process = []
 			
-			if (get_logtype_from_filename(filename) == 'DraftLog') and (str(uid) == blob_uid):
-				blob_client = blob_service_client.get_blob_client(container=os.environ.get('LOG_CONTAINER_NAME'), blob=blob.name)
-				initial = blob_client.download_blob().readall().decode('utf-8').replace('\r','')
+			if log_container_client is None:  # Local file storage
+				local_storage_dir = os.path.join('local-dev', 'data', 'uploads', str(uid))
+				debug_log(f"🔍 REPROCESS: Looking for files in: {local_storage_dir}")
+				debug_log(f"🔍 REPROCESS: Directory exists: {os.path.exists(local_storage_dir)}")
+				if os.path.exists(local_storage_dir):
+					all_files = os.listdir(local_storage_dir)
+					debug_log(f"🔍 REPROCESS: Found {len(all_files)} total files: {all_files}")
+					for filename in all_files:
+						debug_log(f"🔍 REPROCESS: Processing file: {filename}")
+						if filename.endswith('.meta'):  # Skip metadata files
+							debug_log(f"🔍 REPROCESS: Skipping {filename} (metadata file)")
+							continue
+						
+						local_file_path = os.path.join(local_storage_dir, filename)
+						meta_file_path = local_file_path + '.meta'
+						
+						# Read metadata
+						if os.path.exists(meta_file_path):
+							with open(meta_file_path, 'r') as f:
+								mtime = f.read().strip()
+						else:
+							mtime = '202301010000'  # Default fallback
+						
+						log_type = get_logtype_from_filename(filename)
+						debug_log(f"🔍 REPROCESS: File {filename} detected as log_type: '{log_type}'")
+						if log_type in ['GameLog', 'DraftLog']:
+							debug_log(f"🔍 REPROCESS: Adding {filename} to files_to_process")
+							files_to_process.append({
+								'filename': filename,
+								'path': local_file_path,
+								'mtime': mtime,
+								'storage_type': 'local',
+								'log_type': log_type
+							})
+						else:
+							debug_log(f"🔍 REPROCESS: Skipping {filename} - log_type '{log_type}' not in ['GameLog', 'DraftLog']")
+				else:
+					debug_log(f"🔍 REPROCESS: Local storage directory does not exist: {local_storage_dir}")
+			else:  # Azure Blob Storage
+				for blob in log_container_client.list_blobs():
+					filename = blob.name.split('/')[-1]
+					try:
+						blob_uid = blob.name.split('/')[0]
+					except:
+						blob_uid = 0
 
-				try:
-					parsed_data = modo.parse_draft_log(filename,initial)
-					counts['total_draftlogs'] += 1
-				except Exception as error:
-					counts['draftlogs_skipped_error'] += 1
-					if str(error) in draft_errors:
-						draft_errors[str(error)] += 1
-					else:
-						draft_errors[str(error)] = 0
-					continue
+					if (get_logtype_from_filename(filename) in ['GameLog', 'DraftLog']) and (str(uid) == blob_uid):
+						blob_client = blob_service_client.get_blob_client(container=os.environ.get('LOG_CONTAINER_NAME'), blob=blob.name)
+						blob_properties = blob_client.get_blob_properties()
+						mtime = blob_properties['metadata']['original_mod_time']
+						
+						files_to_process.append({
+							'filename': filename,
+							'blob_client': blob_client,
+							'mtime': mtime,
+							'storage_type': 'azure',
+							'log_type': get_logtype_from_filename(filename)
+						})
+			
+			# Now process all files with unified logic
+			debug_log(f"🔍 REPROCESS: Processing {len(files_to_process)} files")
 
-				for draft in parsed_data[0]:
-					existing = Draft.query.filter_by(uid=uid, draft_id=draft[0], hero=draft[1]).first()
-					if existing:
-						counts['drafts_skipped_dupe'] += 1
-						existing.player2 = draft[2]
-						existing.player3 = draft[3]
-						existing.player4 = draft[4]
-						existing.player5 = draft[5]
-						existing.player6 = draft[6]
-						existing.player7 = draft[7]
-						existing.player8 = draft[8]
-						existing.format = draft[11]
-						existing.date = draft[12]
-						Pick.query.filter_by(uid=uid, draft_id=draft[0]).delete()
-						try:
-							db.session.commit()
-						except:
-							db.session.rollback()
-					else:
-						new_draft = Draft(uid=uid,
-										draft_id=draft[0],
-										hero=draft[1],
-										player2=draft[2],
-										player3=draft[3],
-										player4=draft[4],
-										player5=draft[5],
-										player6=draft[6],
-										player7=draft[7],
-										player8=draft[8],
-										match_wins=draft[9],
-										match_losses=draft[10],
-										format=draft[11],
-										date=draft[12])
-						db.session.add(new_draft)
-						counts['new_drafts'] += 1
-				for pick in parsed_data[1]:
-					existing = Pick.query.filter_by(uid=uid, draft_id=pick[0], pick_ovr=pick[4]).first()
-					if existing:
-						counts['picks_skipped_dupe'] += 1
+			count_gamelogs = 0
+			count_draftlogs = 0
+			
+			for file_info in files_to_process:
+				filename = file_info['filename']
+				mtime = file_info['mtime']
+				log_type = file_info['log_type']
+
+				debug_log(f'Filename: {filename}, mtime: {mtime}, log_type: {log_type}')
+				
+				# Read file content based on storage type
+				if file_info['storage_type'] == 'local':
+					with open(file_info['path'], 'r', encoding='utf-8', errors='ignore') as f:
+						initial = f.read().replace('\x00','')
+				else:  # Azure
+					initial = file_info['blob_client'].download_blob().readall().decode('utf-8', errors='ignore')
+					initial = initial.replace('\x00','')
+
+				# Process based on log type
+				if log_type == 'GameLog':
+					count_gamelogs += 1
+					debug_log(f'GameLog: {count_gamelogs}')
+					fname = filename.split('_')[-1].split('.dat')[0]
+
+					if Removed.query.filter_by(uid=uid, match_id=fname).first():
+						counts['gamelogs_skipped_removed'] += 1
+						debug_log(f'Skipping GameLog: {fname} - Removed')
 						continue
-					else:
-						p = pick
-						for index,i in enumerate(p):
-							if i == 'NA':
-								p[index] = ''
-						new_pick = Pick(uid=uid,
-										draft_id=pick[0],
-										card=pick[1],
-										pack_num=pick[2],
-										pick_num=pick[3],
-										pick_ovr=pick[4],
-										avail1=p[5],
-										avail2=p[6],
-										avail3=p[7],
-										avail4=p[8],
-										avail5=p[9],
-										avail6=p[10],
-										avail7=p[11],
-										avail8=p[12],
-										avail9=p[13],
-										avail10=p[14],
-										avail11=p[15],
-										avail12=p[16],
-										avail13=p[17],
-										avail14=p[18])
-						db.session.add(new_pick)
-						counts['new_picks'] += 1
-				try:
-					db.session.commit()
-				except:
-					db.session.rollback()
-			if self.is_aborted():
-				return 'TASK STOPPED'
-		build_cards_played_db(uid)
-	except Exception as e:
-		error_code = e
 
-	complete_date = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific'))
-	curr_date = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific')).strftime('%Y-%m-%d')
-	curr_time = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific')).time().strftime('%H:%M')
+					try:
+						parsed_data = modo.get_all_data(initial,mtime,fname)
+						parsed_data_inverted = modo.invert_join([[parsed_data[0]], parsed_data[1], parsed_data[2], parsed_data[3], parsed_data[4]])
+						debug_log(f'Parsed Data: {fname}')
+						counts['total_gamelogs'] += 1
+						if len(parsed_data_inverted) > 3:
+							debug_log(f'GameActions: {parsed_data_inverted[3]}')
+					except Exception as error:
+						counts['gamelogs_skipped_error'] += 1
+						if str(error) in game_errors:
+							game_errors[str(error)] += 1
+						else:
+							game_errors[str(error)] = 0
+						debug_log(f'Skipping GameLog: {fname} - Error: {error}')
+						continue
 
-	new_task_history = TaskHistory(
-		uid=data['user_id'],
-		curr_username=data['username'],
-		submit_date=submit_date,
-		complete_date=complete_date,
-		task_type='Reprocess',
-		error_code=error_code
-	)
-	db.session.add(new_task_history)
-	try:
-		db.session.commit()
-	except:
-		db.session.rollback()
+					if len(parsed_data_inverted[2]) == 0:
+						newIgnore = Removed(uid=uid, match_id=fname, reason='Empty')
+						db.session.add(newIgnore)
+						counts['gamelogs_skipped_empty'] += 1
+						debug_log(f'Skipping GameLog: {fname} - Empty')
+						continue
 
-	mail = current_app.extensions['mail'] 
-	with current_app.app_context():
-		msg = Message(f'MTGO-DB Load Report #{new_task_history.task_id}', sender=current_app.config.get('MAIL_USERNAME'), recipients=[data['email']])
+					for match in parsed_data_inverted[0]:
+						existing = Match.query.filter_by(uid=uid, match_id=match[0], p1=match[2]).first()
+						if existing:
+							counts['matches_skipped_dupe'] += 1
+							continue
+						else:
+							new_match = Match(uid=uid,
+											match_id=match[0],
+											date=match[1],
+											p1=match[2],
+											p1_arch=match[3],
+											p1_subarch=match[4],
+											p2=match[5],
+											p2_arch=match[6],
+											p2_subarch=match[7],
+											p1_score=match[8],
+											p2_score=match[9],
+											p1_ties=match[10],
+											p1_wins=match[11],
+											p2_wins=match[12],
+											match_winner=match[13],
+											format=match[14],
+											limited_format=match[15],
+											match_type=match[16])
+							db.session.add(new_match)
+							counts['new_matches'] += 1
+					for game in parsed_data_inverted[1]:
+						existing = Game.query.filter_by(uid=uid, match_id=game[0], game_num=game[3], p1=game[1]).first()
+						if existing:
+							counts['games_skipped_dupe'] += 1
+							continue
+						else:
+							new_game = Game(uid=uid,
+											match_id=game[0],
+											p1=game[1],
+											p2=game[2],
+											game_num=game[3],
+											pd_selector=game[4],
+											pd_choice=game[5],
+											on_play=game[6],
+											on_draw=game[7],
+											p1_mulls=game[8],
+											p2_mulls=game[9],
+											turns=game[10],
+											game_winner=game[11])
+							db.session.add(new_game)
+							counts['new_games'] += 1
+					for play in parsed_data_inverted[2]:
+						existing = Play.query.filter_by(uid=uid, match_id=play[0], game_num=play[1], play_num=play[2]).first()
+						if existing:
+							counts['plays_skipped_dupe'] += 1
+							continue
+						else:
+							new_play = Play(uid=uid,
+											match_id=play[0],
+											game_num=play[1],
+											play_num=play[2],
+											turn_num=play[3],
+											casting_player=play[4],
+											action=play[5],
+											primary_card=play[6],
+											target1=play[7],
+											target2=play[8],
+											target3=play[9],
+											opp_target=play[10],
+											self_target=play[11],
+											cards_drawn=play[12],
+											attackers=play[13],
+											active_player=play[14],
+											non_active_player=play[15])
+							db.session.add(new_play)
+							counts['new_plays'] += 1
+					for action in parsed_data_inverted[3]:
+						existing = GameActions.query.filter_by(uid=uid, match_id=action.rsplit("-",1)[0], game_num=int(action.rsplit("-",1)[1]), game_actions=parsed_data_inverted[3][action][0]).first()
+						debug_log(f'action: {action}')
+						if existing:
+							continue
+						else:
+							new_action = GameActions(uid=uid,
+													match_id=action.rsplit("-",1)[0],
+													game_num=int(action.rsplit("-",1)[1]),
+													game_actions=parsed_data_inverted[3][action][0])
+							db.session.add(new_action)
+					try:
+						db.session.commit()
+					except:
+						db.session.rollback()
+
+				elif log_type == 'DraftLog':
+					count_draftlogs += 1
+					debug_log(f'DraftLog: {count_draftlogs}')
+					fname = filename.split('_')[-1].split('.draftlog')[0]
+
+					if Removed.query.filter_by(uid=uid, match_id=fname).first():
+						counts['draftlogs_skipped_removed'] += 1
+						continue
+
+					try:
+						parsed_data = modo.get_draft_data(initial,mtime,fname)
+						counts['total_draftlogs'] += 1
+					except Exception as error:
+						counts['draftlogs_skipped_error'] += 1
+						if str(error) in draft_errors:
+							draft_errors[str(error)] += 1
+						else:
+							draft_errors[str(error)] = 0
+						continue
+
+					if len(parsed_data[1]) == 0:
+						newIgnore = Removed(uid=uid, match_id=fname, reason='Empty')
+						db.session.add(newIgnore)
+						counts['draftlogs_skipped_empty'] += 1
+						continue
+
+					for draft in [parsed_data[0]]:
+						existing = Draft.query.filter_by(uid=uid, draft_id=draft[0]).first()
+						if existing:
+							counts['drafts_skipped_dupe'] += 1
+							continue
+						else:
+							new_draft = Draft(uid=uid,
+											draft_id=draft[0],
+											date=draft[1],
+											format=draft[2],
+											picks=draft[3],
+											wins=draft[4],
+											losses=draft[5])
+							db.session.add(new_draft)
+							counts['new_drafts'] += 1
+
+					for pick in parsed_data[1]:
+						existing = Pick.query.filter_by(uid=uid, draft_id=pick[0], pick_ovr=pick[4]).first()
+						if existing:
+							counts['picks_skipped_dupe'] += 1
+							continue
+						else:
+							p = pick
+							for index,i in enumerate(p):
+								if i == 'NA':
+									p[index] = ''
+							new_pick = Pick(uid=uid,
+											draft_id=pick[0],
+											card=pick[1],
+											pack_num=pick[2],
+											pick_num=pick[3],
+											pick_ovr=pick[4],
+											avail1=p[5],
+											avail2=p[6],
+											avail3=p[7],
+											avail4=p[8],
+											avail5=p[9],
+											avail6=p[10],
+											avail7=p[11],
+											avail8=p[12],
+											avail9=p[13],
+											avail10=p[14],
+											avail11=p[15],
+											avail12=p[16],
+											avail13=p[17],
+											avail14=p[18])
+							db.session.add(new_pick)
+							counts['new_picks'] += 1
+					try:
+						db.session.commit()
+					except:
+						db.session.rollback()
+				if self.is_aborted():
+					return 'TASK STOPPED'
+			build_cards_played_db(uid)
+		except Exception as e:
+			debug_log(f'Error: {e}')
+			error_code = e
+
+		complete_date = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific'))
+		curr_date = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific')).strftime('%Y-%m-%d')
+		curr_time = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific')).time().strftime('%H:%M')
+
+		new_task_history = TaskHistory(
+			uid=data['user_id'],
+			curr_username=data['username'],
+			submit_date=submit_date,
+			complete_date=complete_date,
+			task_type='Re-Process',
+			error_code=error_code
+		)
+		db.session.add(new_task_history)
+		try:
+			db.session.commit()
+		except:
+			db.session.rollback()
+
+		mail = app.extensions['mail']
+		msg = Message(f'MTGO-DB Load Report #{new_task_history.task_id}', sender=app.config.get('MAIL_USERNAME'), recipients=[data['email']])
 		msg.html = f'''
-		<h2 style="text-align: center">Load Report, Reprocessing Data - #{new_task_history.task_id}<br></h2>
+		<h2 style="text-align: center">Load Report, Re-Processing Data - #{new_task_history.task_id}<br></h2>
 		<h3 style="text-align: center">Completed: {curr_date} at {curr_time}<h3><br><br>
 
 		<div style="display: flex; justify-content: center;">
 			<table style="text-align: center">
 				<thead>
 					<tr>
-						<th style="font-size: 14pt; max-width: 250px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">Load Result</th>
+						<th style="font-size: 14pt; max-width: 300px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">Load Result</th>
 						<th style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">Matches</th>
 						<th style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">Games</th>
 						<th style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">Plays</th>
@@ -1395,7 +1494,7 @@ def reprocess_logs(self, data):
 				</thead>
 				<tbody>
 					<tr>
-						<th style="font-size: 14pt; max-width: 250px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Files Reprocessed</th>
+						<th style="font-size: 14pt; max-width: 300px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Files Reprocessed</th>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['total_gamelogs']}</td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
@@ -1403,7 +1502,7 @@ def reprocess_logs(self, data):
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
 					</tr>
 					<tr>
-						<th style="font-size: 14pt; max-width: 250px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">New Matches Processed</th>
+						<th style="font-size: 14pt; max-width: 300px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">New Matches Processed</th>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['new_matches']}</td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
@@ -1411,15 +1510,31 @@ def reprocess_logs(self, data):
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
 					</tr>
 					<tr>
-						<th style="font-size: 14pt; max-width: 250px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Files Skipped (Error)</th>
-						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['gamelogs_skipped_error']}</td>
+						<th style="font-size: 14pt; max-width: 300px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">New Games Processed</th>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['new_games']}</td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
-						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['draftlogs_skipped_error']}</td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
-					</tr>	
+					</tr>
 					<tr>
-						<th style="font-size: 14pt; max-width: 250px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Files Skipped (Ignored)</th>
+						<th style="font-size: 14pt; max-width: 300px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">New Plays Processed</th>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['new_plays']}</td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+					</tr>
+					<tr>
+						<th style="font-size: 14pt; max-width: 300px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">New Draft Picks Processed</th>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['new_picks']}</td>
+					</tr>
+					<tr>
+						<th style="font-size: 14pt; max-width: 300px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Files Skipped (Removed)</th>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['gamelogs_skipped_removed']}</td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
@@ -1427,22 +1542,38 @@ def reprocess_logs(self, data):
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
 					</tr>
 					<tr>
-						<th style="font-size: 14pt; max-width: 250px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Files Skipped (Empty)</th>
+						<th style="font-size: 14pt; max-width: 300px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Files Skipped (Empty)</th>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['gamelogs_skipped_empty']}</td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['draftlogs_skipped_empty']}</td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+					</tr>
+					<tr>
+						<th style="font-size: 14pt; max-width: 300px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Files Skipped (Errors)</th>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['gamelogs_skipped_error']}</td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
 						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['draftlogs_skipped_error']}</td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+					</tr>
+					<tr>
+						<th style="font-size: 14pt; max-width: 300px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Records Skipped (Duplicates)</th>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['matches_skipped_dupe']}</td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['games_skipped_dupe']}</td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['plays_skipped_dupe']}</td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['drafts_skipped_dupe']}</td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['picks_skipped_dupe']}</td>
 					</tr>
 				</tbody>
 			</table>
 		</div>
 		<div style="display: flex; justify-content: center;">
-			<p style="text-align: center; font-style: italic;">Note: Two records are loaded and stored for each Match and Game.</p>
+			<p style="text-align: center; font-style: italic;">Note: Two records are loaded and stored for each Match and Game.
 		</div>
 		'''
-		# mail.send(msg)  # Temporarily disabled to focus on file processing issue
-		debug_log("📧 DEBUG: Email would be sent here (temporarily disabled)")
+		mail.send(msg)
+		debug_log("📧 DEBUG: Email sent here")
 
 	return 'DONE'
 
@@ -1772,6 +1903,7 @@ def load_from_app():
 		if not i:
 			continue
 		filename = i.filename.split('/')[-1]
+		debug_log(f'Filename: {filename}')
 		if (filename not in ['ALL_DATA', 'DRAFTS_TABLE', 'PICKS_TABLE']):
 			continue
 		if filename == 'ALL_DATA':
@@ -1785,6 +1917,7 @@ def load_from_app():
 			process_total += len(all_data[1])
 			process_total += len(all_data[2])
 			process_total += len(all_data[3])
+			debug_log(f'All Data: {len(all_data[0])} matches, {len(all_data[1])} games, {len(all_data[2])} plays, {len(all_data[3])} gameactions?')
 		elif filename == 'DRAFTS_TABLE':
 			try:
 				drafts_table = pickle.loads(i.read())
@@ -1792,6 +1925,7 @@ def load_from_app():
 				flash(f'Unable to read file: {i.filename}.', category='error')
 				return redirect(url_for('views.index'))
 			process_total += len(drafts_table)
+			debug_log(f'Drafts Table: {len(drafts_table)} drafts')
 		elif filename == 'PICKS_TABLE':
 			try:
 				picks_table = pickle.loads(i.read())
@@ -1799,6 +1933,7 @@ def load_from_app():
 				flash(f'Unable to read file: {i.filename}.', category='error')
 				return redirect(url_for('views.index'))
 			process_total += len(picks_table)
+			debug_log(f'Picks Table: {len(picks_table)} picks')
 
 	if (len(all_data) == 0) and (len(drafts_table) == 0) and (len(picks_table) == 0):
 		flash('No MTGO-Tracker save data was found.', 'error')
@@ -2275,61 +2410,168 @@ def input_options():
 @views.route('/export')
 @login_required
 def export():
-	file_name = f'{current_user.email}_Tables.zip'
-	blob_client = export_container_client.get_blob_client(file_name)
+	# Create export directory in local-dev instead of system temp
+	export_base_dir = os.path.join('local-dev', 'data', 'excel')
+	os.makedirs(export_base_dir, exist_ok=True)
+	temp_dir = tempfile.mkdtemp(dir=export_base_dir)
 	
-	tables = ['Matches', 'Games', 'Plays', 'Picks', 'Drafts']
-	empty_tables = []
-	export_cnt = 0
-	try:
-		pd.DataFrame([i.as_dict() for i in Match.query.filter_by(uid=current_user.uid, p1=current_user.username).all()]).drop('uid', axis=1).to_csv(f'{current_user.email}_Matches.csv', index=False)
-		export_cnt += 1
-	except KeyError:
-		empty_tables.append('Matches')
-	try:
-		pd.DataFrame([i.as_dict() for i in Game.query.filter_by(uid=current_user.uid, p1=current_user.username).all()]).drop('uid', axis=1).to_csv(f'{current_user.email}_Games.csv', index=False)
-		export_cnt += 1
-	except KeyError:
-		empty_tables.append('Games')
-	try:
-		pd.DataFrame([i.as_dict() for i in Play.query.filter_by(uid=current_user.uid).all()]).drop('uid', axis=1).to_csv(f'{current_user.email}_Plays.csv', index=False)
-		export_cnt += 1
-	except KeyError:
-		empty_tables.append('Plays')
-	try:
-		pd.DataFrame([i.as_dict() for i in Pick.query.filter_by(uid=current_user.uid).all()]).drop('uid', axis=1).to_csv(f'{current_user.email}_Picks.csv', index=False)
-		export_cnt += 1
-	except:
-		empty_tables.append('Drafts')
-	try:
-		pd.DataFrame([i.as_dict() for i in Draft.query.filter_by(uid=current_user.uid).all()]).drop('uid', axis=1).to_csv(f'{current_user.email}_Drafts.csv', index=False)
-		export_cnt += 1
-	except KeyError:
-		empty_tables.append('Draft Picks')
-
-	with zipfile.ZipFile(f'{current_user.email}_Tables.zip', 'w', compression=zipfile.ZIP_DEFLATED) as zipf:
-		for i in tables:
-			if os.path.exists(f'{current_user.email}_{i}.csv'):
-				zipf.write(f'{current_user.email}_{i}.csv', f'{current_user.email}_{i}.csv')
-	with open(f'{current_user.email}_Tables.zip', "rb") as data:
-		blob_client.upload_blob(data, overwrite=True)
-	for i in tables:
-		if os.path.exists(f'{current_user.email}_{i}.csv'):
-			os.remove(f'{current_user.email}_{i}.csv')
-	os.remove(f'{current_user.email}_Tables.zip')
-
-	blob_client = blob_service_client.get_blob_client(container=os.environ.get('EXPORT_CONTAINER_NAME'), blob=file_name)
-	sas_token = generate_blob_sas(
-		blob_client.account_name,
-		blob_client.container_name,
-		blob_client.blob_name,
-		account_key=blob_service_client.credential.account_key,  # or use connection_string
-		permission=BlobSasPermissions(read=True),
-		expiry=datetime.datetime.utcnow() + timedelta(hours=24)  # Adjust the expiry time as needed
-	)
+	def delayed_cleanup(temp_dir, delay=30):
+		"""Clean up temp directory in background after download completes"""
+		time.sleep(delay)
+		try:
+			shutil.rmtree(temp_dir)
+			debug_log(f"Background cleanup successful: {temp_dir}")
+		except Exception as e:
+			debug_log(f"Background cleanup failed: {temp_dir} - {e}")
 	
-	url = blob_client.url + '?' + sas_token
-	return redirect(url)
+	try:
+		file_name = f'{current_user.email}_Tables.zip'
+		empty_tables = []
+		export_cnt = 0
+		created_files = []
+		
+		# Debug info
+		debug_log(f"Export started for user: {current_user.uid}, {current_user.username}")
+		
+		# Matches
+		try:
+			query = select(Match).where(
+				(Match.uid == current_user.uid) & 
+				(Match.p1 == current_user.username)
+			)
+			matches_df = pd.read_sql(query, db.engine)
+			debug_log(f"Matches query returned {len(matches_df)} rows")
+			
+			if not matches_df.empty:
+				matches_df = matches_df.drop('uid', axis=1)
+				matches_file = os.path.join(temp_dir, f'{current_user.email}_Matches.xlsx')
+				matches_df.to_excel(matches_file, index=False, engine='openpyxl')
+				created_files.append(matches_file)
+				export_cnt += 1
+			else:
+				empty_tables.append('Matches')
+		except Exception as e:
+			debug_log(f"Matches export error: {e}")
+			empty_tables.append('Matches')
+		
+		# Games
+		try:
+			query = select(Game).where(
+				(Game.uid == current_user.uid) & 
+				(Game.p1 == current_user.username)
+			)
+			games_df = pd.read_sql(query, db.engine)
+			debug_log(f"Games query returned {len(games_df)} rows")
+			
+			if not games_df.empty:
+				games_df = games_df.drop('uid', axis=1)
+				games_file = os.path.join(temp_dir, f'{current_user.email}_Games.xlsx')
+				games_df.to_excel(games_file, index=False, engine='openpyxl')
+				created_files.append(games_file)
+				export_cnt += 1
+			else:
+				empty_tables.append('Games')
+		except Exception as e:
+			debug_log(f"Games export error: {e}")
+			empty_tables.append('Games')
+		
+		# Plays
+		try:
+			query = select(Play).where(Play.uid == current_user.uid)
+			plays_df = pd.read_sql(query, db.engine)
+			debug_log(f"Plays query returned {len(plays_df)} rows")
+			
+			if not plays_df.empty:
+				plays_df = plays_df.drop('uid', axis=1)
+				plays_file = os.path.join(temp_dir, f'{current_user.email}_Plays.xlsx')
+				plays_df.to_excel(plays_file, index=False, engine='openpyxl')
+				created_files.append(plays_file)
+				export_cnt += 1
+			else:
+				empty_tables.append('Plays')
+		except Exception as e:
+			debug_log(f"Plays export error: {e}")
+			empty_tables.append('Plays')
+		
+		# Picks
+		try:
+			query = select(Pick).where(Pick.uid == current_user.uid)
+			picks_df = pd.read_sql(query, db.engine)
+			debug_log(f"Picks query returned {len(picks_df)} rows")
+			
+			if not picks_df.empty:
+				picks_df = picks_df.drop('uid', axis=1)
+				picks_file = os.path.join(temp_dir, f'{current_user.email}_Picks.xlsx')
+				picks_df.to_excel(picks_file, index=False, engine='openpyxl')
+				created_files.append(picks_file)
+				export_cnt += 1
+			else:
+				empty_tables.append('Picks')
+		except Exception as e:
+			debug_log(f"Picks export error: {e}")
+			empty_tables.append('Picks')
+		
+		# Drafts
+		try:
+			query = select(Draft).where(Draft.uid == current_user.uid)
+			drafts_df = pd.read_sql(query, db.engine)
+			debug_log(f"Drafts query returned {len(drafts_df)} rows")
+			
+			if not drafts_df.empty:
+				drafts_df = drafts_df.drop('uid', axis=1)
+				drafts_file = os.path.join(temp_dir, f'{current_user.email}_Drafts.xlsx')
+				drafts_df.to_excel(drafts_file, index=False, engine='openpyxl')
+				created_files.append(drafts_file)
+				export_cnt += 1
+			else:
+				empty_tables.append('Drafts')
+		except Exception as e:
+			debug_log(f"Drafts export error: {e}")
+			empty_tables.append('Drafts')
+		
+		# Check if any files were created
+		if export_cnt == 0:
+			shutil.rmtree(temp_dir)  # Clean up empty temp dir
+			debug_log("No data available for export - all tables empty")
+			flash('No data available for export.', 'error')
+			return redirect(url_for('views.index'))
+		
+		# Create zip file
+		zip_path = os.path.join(temp_dir, file_name)
+		with zipfile.ZipFile(zip_path, 'w', compression=zipfile.ZIP_DEFLATED) as zipf:
+			for file_path in created_files:
+				# Add file to zip with just the filename (not the full path)
+				arcname = os.path.basename(file_path)
+				zipf.write(file_path, arcname)
+		
+		debug_log(f"Export successful - created {export_cnt} files")
+		
+		# Schedule background cleanup after 30 seconds (plenty of time for download)
+		cleanup_thread = threading.Thread(
+			target=delayed_cleanup, 
+			args=(temp_dir, 30), 
+			daemon=True
+		)
+		cleanup_thread.start()
+		debug_log(f"Background cleanup scheduled for: {temp_dir}")
+		
+		# Send the file directly for download
+		return send_file(
+			zip_path,
+			as_attachment=True,
+			download_name=file_name,
+			mimetype='application/zip'
+		)
+		
+	except Exception as e:
+		# Clean up on error
+		try:
+			shutil.rmtree(temp_dir)
+		except:
+			pass
+		debug_log(f"Export error: {e}")
+		flash(f'Export failed: {str(e)}', 'error')
+		return redirect(url_for('views.index'))
 
 @views.route('/best_guess', methods=['POST'])
 @login_required
