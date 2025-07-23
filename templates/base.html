@@ -29,7 +29,38 @@
         <h1 class="page-title section-title">{% block page_title %}MTGO-DB{% endblock %}</h1>
       </div>
       <div class="header-right">
-        <!-- Space for future header actions -->
+        {% if user.is_authenticated %}
+        <div class="user-menu">
+          <div class="user-info" onclick="toggleUserDropdown()">
+            <i class="fas fa-user-circle user-avatar"></i>
+            <div class="user-details">
+              <span class="user-email">{{ user.email }}</span>
+              <i class="fas fa-chevron-down user-chevron"></i>
+            </div>
+          </div>
+          <div class="user-dropdown" id="user-dropdown">
+            <a href="{{ url_for('views.profile') }}" class="user-dropdown-item">
+              <i class="fas fa-user nav-icon"></i>
+              Profile
+            </a>
+            <a href="{{ url_for('views.logout') }}" class="user-dropdown-item">
+              <i class="fas fa-sign-out-alt nav-icon"></i>
+              Logout
+            </a>
+          </div>
+        </div>
+        {% else %}
+        <div class="auth-buttons">
+          <a href="{{ url_for('views.login') }}" class="auth-btn login-btn">
+            <i class="fas fa-sign-in-alt nav-icon"></i>
+            <span class="nav-text">Login</span>
+          </a>
+          <a href="{{ url_for('views.register') }}" class="auth-btn register-btn">
+            <i class="fas fa-user-plus nav-icon"></i>
+            <span class="nav-text">Register</span>
+          </a>
+        </div>
+        {% endif %}
       </div>
     </header>
 
@@ -147,7 +178,7 @@
               <li class="nav-item">
                 <a href="#" class="nav-link" onclick="showReprocessModal()">
                   <i class="fas fa-redo nav-icon"></i>
-                  <span class="nav-text">Reprocess Archived Files</span>
+                  <span class="nav-text">Re-Process Archived Files</span>
                 </a>
               </li>
               <li class="nav-item">
@@ -197,42 +228,7 @@
           {% endif %}
         </div>
 
-        {% if user.is_authenticated %}
-        <div class="sidebar-footer">
-          <div class="user-menu">
-            <div class="user-info" onclick="toggleUserDropdown()">
-              <i class="fas fa-user-circle user-avatar"></i>
-              <div class="user-details">
-                <span class="user-email">{{ user.email }}</span>
-                <i class="fas fa-chevron-up user-chevron"></i>
-              </div>
-            </div>
-            <div class="user-dropdown" id="user-dropdown">
-              <a href="{{ url_for('views.profile') }}" class="user-dropdown-item">
-                <i class="fas fa-user nav-icon"></i>
-                Profile
-              </a>
-              <a href="{{ url_for('views.logout') }}" class="user-dropdown-item">
-                <i class="fas fa-sign-out-alt nav-icon"></i>
-                Logout
-              </a>
-            </div>
-          </div>
-        </div>
-        {% else %}
-        <div class="sidebar-footer">
-          <div class="auth-buttons">
-            <a href="{{ url_for('views.login') }}" class="auth-btn login-btn">
-              <i class="fas fa-sign-in-alt nav-icon"></i>
-              <span class="nav-text">Login</span>
-            </a>
-            <a href="{{ url_for('views.register') }}" class="auth-btn register-btn">
-              <i class="fas fa-user-plus nav-icon"></i>
-              <span class="nav-text">Register</span>
-            </a>
-          </div>
-        </div>
-        {% endif %}
+
       </nav>
 
       <!-- Main Content Area -->
@@ -423,6 +419,100 @@
         </div>
       </div>
 
+      <!-- Import App Modal -->
+      <div id="ImportAppModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 700px; width: 90%;">
+          <div class="modal-header">
+            <h3>Import from MTGO-Tracker (Windows)</h3>
+            <button type="button" class="modal-close" onclick="hideImportAppModal()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="importAppForm" action="/load_from_app" method="POST" enctype="multipart/form-data">            
+              <div class="form-group">
+                <label class="form-label">Select MTGO-Tracker Save Files</label>
+                <input type="file" class="form-input" name="folder" multiple required id="importAppFileInput" onchange="validateImportAppFiles()">
+                <small style="color: var(--fg-muted);">Select the ALL_DATA, DRAFTS_TABLE, and PICKS_TABLE files from your MTGO-Tracker/save/ folder</small>
+                <div id="fileValidationMessage" style="margin-top: var(--spacing-sm); font-size: 0.875rem;"></div>
+              </div>
+              
+              <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-top: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+                <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
+                  <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
+                  <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">How to Select Files</h4>
+                </div>
+                <ol style="margin: 0; padding-left: var(--spacing-lg); color: var(--fg-body); line-height: 1.6;">
+                  <li style="margin-bottom: var(--spacing-sm);">Navigate to your <code style="background: var(--bg-subtle); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-sm); font-family: monospace;">MTGO-Tracker/save/</code> folder</li>
+                  <li style="margin-bottom: var(--spacing-sm);">Hold <kbd style="background: var(--bg-subtle); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-sm); font-family: monospace; border: 1px solid var(--border);">Ctrl</kbd> (or <kbd style="background: var(--bg-subtle); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-sm); font-family: monospace; border: 1px solid var(--border);">Cmd</kbd> on Mac) and select these files:</li>
+                  <ul style="margin: var(--spacing-sm) 0 0 var(--spacing-lg); padding-left: var(--spacing-lg);">
+                    <li style="margin-bottom: var(--spacing-xs);"><code style="background: var(--bg-subtle); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-sm); font-family: monospace;">ALL_DATA</code></li>
+                    <li style="margin-bottom: var(--spacing-xs);"><code style="background: var(--bg-subtle); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-sm); font-family: monospace;">DRAFTS_TABLE</code></li>
+                    <li><code style="background: var(--bg-subtle); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-sm); font-family: monospace;">PICKS_TABLE</code></li>
+                  </ul>
+                </ol>
+              </div>
+
+              <div style="background: rgba(239, 68, 68, 0.05); border-left: 4px solid #ef4444; border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg) 0;">
+                <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
+                  <i class="fas fa-exclamation-triangle" style="color: #ef4444; font-size: 1.125rem;"></i>
+                  <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Important Notes</h4>
+                </div>
+                <ul style="margin: 0; padding-left: var(--spacing-lg); color: var(--fg-body); line-height: 1.6;">
+                  <li style="margin-bottom: var(--spacing-sm);">Records added <strong>will not</strong> have an associated raw file archived and will not be able to be re-processed.</li>
+                  <li>This will overwrite any manual revisions and is <strong>not reversible</strong>.</li>
+                </ul>
+              </div>
+
+            </form>
+          </div>
+          <div class="modal-footer">
+            <div class="d-flex gap-3 justify-content-end">
+              <button type="button" class="button secondary" onclick="hideImportAppModal()">Cancel</button>
+              <button type="submit" class="button primary" form="importAppForm" id="importAppSubmitBtn" disabled>Apply</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reprocess Modal -->
+      <div id="ReprocessModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px; width: 90%;">
+          <div class="modal-header">
+            <h3>Re-Process Data</h3>
+            <button type="button" class="modal-close" onclick="hideReprocessModal()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="reprocessForm" action="/reprocess" method="POST">
+              <div style="margin-bottom: var(--spacing-lg);">
+                <p style="color: var(--fg-body); line-height: 1.6; margin-bottom: var(--spacing-lg);">
+                  Your archived GameLog and DraftLog files will be <strong>re-parsed</strong>.<br><br>
+                  Any manual revisions you have made <strong>will not</strong> be lost.
+                </p>
+                <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg);">
+                  <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
+                    <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
+                    <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Processing Details</h4>
+                  </div>
+                  <ul style="margin: 0; padding-left: var(--spacing-lg); color: var(--fg-body); line-height: 1.6;">
+                    <li style="margin-bottom: var(--spacing-sm);">This may take several minutes depending on how many archived files you have to reprocess.</li>
+                    <li>A load report will be emailed upon completion.</li>
+                  </ul>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <div class="d-flex gap-3 justify-content-end">
+              <button type="button" class="button secondary" onclick="hideReprocessModal()">Cancel</button>
+              <button type="submit" class="button primary" form="reprocessForm">Reprocess</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Processing Modal -->
       <div id="processingModal" class="modal" style="display: none;">
         <div class="modal-content" style="max-width: 400px; width: 90%;">
@@ -569,6 +659,14 @@
       max-width: 600px !important;
     }
     
+    #ImportAppModal .modal-content {
+      max-width: 700px !important;
+    }
+    
+    #ReprocessModal .modal-content {
+      max-width: 600px !important;
+    }
+    
     #processingModal .modal-content {
       max-width: 400px !important;
       width: 90% !important;
@@ -585,6 +683,8 @@
       #DraftIdModal .modal-content,
       #BestGuessModal .modal-content,
       #ImportModal .modal-content,
+      #ImportAppModal .modal-content,
+      #ReprocessModal .modal-content,
       #processingModal .modal-content {
         max-width: none !important;
         width: 95% !important;
@@ -676,6 +776,12 @@
     .button.secondary:hover {
       background: var(--secondary-button-bg-hover);
       border-color: var(--secondary-button-border-hover);
+    }
+    
+    .button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
     }
     
     /* Dropdown Styles */
@@ -865,6 +971,107 @@
       }
     }
     
+    /* Header Auth Styles */
+    .header-right {
+      position: relative;
+    }
+    
+    .header-right .user-menu {
+      position: relative;
+      width: max-content;
+    }
+    
+    .header-right .user-info {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--fg-default);
+      width: max-content;
+      min-width: max-content;
+    }
+    
+    .header-right .user-info:hover {
+      background: var(--bg-default-hover);
+      border-color: var(--border);
+    }
+    
+    .header-right .user-avatar {
+      font-size: 1.5rem;
+      color: var(--fg-muted);
+    }
+    
+    .header-right .user-details {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+    
+    .header-right .user-email {
+      font-size: 0.875rem;
+      color: var(--fg-default);
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: visible;
+      text-overflow: unset;
+      max-width: none;
+    }
+    
+    .header-right .user-chevron {
+      font-size: 0.75rem;
+      color: var(--fg-muted);
+      transition: transform var(--transition-fast);
+    }
+    
+    .header-right .auth-buttons {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+    
+    .header-right .auth-btn {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all var(--transition-fast);
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+    
+    .header-right .login-btn {
+      color: var(--fg-default);
+      border-color: var(--border);
+      background: transparent;
+    }
+    
+    .header-right .login-btn:hover {
+      background: var(--bg-default-hover);
+      border-color: var(--border-hover);
+      color: var(--fg-default);
+    }
+    
+    .header-right .register-btn {
+      color: var(--primary-button-fg);
+      background: var(--primary-button-bg);
+      border-color: var(--primary-button-border);
+    }
+    
+    .header-right .register-btn:hover {
+      background: var(--primary-button-bg-hover);
+      border-color: var(--primary-button-border-hover);
+      color: var(--primary-button-fg);
+    }
+    
     /* Responsive */
     @media (max-width: 768px) {
       .nav-menu {
@@ -876,6 +1083,18 @@
         box-shadow: none;
         border: none;
         background: transparent;
+      }
+      
+      .header-right .user-details {
+        display: none;
+      }
+      
+      .header-right .auth-btn .nav-text {
+        display: none;
+      }
+      
+      .header-right .auth-btn {
+        padding: var(--spacing-sm);
       }
     }
     </style>
@@ -903,15 +1122,48 @@
       }
     }
     
+    // User dropdown functionality
+    function toggleUserDropdown() {
+      const dropdown = document.getElementById('user-dropdown');
+      const chevron = document.querySelector('.user-chevron');
+      const isVisible = dropdown.classList.contains('show');
+      
+      // Close all other dropdowns
+      document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        menu.classList.remove('show');
+      });
+      document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+        toggle.classList.remove('active');
+      });
+      
+      // Toggle user dropdown
+      if (!isVisible) {
+        dropdown.classList.add('show');
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
+      } else {
+        dropdown.classList.remove('show');
+        if (chevron) chevron.style.transform = 'rotate(0deg)';
+      }
+    }
+    
     // Close dropdowns when clicking outside
     document.addEventListener('click', function(event) {
-      if (!event.target.closest('.nav-item') && !event.target.closest('.dropdown')) {
+      if (!event.target.closest('.nav-item') && !event.target.closest('.dropdown') && !event.target.closest('.user-menu')) {
+        // Close modal dropdowns
         document.querySelectorAll('.dropdown-menu').forEach(menu => {
           menu.classList.remove('show');
         });
         document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
           toggle.classList.remove('active');
         });
+        
+        // Close user dropdown
+        const userDropdown = document.getElementById('user-dropdown');
+        const chevron = document.querySelector('.user-chevron');
+        if (userDropdown) {
+          userDropdown.classList.remove('show');
+          if (chevron) chevron.style.transform = 'rotate(0deg)';
+        }
       }
     });
     
@@ -965,13 +1217,32 @@
     }
     
     function showImportAppModal() {
-      // TODO: Implement MTGO-Tracker import modal
-      alert('MTGO-Tracker import functionality coming soon!');
+      const modal = document.getElementById('ImportAppModal');
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      
+      // Reset form and validation when modal opens
+      document.getElementById('importAppFileInput').value = '';
+      document.getElementById('importAppSubmitBtn').disabled = true;
+      document.getElementById('fileValidationMessage').innerHTML = '';
+    }
+    
+    function hideImportAppModal() {
+      const modal = document.getElementById('ImportAppModal');
+      modal.style.display = 'none';
+      document.body.style.overflow = 'auto';
     }
     
     function showReprocessModal() {
-      // TODO: Implement reprocess modal
-      alert('Reprocess functionality coming soon!');
+      const modal = document.getElementById('ReprocessModal');
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function hideReprocessModal() {
+      const modal = document.getElementById('ReprocessModal');
+      modal.style.display = 'none';
+      document.body.style.overflow = 'auto';
     }
     
     function showZipLogsModal() {
@@ -1046,6 +1317,63 @@
       // TODO: Implement draft ID application
       console.log('Applying draft ID, skip:', skip);
       hideDraftIdModal();
+    }
+    
+    // File validation for ImportApp modal
+    function validateImportAppFiles() {
+      const fileInput = document.getElementById('importAppFileInput');
+      const submitBtn = document.getElementById('importAppSubmitBtn');
+      const messageDiv = document.getElementById('fileValidationMessage');
+      
+      const requiredFiles = ['ALL_DATA', 'DRAFTS_TABLE', 'PICKS_TABLE'];
+      const selectedFiles = Array.from(fileInput.files);
+      
+      // Clear previous messages
+      messageDiv.innerHTML = '';
+      
+      if (selectedFiles.length === 0) {
+        submitBtn.disabled = true;
+        return;
+      }
+      
+      // Extract filenames (handle paths from different OS)
+      const selectedFilenames = selectedFiles.map(file => {
+        // Handle both forward and backward slashes
+        return file.name.split('/').pop().split('\\').pop();
+      });
+      
+      // Check if we have exactly the required files
+      const foundFiles = requiredFiles.filter(required => 
+        selectedFilenames.includes(required)
+      );
+      const missingFiles = requiredFiles.filter(required => 
+        !selectedFilenames.includes(required)
+      );
+      const extraFiles = selectedFilenames.filter(filename => 
+        !requiredFiles.includes(filename)
+      );
+      
+      let isValid = foundFiles.length === 3 && missingFiles.length === 0 && extraFiles.length === 0;
+      
+      // Update message and button state
+      if (isValid) {
+        messageDiv.innerHTML = '<span style="color: #22c562;"><i class="fas fa-check-circle"></i> All required files selected</span>';
+        submitBtn.disabled = false;
+      } else {
+        let messages = [];
+        if (missingFiles.length > 0) {
+          messages.push(`Missing: ${missingFiles.join(', ')}`);
+        }
+        if (extraFiles.length > 0) {
+          messages.push(`Extra files (not needed): ${extraFiles.join(', ')}`);
+        }
+        if (selectedFiles.length !== 3) {
+          messages.push(`Expected 3 files, found ${selectedFiles.length}`);
+        }
+        
+        messageDiv.innerHTML = `<span style="color: #ef4444;"><i class="fas fa-exclamation-triangle"></i> ${messages.join(' • ')}</span>`;
+        submitBtn.disabled = true;
+      }
     }
     </script>
 
