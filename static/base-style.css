@@ -434,7 +434,7 @@ body {
 
 .auth-buttons {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: var(--spacing-sm);
 }
 
@@ -963,41 +963,7 @@ body {
   }
 }
 
-/* Flash Messages */
-.alert {
-  padding: var(--spacing-md);
-  border-radius: var(--radius-md);
-  margin-bottom: var(--spacing-md);
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.alert.success {
-  background: #dcfce7;
-  color: #166534;
-  border: 1px solid #bbf7d0;
-}
-
-.alert.error {
-  background: #fef2f2;
-  color: #991b1b;
-  border: 1px solid #fecaca;
-}
-
-.alert-close {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: inherit;
-  opacity: 0.7;
-  padding: var(--spacing-xs);
-}
-
-.alert-close:hover {
-  opacity: 1;
-}
+/* Old flash message styles removed - now handled by .flash-messages styles */
 
 /* Utility Classes */
 .text-center { text-align: center; }
@@ -1263,4 +1229,92 @@ body:has(.image-modal[style*="display: flex"]) {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+.flash-messages {
+  position: fixed !important;
+  top: 12px !important;
+  left: calc(280px + (50vw - 280px) / 2) !important;
+  transform: translateX(-50%) !important;
+  z-index: 20000 !important;
+  max-width: 600px !important;
+  width: calc(100vw - 280px - 40px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  pointer-events: none !important;
+}
+
+.flash-messages .alert,
+.flash-messages .alert-success,
+.flash-messages .alert-error,
+.flash-messages .alert-warning,
+.flash-messages .alert-info {
+  pointer-events: auto !important;
+  margin-bottom: var(--spacing-sm) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+  height: 30px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  padding: var(--spacing-sm) var(--spacing-md) !important;
+  border-radius: var(--radius-md) !important;
+  opacity: 1 !important;
+  position: relative !important;
+  border: 1px solid transparent !important;
+}
+
+/* Specific alert type styles for flash messages */
+.flash-messages .alert-success {
+  background: rgba(34, 197, 98, 0.1) !important;
+  color: #166534 !important;
+  border-color: rgba(34, 197, 98, 0.3) !important;
+}
+
+.flash-messages .alert-error {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #dc2626 !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+.flash-messages .alert-warning {
+  background: rgba(245, 158, 11, 0.1) !important;
+  color: #d97706 !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+.flash-messages .alert-info {
+  background: rgba(59, 130, 246, 0.1) !important;
+  color: #2563eb !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+.flash-messages .alert-close {
+  background: none !important;
+  border: none !important;
+  cursor: pointer !important;
+  color: inherit !important;
+  opacity: 0.7 !important;
+  padding: var(--spacing-xs) !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.flash-messages .alert-close:hover {
+  opacity: 1 !important;
+}
+
+@media (max-width: 768px) {
+  .flash-messages {
+    top: 8px !important;
+    left: 50% !important;
+    width: calc(98vw - 20px) !important;
+    max-width: calc(98vw - 20px) !important;
+  }
 }

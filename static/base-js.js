@@ -353,6 +353,495 @@ function initImageModal() {
   });
 }
 
+// Game Winner Modal Management
+class GameWinnerManager {
+  constructor() {
+    this.currentGame = null;
+    this.modal = document.getElementById('GameWinnerModal');
+  }
+
+  async initialize() {
+    try {
+      const response = await fetch('/api/game-winner/next', {
+        method: 'GET',
+        headers: {
+          'X-Requested-By': 'MTGO-Tracker',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch game data');
+      }
+
+      const data = await response.json();
+      
+      if (!data.hasGames) {
+        this.showNoGamesMessage();
+        this.disableMenuButton();
+        return;
+      }
+
+      this.currentGame = data;
+      this.updateModalContent(data);
+      this.enableMenuButton();
+      
+    } catch (error) {
+      console.error('Error initializing game winner modal:', error);
+      this.showErrorMessage('Failed to load game data');
+    }
+  }
+
+  updateModalContent(gameData) {
+    // Update game info section
+    const dateElement = document.getElementById('GameWinnerModalDate');
+    dateElement.textContent = `${gameData.date} vs. ${gameData.p2} - Game ${gameData.game_num}`;
+
+    // Update game actions
+    const actionsElement = document.getElementById('EndGameActions');
+    actionsElement.innerHTML = gameData.game_actions
+      .map(action => this.formatGameAction(action))
+      .join('<br>');
+
+    // Update button labels
+    const p1Button = document.querySelector('[onclick="applyGetWinner(\'P1\')"]');
+    const p2Button = document.querySelector('[onclick="applyGetWinner(\'P2\')"]');
+    
+    if (p1Button) p1Button.innerHTML = `<i class="fas fa-user" style="margin-right: var(--spacing-xs);"></i>${gameData.p1}`;
+    if (p2Button) p2Button.innerHTML = `<i class="fas fa-user" style="margin-right: var(--spacing-xs);"></i>${gameData.p2}`;
+  }
+
+  formatGameAction(action) {
+    // Handle the @[...@] formatting from the original code
+    if (action.indexOf('@[') === -1) return action;
+    
+    let formatted = action;
+    const openCount = (action.match(/@\[/g) || []).length;
+    const closeCount = (action.match(/@\]/g) || []).length;
+    
+    if (openCount === closeCount) {
+      for (let i = 0; i < openCount; i++) {
+        formatted = formatted.replace('@[', '<strong>').replace('@]', '</strong>');
+      }
+    }
+    
+    return formatted;
+  }
+
+  async applyWinner(winner) {
+    if (!this.currentGame) {
+      console.error('No current game data');
+      return;
+    }
+
+    try {
+      showProcessingModal('Updating game winner...');
+
+      const payload = {
+        match_id: this.currentGame.match_id,
+        game_num: this.currentGame.game_num,
+        winner: winner, // 'P1', 'P2', or 'skip'
+        p1: this.currentGame.p1,
+        p2: this.currentGame.p2
+      };
+
+      const response = await fetch('/api/game-winner/update', {
+        method: 'POST',
+        headers: {
+          'X-Requested-By': 'MTGO-Tracker',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update game winner');
+      }
+
+      const result = await response.json();
+      hideProcessingModal();
+
+      if (!result.hasNextGame) {
+        // No more games to process
+        hideGameWinnerModal();
+        this.showCompletionMessage();
+        this.disableMenuButton();
+        return;
+      }
+
+      // Load next game
+      this.currentGame = result.nextGame;
+      this.updateModalContent(result.nextGame);
+
+    } catch (error) {
+      hideProcessingModal();
+      console.error('Error updating game winner:', error);
+      this.showErrorMessage('Failed to update game winner');
+    }
+  }
+
+  showNoGamesMessage() {
+    const dateElement = document.getElementById('GameWinnerModalDate');
+    dateElement.textContent = 'No games found';
+    
+    const actionsElement = document.getElementById('EndGameActions');
+    actionsElement.innerHTML = '<div style="text-align: center; color: var(--fg-muted); padding: var(--spacing-lg);">No games with missing winners found.</div>';
+    
+    // Disable action buttons
+    document.querySelectorAll('#GameWinnerModal .button').forEach(btn => {
+      if (!btn.onclick || !btn.onclick.toString().includes('hideGameWinnerModal')) {
+        btn.disabled = true;
+      }
+    });
+  }
+
+  showErrorMessage(message) {
+    const actionsElement = document.getElementById('EndGameActions');
+    actionsElement.innerHTML = `<div style="text-align: center; color: #ef4444; padding: var(--spacing-lg);">${message}</div>`;
+  }
+
+  showCompletionMessage() {
+    // Show a success flash message
+    if (typeof showFlashMessage === 'function') {
+      showFlashMessage('All games with missing winners have been processed!', 'success');
+    }
+  }
+
+  enableMenuButton() {
+    const menuButton = document.getElementById('getMissingMenuButton');
+    if (menuButton) {
+      menuButton.disabled = false;
+      menuButton.classList.remove('disabled');
+    }
+  }
+
+  disableMenuButton() {
+    const menuButton = document.getElementById('getMissingMenuButton');
+    if (menuButton) {
+      menuButton.disabled = true;
+      menuButton.classList.add('disabled');
+    }
+  }
+}
+
+// Global instance
+let gameWinnerManager = null;
+
+// Draft ID Modal Management
+class DraftIdManager {
+  constructor() {
+    this.currentMatch = null;
+    this.modal = document.getElementById('DraftIdModal');
+    this.selectedDraftId = null;
+  }
+
+  async initialize() {
+    try {
+      const response = await fetch('/api/draft-id/next', {
+        method: 'GET',
+        headers: {
+          'X-Requested-By': 'MTGO-Tracker',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch draft data');
+      }
+
+      const data = await response.json();
+      
+      if (!data.hasMatches) {
+        this.showNoMatchesMessage();
+        this.disableMenuButton();
+        return;
+      }
+
+      this.currentMatch = data;
+      this.selectedDraftId = data.possible_draft_ids?.[0] || null;
+      this.updateModalContent(data);
+      this.enableMenuButton();
+      
+    } catch (error) {
+      console.error('Error initializing draft ID modal:', error);
+      this.showErrorMessage('Failed to load match data');
+    }
+  }
+
+  updateModalContent(matchData) {
+    // Update match info section
+    const dateElement = document.getElementById('DraftIdModalDate');
+    dateElement.textContent = `${matchData.match_id} - Date: ${matchData.date}`;
+
+    // Update card lists
+    this.updateCardList('DraftIdLands', matchData.lands);
+    this.updateCardList('DraftIdSpells', matchData.spells.slice(0, Math.floor(matchData.spells.length / 2)));
+    this.updateCardList('DraftIdSpells2', matchData.spells.slice(Math.floor(matchData.spells.length / 2)));
+
+    // Update dropdown with possible draft IDs
+    this.updateDraftIdDropdown(matchData.possible_draft_ids);
+  }
+
+  updateCardList(elementId, cards) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    element.innerHTML = cards.length > 0 ? cards.join('<br>') : '<em>No cards</em>';
+  }
+
+  updateDraftIdDropdown(draftIds) {
+    const button = document.getElementById('DraftIdButton');
+    const menu = document.getElementById('DraftIdMenu');
+    
+    if (!button || !menu || !draftIds || draftIds.length === 0) {
+      if (button) button.textContent = 'No draft IDs available';
+      if (menu) menu.innerHTML = '';
+      return;
+    }
+
+    // Set default selection
+    this.selectedDraftId = draftIds[0];
+    button.innerHTML = `<i class="fas fa-chevron-down" style="margin-right: var(--spacing-xs);"></i>${draftIds[0]}`;
+
+    // Populate dropdown menu
+    menu.innerHTML = draftIds.map(draftId => 
+      `<li onclick="draftIdManager.selectDraftId('${draftId}')">${draftId}</li>`
+    ).join('');
+  }
+
+  selectDraftId(draftId) {
+    this.selectedDraftId = draftId;
+    const button = document.getElementById('DraftIdButton');
+    if (button) {
+      button.innerHTML = `<i class="fas fa-chevron-down" style="margin-right: var(--spacing-xs);"></i>${draftId}`;
+    }
+    
+    // Close dropdown
+    const menu = document.getElementById('DraftIdMenu');
+    if (menu) {
+      menu.classList.remove('show');
+    }
+  }
+
+  async applyDraftId(skip = false) {
+    if (!this.currentMatch) {
+      console.error('No current match data');
+      return;
+    }
+
+    try {
+      showProcessingModal('Updating draft association...');
+
+      const payload = {
+        match_id: this.currentMatch.match_id,
+        draft_id: skip ? null : this.selectedDraftId,
+        skip: skip
+      };
+
+      const response = await fetch('/api/draft-id/update', {
+        method: 'POST',
+        headers: {
+          'X-Requested-By': 'MTGO-Tracker',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update draft association');
+      }
+
+      const result = await response.json();
+      hideProcessingModal();
+
+      if (!result.hasNextMatch) {
+        // No more matches to process
+        hideDraftIdModal();
+        this.showCompletionMessage();
+        this.disableMenuButton();
+        return;
+      }
+
+      // Load next match
+      this.currentMatch = result.nextMatch;
+      this.selectedDraftId = result.nextMatch.possible_draft_ids?.[0] || null;
+      this.updateModalContent(result.nextMatch);
+
+    } catch (error) {
+      hideProcessingModal();
+      console.error('Error updating draft association:', error);
+      this.showErrorMessage('Failed to update draft association');
+    }
+  }
+
+  showNoMatchesMessage() {
+    const dateElement = document.getElementById('DraftIdModalDate');
+    dateElement.textContent = 'No limited matches found.';
+    
+    const landsElement = document.getElementById('DraftIdLands');
+    const spellsElement = document.getElementById('DraftIdSpells');
+    const spells2Element = document.getElementById('DraftIdSpells2');
+    
+    if (landsElement) landsElement.innerHTML = '';
+    if (spellsElement) spellsElement.innerHTML = '<div style="color: var(--fg-muted); padding: var(--spacing-lg);">No Limited Matches missing an Associated Draft_ID.<br><br>Note: Matches need to have Format set to \'Limited\' before they can be associated with a Draft.</div>';
+    if (spells2Element) spells2Element.innerHTML = '';
+    
+    // Disable action buttons
+    document.querySelectorAll('#DraftIdModal .button').forEach(btn => {
+      if (!btn.onclick || !btn.onclick.toString().includes('hideDraftIdModal')) {
+        btn.disabled = true;
+      }
+    });
+  }
+
+  showErrorMessage(message) {
+    const landsElement = document.getElementById('DraftIdLands');
+    if (landsElement) {
+      landsElement.innerHTML = `<div style="text-align: center; color: #ef4444; padding: var(--spacing-lg);">${message}</div>`;
+    }
+  }
+
+  showCompletionMessage() {
+    // Show a success flash message
+    if (typeof showFlashMessage === 'function') {
+      showFlashMessage('All limited matches have been processed for draft associations!', 'success');
+    }
+  }
+
+  enableMenuButton() {
+    const menuButton = document.getElementById('applyDraftIdMenuButton');
+    if (menuButton) {
+      menuButton.disabled = false;
+      menuButton.classList.remove('disabled');
+    }
+  }
+
+  disableMenuButton() {
+    const menuButton = document.getElementById('applyDraftIdMenuButton');
+    if (menuButton) {
+      menuButton.disabled = true;
+      menuButton.classList.add('disabled');
+    }
+  }
+}
+
+// Global instance
+let draftIdManager = null;
+
+// Flash message helper function
+function showFlashMessage(message, category = 'info') {
+  const flashContainer = document.querySelector('.flash-messages') || 
+                        document.querySelector('.main-content');
+  
+  if (!flashContainer) return;
+
+  const alertDiv = document.createElement('div');
+  alertDiv.className = `alert alert-${category}`;
+  alertDiv.setAttribute('role', 'alert');
+  
+  let iconClass = 'fas fa-info-circle';
+  let iconColor = '#3b82f6';
+  
+  switch(category) {
+    case 'success':
+      iconClass = 'fas fa-check-circle';
+      iconColor = '#22c562';
+      break;
+    case 'error':
+      iconClass = 'fas fa-exclamation-circle';
+      iconColor = '#ef4444';
+      break;
+    case 'warning':
+      iconClass = 'fas fa-exclamation-triangle';
+      iconColor = '#f59e0b';
+      break;
+  }
+  
+  alertDiv.innerHTML = `
+    <div class="alert-content">
+      <i class="${iconClass}" style="margin-right: var(--spacing-sm); color: ${iconColor};"></i>
+      ${message}
+    </div>
+    <button type="button" class="alert-close" onclick="this.parentElement.remove()">
+      <i class="fas fa-times"></i>
+    </button>
+  `;
+  
+  // Insert at the beginning of flash container or main content
+  if (flashContainer.classList.contains('flash-messages')) {
+    flashContainer.appendChild(alertDiv);
+  } else {
+    flashContainer.insertBefore(alertDiv, flashContainer.firstChild);
+  }
+  
+  // Auto-remove after 5 seconds for success messages
+  if (category === 'success') {
+    setTimeout(() => {
+      if (alertDiv.parentNode) {
+        alertDiv.remove();
+      }
+    }, 5000);
+  }
+}
+
+// Initialize the manager when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+  gameWinnerManager = new GameWinnerManager();
+  if (!draftIdManager) {
+    draftIdManager = new DraftIdManager();
+  }
+});
+
+// Updated global functions for compatibility with existing onclick handlers
+async function initGetWinner() {
+  if (!gameWinnerManager) {
+    gameWinnerManager = new GameWinnerManager();
+  }
+  
+  await gameWinnerManager.initialize();
+  showGameWinnerModal();
+}
+
+async function applyGetWinner(winner) {
+  if (!gameWinnerManager) {
+    console.error('GameWinnerManager not initialized');
+    return;
+  }
+  
+  // Map the winner parameter correctly
+  let winnerParam = winner;
+  if (winner === '0') {
+    winnerParam = 'skip';
+  }
+  
+  await gameWinnerManager.applyWinner(winnerParam);
+}
+
+async function initGetDraftId() {
+  if (!draftIdManager) {
+    draftIdManager = new DraftIdManager();
+  }
+  
+  await draftIdManager.initialize();
+  showDraftIdModal();
+}
+
+async function applyGetDraftId(skip) {
+  if (!draftIdManager) {
+    console.error('DraftIdManager not initialized');
+    return;
+  }
+  
+  await draftIdManager.applyDraftId(skip);
+}
+
+// Compatibility function for dropdown selection
+function showAssociatedDraftId(item) {
+  if (draftIdManager && item && item.textContent) {
+    draftIdManager.selectDraftId(item.textContent.trim());
+  }
+}
+
 // Event Listeners
 document.addEventListener('DOMContentLoaded', initPage);
 window.addEventListener('resize', function() {

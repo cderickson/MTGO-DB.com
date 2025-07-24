@@ -52,7 +52,7 @@ def debug_log(message):
 	except Exception as e:
 		debug_log(f"Warning: Could not write to log file: {e}")
 
-page_size = 25
+page_size = 20
 
 # Initialize Azure clients only if connection string is available
 try:
@@ -76,18 +76,24 @@ s = URLSafeTimedSerializer(os.environ.get("URL_SAFETIMEDSERIALIZER", "dev-secret
 views = Blueprint('views', __name__)
 
 def get_input_options():
-	url_input = 'https://raw.githubusercontent.com/cderickson/MTGO-Tracker/main/INPUT_OPTIONS.txt'
+	"""Load input options from local file"""
+	input_options_file = os.path.join('static', 'INPUT_OPTIONS.txt')
+	
+	if not os.path.exists(input_options_file):
+		debug_log(f"Input options file not found: {input_options_file}")
+		return {}
+	
 	in_header = False
 	in_instr = True
 	input_options = {}
 	x = ""
 	y = []
-	debug_log(os.getcwd())
-	with requests.get(url_input) as r:
-		initial = r.content.decode('utf-8', errors='ignore')
-		initial = initial.replace('\x00','')
-		initial = initial.split("\n")
-		for i in initial:
+	
+	try:
+		with open(input_options_file, 'r', encoding='utf-8', errors='ignore') as f:
+			lines = f.read().replace('\x00', '').split('\n')
+			
+		for i in lines:
 			if i == "-----------------------------":
 				if in_instr:
 					in_instr = False
@@ -100,30 +106,57 @@ def get_input_options():
 			elif (in_header == False) and (i != "") and (in_instr == False):
 				y.append(i)
 			last = i
-	return input_options
+		
+		debug_log(f"Loaded input options with {len(input_options)} categories from local file")
+		return input_options
+		
+	except Exception as e:
+		debug_log(f"Error reading input options file: {e}")
+		return {}
 def get_multifaced_cards():
-	url_mfc = 'https://raw.githubusercontent.com/cderickson/MTGO-Tracker/main/MULTIFACED_CARDS.txt'
+	"""Load multifaced cards from local file"""
+	multifaced_file = os.path.join('static', 'MULTIFACED_CARDS.txt')
+	
+	if not os.path.exists(multifaced_file):
+		debug_log(f"Multifaced cards file not found: {multifaced_file}")
+		return {}
+	
 	multifaced_cards = {}
-	with requests.get(url_mfc) as r:
-		initial = r.content.decode('utf-8', errors='ignore')
-		initial = initial.replace('\x00','')
-		initial = initial.split("\n")
-		for i in initial:
+	try:
+		with open(multifaced_file, 'r', encoding='utf-8', errors='ignore') as f:
+			lines = f.read().replace('\x00', '').split('\n')
+			
+		for i in lines:
 			if i.isupper():
 				multifaced_cards[i] = {}
 				last = i
 			if ' // ' in i:
 				multifaced_cards[last][i.split(' // ')[0]] = i.split(' // ')[1]
-	return multifaced_cards
+		
+		debug_log(f"Loaded {len(multifaced_cards)} multifaced card categories from local file")
+		return multifaced_cards
+		
+	except Exception as e:
+		debug_log(f"Error reading multifaced cards file: {e}")
+		return {}
 def get_all_decks():
-	url_decks = 'https://github.com/cderickson/MTGO-Tracker/blob/main/ALL_DECKS?raw=true'
-	with requests.get(url_decks) as r:
-		if r.status_code == 200:
-			file_content = io.BytesIO(r.content)
-			all_decks = pickle.load(file_content)
-		else:
-			return {}
-	return all_decks
+	"""Load all decks from local pickle file"""
+	decks_file = os.path.join('static', 'ALL_DECKS')
+	
+	if not os.path.exists(decks_file):
+		debug_log(f"All decks file not found: {decks_file}")
+		return {}
+	
+	try:
+		with open(decks_file, 'rb') as f:
+			all_decks = pickle.load(f)
+		
+		debug_log(f"Loaded {len(all_decks) if isinstance(all_decks, dict) else 'unknown'} decks from local file")
+		return all_decks
+		
+	except Exception as e:
+		debug_log(f"Error reading all decks file: {e}")
+		return {}
 def build_cards_played_db(uid):
 	#debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Building cards played database for user {uid}")
 	
@@ -2016,390 +2049,500 @@ def table_drill(table_name, row_id, game_num):
 
 	return render_template('tables.html', user=current_user, table_name=table_name, table=table)
 
-@views.route('/revise', methods=['POST'])
+# New cleaner API routes for Game Winner functionality
+@views.route('/api/game-winner/next', methods=['GET'])
 @login_required
-def revise():
-	match_id = request.form.get('Match_ID')
-	p1_arch = request.form.get('P1Arch')
-	p1_subarch = request.form.get('P1_Subarch')
-	p2_arch = request.form.get('P2Arch')
-	p2_subarch = request.form.get('P2_Subarch')
-	fmt = request.form.get('Format')
-	limited_format = request.form.get('Limited_Format')
-	match_type = request.form.get('Match_Type')
-	page_num = request.form.get('Page_Num')
-
-	matches = Match.query.filter_by(match_id=match_id).all()
-	for match in matches:
-		if match.p1 == current_user.username:
-			match.p1_arch = p1_arch
-			match.p1_subarch = p1_subarch
-			match.p2_arch = p2_arch
-			match.p2_subarch = p2_subarch
-		else:
-			match.p1_arch = p2_arch 
-			match.p1_subarch = p2_subarch 
-			match.p2_arch = p1_arch
-			match.p2_subarch = p1_subarch
-		match.format = fmt 
-		match.limited_format = limited_format
-		match.match_type = match_type
-	try:
-		db.session.commit()
-	except:
-		db.session.rollback()
-	return redirect(url_for('views.table', table_name='matches', page_num=page_num))
-
-@views.route('/revise_multi', methods=['POST'])
-@login_required
-def revise_multi():
-	match_id_str = request.form.get('Match_ID_Multi')
-	field_to_change = request.form.get('FieldToChangeMulti')
-	p1_arch = request.form.get('P1ArchMulti')
-	p1_subarch = request.form.get('P1_Subarch_Multi')
-	p2_arch = request.form.get('P2ArchMulti')
-	p2_subarch = request.form.get('P2_Subarch_Multi')
-	fmt = request.form.get('FormatMulti')
-	limited_format = request.form.get('Limited_FormatMulti')
-	match_type = request.form.get('Match_TypeMulti')
-	page_num = request.form.get('Page_Num_Multi')
-
-	match_ids = match_id_str.split(',')
-
-	matches = Match.query.filter(Match.match_id.in_(match_ids), Match.uid == current_user.uid).all()
-	for match in matches:
-		if field_to_change == 'P1 Deck':
-			if match.p1 == current_user.username:
-				if match.p1_arch != 'Limited':
-					match.p1_arch = p1_arch
-				match.p1_subarch = p1_subarch
-			else:
-				if match.p2_arch != 'Limited':
-					match.p2_arch = p1_arch 
-				match.p2_subarch = p1_subarch 
-		elif field_to_change == 'P2 Deck':
-			if match.p1 == current_user.username:
-				if match.p2_arch != 'Limited':
-					match.p2_arch = p2_arch
-				match.p2_subarch = p2_subarch
-			else:
-				if match.p1_arch != 'Limited':
-					match.p1_arch = p2_arch 
-				match.p1_subarch = p2_subarch
-		elif field_to_change == 'Format':
-			match.format = fmt 
-			match.limited_format = limited_format
-			if fmt in options['Limited Formats']:
-				match.p1_arch = 'Limited'
-				match.p2_arch = 'Limited'
-			else:
-				if match.p1_arch == 'Limited':
-					match.p1_arch = 'NA'
-				if match.p2_arch == 'Limited':
-					match.p2_arch = 'NA'
-		elif field_to_change == 'Match Type':
-			match.match_type = match_type
-	try:
-		db.session.commit()
-	except:
-		db.session.rollback()
-	return redirect(url_for('views.table', table_name='matches', page_num=page_num))
-
-@views.route('/revise_ignored', methods=['POST'])
-@login_required
-def revise_ignored():
-	match_id_str = request.form.get('Ignored_Match_ID_Multi')
-	match_ids = match_id_str.split(',')
-	for i in match_ids:
-		Removed.query.filter_by(uid=current_user.uid, match_id=i).delete()
-	try:
-		db.session.commit()
-	except:
-		db.session.rollback()
-	table = Removed.query.filter_by(uid=current_user.uid, reason='Ignored').order_by(Removed.match_id).all()
-	if len(table) == 0:
-		flash(f'No ignored matches to display.', category='error')
-		return redirect(url_for('views.profile'))
-	return render_template('tables.html', user=current_user, table_name='ignored', table=table)
-
-@views.route('/values/<match_id>', methods=['GET'])
-@login_required
-def values(match_id):
+def api_game_winner_next():
+	"""Get the next game that needs a winner assigned"""
 	if request.headers.get('X-Requested-By') != 'MTGO-Tracker':
-		return 'Forbidden', 403
-	if not current_user.is_authenticated:
-		return 'Forbidden', 403
-	match = Match.query.filter_by(uid=current_user.uid, match_id=match_id, p1=current_user.username).first().as_dict()
-	cards = CardsPlayed.query.filter_by(uid=current_user.uid, match_id=match_id).first().as_dict()
-	cards['lands1'] = '<br>'.join(cards['lands1'])
-	cards['lands2'] = '<br>'.join(cards['lands2'])
-	cards['plays1'] = '<br>'.join(cards['plays1'])
-	cards['plays2'] = '<br>'.join(cards['plays2'])
-	return match | cards
+		return jsonify({'error': 'Forbidden'}), 403
+	
+	try:
+		# Query for games with missing winners
+		na_query = Game.query.filter_by(
+			uid=current_user.uid, 
+			game_winner='NA', 
+			p1=current_user.username
+		).join(
+			Match, 
+			(Game.uid == Match.uid) & 
+			(Game.match_id == Match.match_id) & 
+			(Game.p1 == Match.p1)
+		).add_entity(Match)
 
-@views.route('/game_winner/<match_id>/<game_num>/<game_winner>', methods=['GET'])
-@login_required
-def game_winner(match_id, game_num, game_winner):
+		if na_query.first() is None:
+			return jsonify({'hasGames': False})
+
+		# Find first game with game actions
+		for game, match in na_query.order_by(asc(Match.date), asc(Game.game_num)).all():
+			game_actions_record = GameActions.query.filter_by(
+				uid=current_user.uid, 
+				match_id=match.match_id, 
+				game_num=game.game_num
+			).first()
+			
+			if game_actions_record:
+				ga = game_actions_record.game_actions.split('\n')[-15:]
+				
+				# Format game actions (handle @[...@] formatting)
+				formatted_actions = []
+				for action in ga:
+					if action.count('@[') != action.count('@]'):
+						formatted_actions.append(action)
+						continue
+					
+					formatted = action
+					for _ in range(action.count('@[')):
+						formatted = formatted.replace('@[', '<strong>', 1).replace('@]', '</strong>', 1)
+					formatted_actions.append(formatted)
+				
+				# Prepare response data
+				game_data = game.as_dict()
+				game_data.update({
+					'date': match.date,
+					'game_actions': formatted_actions,
+					'hasGames': True
+				})
+				
+				return jsonify(game_data)
+		
+		return jsonify({'hasGames': False})
+		
+	except Exception as e:
+		debug_log(f"Error in api_game_winner_next: {str(e)}")
+		return jsonify({'error': 'Internal server error'}), 500
+
+@views.route('/api/game-winner/update', methods=['POST'])
+@login_required  
+def api_game_winner_update():
+	"""Update a game winner and return the next game"""
 	if request.headers.get('X-Requested-By') != 'MTGO-Tracker':
-		return 'Forbidden', 403
-	if not current_user.is_authenticated:
-		return 'Forbidden', 403
-	if game_winner != '0':
-		games = Game.query.filter_by(match_id=match_id, game_num=game_num, uid=current_user.uid).all()
-		matches = Match.query.filter_by(match_id=match_id, uid=current_user.uid).all()
-		draft_id = 'NA'
-
-		for game in games:
-			if game.game_winner != 'NA':
-				pass
-			if game.p1 == game_winner:
-				game.game_winner = 'P1'
-			elif game.p2 == game_winner:
-				game.game_winner = 'P2'
+		return jsonify({'error': 'Forbidden'}), 403
+	
+	try:
+		data = request.get_json()
+		if not data:
+			return jsonify({'error': 'No data provided'}), 400
+		
+		match_id = data.get('match_id')
+		game_num = data.get('game_num')
+		winner = data.get('winner')  # 'P1', 'P2', or 'skip'
+		p1 = data.get('p1')
+		p2 = data.get('p2')
+		
+		if not all([match_id, game_num, winner]):
+			return jsonify({'error': 'Missing required fields'}), 400
+		
+		# Update game winner if not skipped
+		if winner != 'skip':
+			games = Game.query.filter_by(
+				match_id=match_id, 
+				game_num=game_num, 
+				uid=current_user.uid
+			).all()
+			
+			matches = Match.query.filter_by(
+				match_id=match_id, 
+				uid=current_user.uid
+			).all()
+			
+			draft_id = 'NA'
+			
+			# Determine actual winner name
+			if winner == 'P1':
+				game_winner = p1
+			elif winner == 'P2':
+				game_winner = p2
 			else:
-				pass
-		for match in matches:
-			draft_id = match.draft_id
-			if match.p1 == game_winner:
-				match.p1_wins += 1
-			elif match.p2 == game_winner:
-				match.p2_wins += 1
-			else:
-				pass
-			if match.p1_wins > match.p2_wins:
-				match.match_winner = 'P1'
-			elif match.p2_wins > match.p1_wins:
-				match.match_winner = 'P2'
-			elif match.p1_wins == match.p2_wins:
-				match.match_winner = 'NA'
-			else:
-				pass
-		update_draft_win_loss(uid=current_user.uid, username=current_user.username, draft_id=draft_id)
-		try:
-			db.session.commit()
-		except:
-			db.session.rollback()
-
-	date = Match.query.filter_by(match_id=match_id, uid=current_user.uid).first().date
-	rem_games = Game.query.filter_by(uid=current_user.uid, game_winner='NA', p1=current_user.username).join(Match, (Game.uid == Match.uid) & (Game.match_id == Match.match_id) & (Game.p1 == Match.p1)).add_entity(Match)
-	rem_games = rem_games.filter(Match.date >= date).order_by(asc(Match.date), asc(Game.game_num))
-	next_game = None
-	if rem_games.first() is None:
-		return {'match_id':'NA'}
-		#na_count = Game.query.filter_by(uid=current_user.uid, game_winner='NA', p1=current_user.username).count()
-		# if na_count == 0:
-		# 	return {'match_id':'Empty'}
-		# else:
-		# 	return {'match_id':'NA'}
-	else:
-		for game,match in rem_games.all():
+				game_winner = '0'
+			
+			# Update games
+			for game in games:
+				if game.game_winner == 'NA':
+					if game.p1 == game_winner:
+						game.game_winner = 'P1'
+					elif game.p2 == game_winner:
+						game.game_winner = 'P2'
+			
+			# Update matches
+			for match in matches:
+				draft_id = match.draft_id
+				if match.p1 == game_winner:
+					match.p1_wins += 1
+				elif match.p2 == game_winner:
+					match.p2_wins += 1
+				
+				# Update match winner
+				if match.p1_wins > match.p2_wins:
+					match.match_winner = 'P1'
+				elif match.p2_wins > match.p1_wins:
+					match.match_winner = 'P2'
+				else:
+					match.match_winner = 'NA'
+			
+			# Update draft win/loss records
+			update_draft_win_loss(
+				uid=current_user.uid, 
+				username=current_user.username, 
+				draft_id=draft_id
+			)
+			
+			try:
+				db.session.commit()
+			except Exception as e:
+				db.session.rollback()
+				debug_log(f"Error committing game winner update: {str(e)}")
+				return jsonify({'error': 'Failed to update database'}), 500
+		
+		# Find next game
+		current_match_date = Match.query.filter_by(
+			match_id=match_id, 
+			uid=current_user.uid
+		).first().date
+		
+		rem_games = Game.query.filter_by(
+			uid=current_user.uid, 
+			game_winner='NA', 
+			p1=current_user.username
+		).join(
+			Match, 
+			(Game.uid == Match.uid) & 
+			(Game.match_id == Match.match_id) & 
+			(Game.p1 == Match.p1)
+		).add_entity(Match).filter(
+			Match.date >= current_match_date
+		).order_by(asc(Match.date), asc(Game.game_num))
+		
+		# Look for next game after current one
+		for game, match in rem_games.all():
+			# Skip current game and earlier games in same match
 			if (match.match_id == match_id) and (game.game_num <= int(game_num)):
 				continue
-			if GameActions.query.filter_by(uid=current_user.uid, match_id=match.match_id, game_num=game.game_num).first():
-				next_game = game
-				date_dict = {'date':match.date}
-				ga = GameActions.query.filter_by(uid=current_user.uid, match_id=match.match_id, game_num=game.game_num).first().game_actions.split('\n')[-15:]
-				break
-		if not next_game:
-			return {'match_id':'NA'}
-			#na_count = Game.query.filter_by(uid=current_user.uid, game_winner='NA', p1=current_user.username).count()
-			# if na_count == 0:
-			# 	return {'match_id':'Empty'}
-			# else:
-			# 	return {'match_id':'NA'}
-
-	for index,i in enumerate(ga):
-		string = i
-		if i.count('@[') != i.count('@]'):
-			continue
-		for j in range(i.count('@[')):
-			string = string.replace('@[','<b>',1).replace('@]','</b>',1)
-		ga[index] = string
-	ga_dict = {'game_actions' : ga}
-	return next_game.as_dict() | ga_dict | date_dict
-
-@views.route('/game_winner_init', methods=['GET'])
-def game_winner_init():
-	if not current_user.is_authenticated:
-		return {'match_id':'NA'}
-	na_query = Game.query.filter_by(uid=current_user.uid, game_winner='NA', p1=current_user.username).join(Match, (Game.uid == Match.uid) & (Game.match_id == Match.match_id) & (Game.p1 == Match.p1)).add_entity(Match)
-
-	if na_query.first() is None:
-		return {'match_id':'NA'}
-	else:
-		for game,match in na_query.order_by(asc(Match.date), asc(Game.game_num)).all():
-			if GameActions.query.filter_by(uid=current_user.uid, match_id=match.match_id, game_num=game.game_num).first():
-				first_game = game
-				date_dict = {'date':match.date}
-				ga = GameActions.query.filter_by(uid=current_user.uid, match_id=match.match_id, game_num=game.game_num).first().game_actions.split('\n')[-15:]
-				break
-			return {'match_id':'NA'}
-	
-	for index,i in enumerate(ga):
-		string = i
-		if i.count('@[') != i.count('@]'):
-			continue
-		for j in range(i.count('@[')):
-			string = string.replace('@[','<b>',1).replace('@]','</b>',1)
-		ga[index] = string
-	ga_dict = {'game_actions' : ga}
-	return first_game.as_dict() | ga_dict | date_dict
-	
-@views.route('/draft_id_init', methods=['GET'])
-def draft_id_init():
-	def threshold_met(pick_list, played_list):
-		condition_met = sum(1 for i in played_list if i in pick_list)
-		perc = (condition_met / len(played_list)) * 100
-		return perc
-	
-	if not current_user.is_authenticated:
-		return {'match_id':'NA'}
-	
-	limited_matches = Match.query.filter_by(uid=current_user.uid, draft_id='NA', p1=current_user.username)
-	limited_matches = limited_matches.filter( Match.format.in_(['Cube', 'Booster Draft']) ).order_by(asc(Match.date))
-	first_match = limited_matches.first()
-	while True:
-		if first_match is None:
-			return 'Forbidden', 403
-
-		lands = [play.primary_card for play in Play.query.filter_by(uid=current_user.uid, 
-																	match_id=first_match.match_id, 
-																	casting_player=first_match.p1, 
-																	action='Land Drop').order_by(Play.primary_card)]
-		nb_lands = [i for i in lands if (i not in ['Plains', 'Island', 'Swamp', 'Mountain', 'Forest'])]
-		spells = [play.primary_card for play in Play.query.filter_by(uid=current_user.uid, 
-																	match_id=first_match.match_id, 
-																	casting_player=first_match.p1, 
-																	action='Casts').order_by(Play.primary_card)]
-
-		nb_lands = list(modo.clean_card_set(set(nb_lands), multifaced))
-		lands = list(modo.clean_card_set(set(lands), multifaced))
-		spells = list(modo.clean_card_set(set(spells), multifaced))
-
-		cards_dict = {'lands':[*set(lands)], 'spells':[*set(spells)]}
-		draft_ids_dict = {'possible_draft_ids':[]}
-		draft_ids_100 = []
-		draft_ids_80 = []
-		draft_ids_all = []
-
-		for draft in Draft.query.filter_by(uid=current_user.uid).filter(Draft.date < first_match.date).order_by(desc(Draft.date)).all():
-			picks = [pick.card for pick in Pick.query.filter_by(uid=current_user.uid, draft_id=draft.draft_id)]
-			picks = list(modo.clean_card_set(set(picks), multifaced))
-			pick_perc = threshold_met(pick_list=picks, played_list=(nb_lands + spells))
-			if pick_perc == 100:
-				draft_ids_100.append(draft.draft_id)
-			elif pick_perc >= 80:
-				draft_ids_80.append(draft.draft_id)
-			else:
-				draft_ids_all.append(draft.draft_id)
-		if len(draft_ids_100) > 0:
-			draft_ids_dict['possible_draft_ids'] = draft_ids_100
-		elif len(draft_ids_80) > 0:
-			draft_ids_dict['possible_draft_ids'] = draft_ids_80
-		else:
-			draft_ids_dict['possible_draft_ids'] = draft_ids_all
-
-		if len(draft_ids_dict['possible_draft_ids']) > 0:
-			break
-
-		limited_matches = limited_matches.filter(Match.date > first_match.date).order_by(Match.date)
-		first_match = limited_matches.first()
-	return first_match.as_dict() | cards_dict | draft_ids_dict
-	
-@views.route('/associated_draft_id/<match_id>/<draft_id>')
-@login_required
-def apply_draft_id(match_id, draft_id):
-	def threshold_met(pick_list, played_list):
-		if not pick_list:
-			return False
-		condition_met = sum(1 for i in played_list if i in pick_list)
-		perc = (condition_met / len(played_list)) * 100
-		return perc
-	
-	if request.headers.get('X-Requested-By') != 'MTGO-Tracker':
-		return 'Forbidden', 403
-	if not current_user.is_authenticated:
-		return 'Forbidden', 403
-	
-	# Add limited match conditions here.
-	limited_matches = Match.query.filter_by(uid=current_user.uid, draft_id='NA', p1=current_user.username)
-	limited_matches = limited_matches.filter( Match.format.in_(['Cube', 'Booster Draft']) )
-	date = Match.query.filter_by(uid=current_user.uid, match_id=match_id).first().date
-	limited_matches = limited_matches.filter(Match.date > date).order_by(Match.date)
-	next_match = limited_matches.first()
-
-	if draft_id != '0':
-		matches = Match.query.filter_by(uid=current_user.uid, match_id=match_id).all()
-		for match in matches:
-			match.draft_id = draft_id
-		try:
-			db.session.commit()
-		except:
-			db.session.rollback()
-
-		match_wins = 0
-		match_losses = 0
-		associated_matches = Match.query.filter_by(uid=current_user.uid, draft_id=draft_id, p1=current_user.username)
-		for match in associated_matches:
-			if match.p1_wins > match.p2_wins:
-				match_wins += 1
-			elif match.p2_wins > match.p1_wins:
-				match_losses += 1
-		draft = Draft.query.filter_by(uid=current_user.uid, draft_id=draft_id).first()
-		draft.match_wins = match_wins
-		draft.match_losses = match_losses
-		try:
-			db.session.commit()
-		except:
-			db.session.rollback()
-
-	while True:
-		if next_match is None:
-			return {'match_id':'NA'}
-
-		lands = [play.primary_card for play in Play.query.filter_by(uid=current_user.uid, 
-																	match_id=next_match.match_id, 
-																	casting_player=next_match.p1, 
-																	action='Land Drop').order_by(Play.primary_card)]
-		nb_lands = [i for i in lands if (i not in ['Plains', 'Island', 'Swamp', 'Mountain', 'Forest'])]
-		spells = [play.primary_card for play in Play.query.filter_by(uid=current_user.uid, 
-																	 match_id=next_match.match_id, 
-																	 casting_player=next_match.p1, 
-																	 action='Casts').order_by(Play.primary_card)]
-
-		nb_lands = list(modo.clean_card_set(set(nb_lands), multifaced))
-		lands = list(modo.clean_card_set(set(lands), multifaced))
-		spells = list(modo.clean_card_set(set(spells), multifaced))
-
-		cards_dict = {'lands':[*set(lands)], 'spells':[*set(spells)]}
-		draft_ids_dict = {'possible_draft_ids':[]}
-		draft_ids_100 = []
-		draft_ids_80 = []
-		draft_ids_all = []
-
-		for draft in Draft.query.filter_by(uid=current_user.uid).filter(Draft.date < next_match.date).order_by(desc(Draft.date)).all():
-			picks = [pick.card for pick in Pick.query.filter_by(uid=current_user.uid, draft_id=draft.draft_id)]
-			picks = list(modo.clean_card_set(set(picks), multifaced))
-			pick_perc = threshold_met(pick_list=picks, played_list=(nb_lands + spells))
-			if pick_perc == 100:
-				draft_ids_100.append(draft.draft_id)
-			elif pick_perc >= 80:
-				draft_ids_80.append(draft.draft_id)
-			else:
-				draft_ids_all.append(draft.draft_id)
-		if len(draft_ids_100) > 0:
-			draft_ids_dict['possible_draft_ids'] = draft_ids_100
-		elif len(draft_ids_80) > 0:
-			draft_ids_dict['possible_draft_ids'] = draft_ids_80
-		else:
-			draft_ids_dict['possible_draft_ids'] = draft_ids_all
-
-		if len(draft_ids_dict['possible_draft_ids']) > 0:
-			break
+			
+			game_actions_record = GameActions.query.filter_by(
+				uid=current_user.uid, 
+				match_id=match.match_id, 
+				game_num=game.game_num
+			).first()
+			
+			if game_actions_record:
+				ga = game_actions_record.game_actions.split('\n')[-15:]
+				
+				# Format game actions
+				formatted_actions = []
+				for action in ga:
+					if action.count('@[') != action.count('@]'):
+						formatted_actions.append(action)
+						continue
+					
+					formatted = action
+					for _ in range(action.count('@[')):
+						formatted = formatted.replace('@[', '<strong>', 1).replace('@]', '</strong>', 1)
+					formatted_actions.append(formatted)
+				
+				# Prepare next game data
+				next_game_data = game.as_dict()
+				next_game_data.update({
+					'date': match.date,
+					'game_actions': formatted_actions
+				})
+				
+				return jsonify({
+					'hasNextGame': True,
+					'nextGame': next_game_data
+				})
 		
-		limited_matches = limited_matches.filter(Match.date > next_match.date).order_by(Match.date)
+		# No more games found
+		return jsonify({'hasNextGame': False})
+		
+	except Exception as e:
+		debug_log(f"Error in api_game_winner_update: {str(e)}")
+		return jsonify({'error': 'Internal server error'}), 500
+
+# New cleaner API routes for Draft ID functionality
+@views.route('/api/draft-id/next', methods=['GET'])
+@login_required
+def api_draft_id_next():
+	"""Get the next limited match that needs a draft_id assigned"""
+	if request.headers.get('X-Requested-By') != 'MTGO-Tracker':
+		return jsonify({'error': 'Forbidden'}), 403
+	
+	global multifaced
+	if multifaced is None:
+		try:
+			multifaced = get_multifaced_cards()
+		except Exception as e:
+			debug_log(f"Warning: Could not load multifaced cards: {e}")
+			multifaced = {}
+	
+	def threshold_met(pick_list, played_list):
+		if not pick_list or not played_list:
+			return 0
+		condition_met = sum(1 for i in played_list if i in pick_list)
+		perc = (condition_met / len(played_list)) * 100
+		return perc
+	
+	try:
+		# Query for limited matches with missing draft_id
+		limited_matches = Match.query.filter_by(
+			uid=current_user.uid, 
+			draft_id='NA', 
+			p1=current_user.username
+		).filter(
+			Match.format.in_(['Cube', 'Booster Draft'])
+		).order_by(asc(Match.date))
+		
+		first_match = limited_matches.first()
+		
+		# Find a match with valid card data and possible draft associations
+		while first_match:
+			# Get cards played in this match
+			lands = [play.primary_card for play in Play.query.filter_by(
+				uid=current_user.uid, 
+				match_id=first_match.match_id, 
+				casting_player=first_match.p1, 
+				action='Land Drop'
+			).order_by(Play.primary_card)]
+			
+			nb_lands = [i for i in lands if i not in ['Plains', 'Island', 'Swamp', 'Mountain', 'Forest']]
+			spells = [play.primary_card for play in Play.query.filter_by(
+				uid=current_user.uid, 
+				match_id=first_match.match_id, 
+				casting_player=first_match.p1, 
+				action='Casts'
+			).order_by(Play.primary_card)]
+
+			# Clean card sets
+			nb_lands = list(modo.clean_card_set(set(nb_lands), multifaced))
+			lands = list(modo.clean_card_set(set(lands), multifaced))
+			spells = list(modo.clean_card_set(set(spells), multifaced))
+
+			# Find possible draft IDs based on card overlap
+			draft_ids_100 = []
+			draft_ids_80 = []
+			draft_ids_all = []
+
+			for draft in Draft.query.filter_by(uid=current_user.uid).filter(
+				Draft.date < first_match.date
+			).order_by(desc(Draft.date)).all():
+				picks = [pick.card for pick in Pick.query.filter_by(
+					uid=current_user.uid, 
+					draft_id=draft.draft_id
+				)]
+				picks = list(modo.clean_card_set(set(picks), multifaced))
+				pick_perc = threshold_met(pick_list=picks, played_list=(nb_lands + spells))
+				
+				if pick_perc == 100:
+					draft_ids_100.append(draft.draft_id)
+				elif pick_perc >= 80:
+					draft_ids_80.append(draft.draft_id)
+				else:
+					draft_ids_all.append(draft.draft_id)
+			
+			# Prioritize better matches
+			possible_draft_ids = []
+			if len(draft_ids_100) > 0:
+				possible_draft_ids = draft_ids_100
+			elif len(draft_ids_80) > 0:
+				possible_draft_ids = draft_ids_80
+			else:
+				possible_draft_ids = draft_ids_all
+
+			if len(possible_draft_ids) > 0:
+				# Found a match with possible associations
+				match_data = first_match.as_dict()
+				match_data.update({
+					'lands': sorted(list(set(lands))),
+					'spells': sorted(list(set(spells))),
+					'possible_draft_ids': possible_draft_ids,
+					'hasMatches': True
+				})
+				
+				return jsonify(match_data)
+
+			# Try next match
+			limited_matches = limited_matches.filter(Match.date > first_match.date).order_by(Match.date)
+			first_match = limited_matches.first()
+		
+		# No matches found
+		return jsonify({'hasMatches': False})
+		
+	except Exception as e:
+		debug_log(f"Error in api_draft_id_next: {str(e)}")
+		return jsonify({'error': 'Internal server error'}), 500
+
+@views.route('/api/draft-id/update', methods=['POST'])
+@login_required  
+def api_draft_id_update():
+	"""Update a match with draft_id and return the next match"""
+	if request.headers.get('X-Requested-By') != 'MTGO-Tracker':
+		return jsonify({'error': 'Forbidden'}), 403
+	
+	global multifaced
+	if multifaced is None:
+		try:
+			multifaced = get_multifaced_cards()
+		except Exception as e:
+			debug_log(f"Warning: Could not load multifaced cards: {e}")
+			multifaced = {}
+	
+	def threshold_met(pick_list, played_list):
+		if not pick_list or not played_list:
+			return 0
+		condition_met = sum(1 for i in played_list if i in pick_list)
+		perc = (condition_met / len(played_list)) * 100
+		return perc
+	
+	try:
+		data = request.get_json()
+		if not data:
+			return jsonify({'error': 'No data provided'}), 400
+		
+		match_id = data.get('match_id')
+		draft_id = data.get('draft_id')
+		skip = data.get('skip', False)
+		
+		if not match_id:
+			return jsonify({'error': 'Missing match_id'}), 400
+		
+		# Update match with draft_id if not skipped
+		if not skip and draft_id:
+			matches = Match.query.filter_by(
+				uid=current_user.uid, 
+				match_id=match_id
+			).all()
+			
+			for match in matches:
+				match.draft_id = draft_id
+			
+			# Update draft match statistics
+			match_wins = 0
+			match_losses = 0
+			associated_matches = Match.query.filter_by(
+				uid=current_user.uid, 
+				draft_id=draft_id, 
+				p1=current_user.username
+			)
+			
+			for match in associated_matches:
+				if match.p1_wins > match.p2_wins:
+					match_wins += 1
+				elif match.p2_wins > match.p1_wins:
+					match_losses += 1
+			
+			draft = Draft.query.filter_by(
+				uid=current_user.uid, 
+				draft_id=draft_id
+			).first()
+			
+			if draft:
+				draft.match_wins = match_wins
+				draft.match_losses = match_losses
+			
+			try:
+				db.session.commit()
+			except Exception as e:
+				db.session.rollback()
+				debug_log(f"Error committing draft ID update: {str(e)}")
+				return jsonify({'error': 'Failed to update database'}), 500
+		
+		# Find next match
+		current_match_date = Match.query.filter_by(
+			match_id=match_id, 
+			uid=current_user.uid
+		).first().date
+		
+		# Query for remaining limited matches
+		limited_matches = Match.query.filter_by(
+			uid=current_user.uid, 
+			draft_id='NA', 
+			p1=current_user.username
+		).filter(
+			Match.format.in_(['Cube', 'Booster Draft'])
+		).filter(
+			Match.date > current_match_date
+		).order_by(Match.date)
+		
 		next_match = limited_matches.first()
-	return next_match.as_dict() | cards_dict | draft_ids_dict
+		
+		# Find next match with valid card data and possible associations
+		while next_match:
+			# Get cards played in this match
+			lands = [play.primary_card for play in Play.query.filter_by(
+				uid=current_user.uid, 
+				match_id=next_match.match_id, 
+				casting_player=next_match.p1, 
+				action='Land Drop'
+			).order_by(Play.primary_card)]
+			
+			nb_lands = [i for i in lands if i not in ['Plains', 'Island', 'Swamp', 'Mountain', 'Forest']]
+			spells = [play.primary_card for play in Play.query.filter_by(
+				uid=current_user.uid, 
+				match_id=next_match.match_id, 
+				casting_player=next_match.p1, 
+				action='Casts'
+			).order_by(Play.primary_card)]
+
+			# Clean card sets
+			nb_lands = list(modo.clean_card_set(set(nb_lands), multifaced))
+			lands = list(modo.clean_card_set(set(lands), multifaced))
+			spells = list(modo.clean_card_set(set(spells), multifaced))
+
+			# Find possible draft IDs based on card overlap
+			draft_ids_100 = []
+			draft_ids_80 = []
+			draft_ids_all = []
+
+			for draft in Draft.query.filter_by(uid=current_user.uid).filter(
+				Draft.date < next_match.date
+			).order_by(desc(Draft.date)).all():
+				picks = [pick.card for pick in Pick.query.filter_by(
+					uid=current_user.uid, 
+					draft_id=draft.draft_id
+				)]
+				picks = list(modo.clean_card_set(set(picks), multifaced))
+				pick_perc = threshold_met(pick_list=picks, played_list=(nb_lands + spells))
+				
+				if pick_perc == 100:
+					draft_ids_100.append(draft.draft_id)
+				elif pick_perc >= 80:
+					draft_ids_80.append(draft.draft_id)
+				else:
+					draft_ids_all.append(draft.draft_id)
+			
+			# Prioritize better matches
+			possible_draft_ids = []
+			if len(draft_ids_100) > 0:
+				possible_draft_ids = draft_ids_100
+			elif len(draft_ids_80) > 0:
+				possible_draft_ids = draft_ids_80
+			else:
+				possible_draft_ids = draft_ids_all
+
+			if len(possible_draft_ids) > 0:
+				# Found next match with possible associations
+				next_match_data = next_match.as_dict()
+				next_match_data.update({
+					'lands': sorted(list(set(lands))),
+					'spells': sorted(list(set(spells))),
+					'possible_draft_ids': possible_draft_ids
+				})
+				
+				return jsonify({
+					'hasNextMatch': True,
+					'nextMatch': next_match_data
+				})
+
+			# Try next match
+			limited_matches = limited_matches.filter(Match.date > next_match.date).order_by(Match.date)
+			next_match = limited_matches.first()
+		
+		# No more matches found
+		return jsonify({'hasNextMatch': False})
+		
+	except Exception as e:
+		debug_log(f"Error in api_draft_id_update: {str(e)}")
+		return jsonify({'error': 'Internal server error'}), 500
 
 @views.route('/input_options')
 @login_required
@@ -2584,6 +2727,8 @@ def best_guess():
 	con_count = 0
 	lim_count = 0
 	all_matches = Match.query.filter_by(uid=current_user.uid)
+	debug_log(f"BG_Match_Set: {bg_type}")
+	debug_log(f"BG_Replace: {replace_type}")
 	if replace_type == 'Overwrite All':
 		if (bg_type == 'Limited Only') or (bg_type == 'All Matches'):
 			matches = all_matches.filter( Match.format.in_(options['Limited Formats']) )
@@ -2617,8 +2762,10 @@ def best_guess():
 
 	if replace_type == 'Replace NA':
 		all_matches = all_matches.filter( (Match.p1_subarch.in_(['Unknown', 'NA'])) | (Match.p2_subarch.in_(['Unknown', 'NA'])) )
+		debug_log(f"All matches: {all_matches.count()}")
 		if (bg_type == 'Limited Only') or (bg_type == 'All Matches'):
 			matches = all_matches.filter( Match.format.in_(options['Limited Formats']) )
+			debug_log(f"Matches1: {matches.count()}")
 			for match in matches:
 				if match.p1_subarch in ['Unknown', 'NA']:
 					cards1 = [play.primary_card for play in Play.query.filter_by(uid=current_user.uid, 
@@ -2636,6 +2783,7 @@ def best_guess():
 					lim_count += 1
 		if (bg_type == 'Constructed Only') or (bg_type == 'All Matches'):
 			matches = all_matches.filter( Match.format.in_(options['Constructed Formats']) )
+			debug_log(f"Matches2: {matches.count()}")
 			for match in matches:
 				yyyy_mm = match.date[0:4] + "-" + match.date[5:7]
 				if match.p1_subarch in ['Unknown', 'NA']:
@@ -2666,35 +2814,7 @@ def best_guess():
 	flash(return_str, category='success')
 	return redirect(url_for('views.table', table_name='matches', page_num=1))
 
-@views.route('/remove', methods=['POST'])
-@login_required
-def remove():
-	removeType = request.form.get('removeType')
-	match_ids = request.form.get('removeMatchId').split(',')
 
-	match_size = 0
-	game_size = 0
-	play_size = 0
-
-	for match_id in match_ids:
-		match_size += Match.query.filter_by(uid=current_user.uid, match_id=match_id).count()
-		game_size += Game.query.filter_by(uid=current_user.uid, match_id=match_id).count()
-		play_size += Play.query.filter_by(uid=current_user.uid, match_id=match_id).count()
-
-		Match.query.filter_by(uid=current_user.uid, match_id=match_id).delete()
-		Game.query.filter_by(uid=current_user.uid, match_id=match_id).delete()
-		Play.query.filter_by(uid=current_user.uid, match_id=match_id).delete()
-
-		if removeType == 'Ignore':
-			newIgnore = Removed(uid=current_user.uid, match_id=match_id, reason='Ignored')
-			db.session.add(newIgnore)
-		try:
-			db.session.commit()
-		except:
-			db.session.rollback()
-
-	flash(f'{match_size} Matches removed, {game_size} Games removed, {play_size} Plays removed.', category='success')
-	return redirect('/table/matches/1')
 
 @views.route('/profile')
 @login_required
@@ -3232,3 +3352,335 @@ def view_debug_log():
 			return "Debug log file not found."
 	except Exception as e:
 		return f"Error reading debug log: {e}"
+
+# Modern API endpoints for Table functionality
+@views.route('/api/table/<table_name>/<int:page_num>')
+@login_required
+def api_table_data(table_name, page_num):
+	"""Get table data with pagination"""
+	try:		
+		# Determine which table to query
+		if table_name.lower() == 'matches':
+			total_count = Match.query.filter_by(uid=current_user.uid, p1=current_user.username).count()
+			query = Match.query.filter_by(uid=current_user.uid, p1=current_user.username).order_by(desc(Match.date))
+		elif table_name.lower() == 'games':
+			total_count = Game.query.filter_by(uid=current_user.uid, p1=current_user.username).count()
+			query = Game.query.filter_by(uid=current_user.uid, p1=current_user.username).order_by(desc(Game.match_id), Game.game_num)
+		elif table_name.lower() == 'plays':
+			total_count = Play.query.filter_by(uid=current_user.uid).count()
+			query = Play.query.filter_by(uid=current_user.uid).order_by(desc(Play.match_id), Play.game_num, Play.play_num)
+		elif table_name.lower() == 'drafts':
+			total_count = Draft.query.filter_by(uid=current_user.uid).count()
+			query = Draft.query.filter_by(uid=current_user.uid).order_by(desc(Draft.date))
+		elif table_name.lower() == 'picks':
+			total_count = Pick.query.filter_by(uid=current_user.uid).count()
+			query = Pick.query.filter_by(uid=current_user.uid).order_by(desc(Pick.draft_id), Pick.pick_ovr)
+		else:
+			return jsonify({'error': 'Invalid table name'}), 400
+		
+		# Calculate pagination
+		total_pages = math.ceil(total_count / page_size)
+		if page_num < 1 or page_num > total_pages:
+			return jsonify({'error': 'Invalid page number'}), 400
+		
+		# Get the data for this page
+		offset = (page_num - 1) * page_size
+		records = query.offset(offset).limit(page_size).all()
+		
+		# Convert to JSON-serializable format
+		table_data = [record.as_dict() for record in records]
+		
+		return jsonify({
+			'table_name': table_name,
+			'page_num': page_num,
+			'total_pages': total_pages,
+			'total_count': total_count,
+			'page_size': page_size,
+			'data': table_data,
+			'has_previous': page_num > 1,
+			'has_next': page_num < total_pages
+		})
+		
+	except Exception as e:
+		debug_log(f"Error in api_table_data: {str(e)}")
+		return jsonify({'error': 'Internal server error'}), 500
+
+@views.route('/api/table/<table_name>/drill/<row_id>/<int:game_num>')
+@login_required
+def api_table_drill(table_name, row_id, game_num):
+	"""Get drill-down table data (filtered child table)"""
+	try:
+		if table_name.lower() == 'games':
+			records = Game.query.filter_by(
+				uid=current_user.uid, 
+				match_id=row_id, 
+				p1=current_user.username
+			).order_by(Game.game_num).all()
+		elif table_name.lower() == 'plays':
+			records = Play.query.filter_by(
+				uid=current_user.uid, 
+				match_id=row_id, 
+				game_num=game_num
+			).order_by(Play.play_num).all()
+		elif table_name.lower() == 'picks':
+			records = Pick.query.filter_by(
+				uid=current_user.uid, 
+				draft_id=row_id
+			).order_by(Pick.pick_ovr).all()
+		else:
+			return jsonify({'error': 'Invalid drill-down table'}), 400
+		
+		# Convert to JSON-serializable format
+		table_data = [record.as_dict() for record in records]
+		
+		return jsonify({
+			'table_name': table_name,
+			'filtered_by': {'row_id': row_id, 'game_num': game_num},
+			'data': table_data,
+			'total_count': len(table_data)
+		})
+		
+	except Exception as e:
+		debug_log(f"Error in api_table_drill: {str(e)}")
+		return jsonify({'error': 'Internal server error'}), 500
+
+@views.route('/api/match/<match_id>/details')
+@login_required
+def api_match_details(match_id):
+	"""Get detailed match information for revision modal"""
+	if request.headers.get('X-Requested-By') != 'MTGO-Tracker':
+		return jsonify({'error': 'Forbidden'}), 403
+	
+	try:
+		# Get match data
+		match = Match.query.filter_by(
+			uid=current_user.uid, 
+			match_id=match_id, 
+			p1=current_user.username
+		).first()
+		
+		if not match:
+			return jsonify({'error': 'Match not found'}), 404
+		
+		# Get cards played data
+		cards = CardsPlayed.query.filter_by(
+			uid=current_user.uid, 
+			match_id=match_id
+		).first()
+		
+		response_data = match.as_dict()
+		
+		if cards:
+			cards_data = cards.as_dict()
+			response_data.update({
+				'lands1': cards_data.get('lands1', []),
+				'lands2': cards_data.get('lands2', []),
+				'plays1': cards_data.get('plays1', []),
+				'plays2': cards_data.get('plays2', [])
+			})
+		
+		return jsonify(response_data)
+		
+	except Exception as e:
+		debug_log(f"Error in api_match_details: {str(e)}")
+		return jsonify({'error': 'Internal server error'}), 500
+
+@views.route('/api/match/revise', methods=['POST'])
+@login_required
+def api_match_revise():
+	"""Revise a single match"""
+	if request.headers.get('X-Requested-By') != 'MTGO-Tracker':
+		return jsonify({'error': 'Forbidden'}), 403
+	
+	try:
+		data = request.get_json()
+		if not data:
+			return jsonify({'error': 'No data provided'}), 400
+		
+		match_id = data.get('match_id')
+		if not match_id:
+			return jsonify({'error': 'Missing match_id'}), 400
+		
+		# Get the match
+		matches = Match.query.filter_by(
+			uid=current_user.uid,
+			match_id=match_id
+		).all()
+		
+		if not matches:
+			return jsonify({'error': 'Match not found'}), 404
+		
+		# Update match data
+		for match in matches:
+			if match.p1 == current_user.username:
+				if data.get('p1_arch'): match.p1_arch = data['p1_arch']
+				if data.get('p1_subarch'): match.p1_subarch = data['p1_subarch']
+				if data.get('p2_arch'): match.p2_arch = data['p2_arch']
+				if data.get('p2_subarch'): match.p2_subarch = data['p2_subarch']
+			else:
+				if data.get('p1_arch'): match.p1_arch = data['p2_arch']
+				if data.get('p1_subarch'): match.p1_subarch = data['p2_subarch']
+				if data.get('p2_arch'): match.p2_arch = data['p1_arch']
+				if data.get('p2_subarch'): match.p2_subarch = data['p1_subarch']
+			
+			if data.get('format'): match.format = data['format']
+			if data.get('limited_format'): match.limited_format = data['limited_format']
+			if data.get('match_type'): match.match_type = data['match_type']
+		
+		try:
+			db.session.commit()
+			return jsonify({'success': True, 'message': 'Match updated successfully'})
+		except Exception as e:
+			db.session.rollback()
+			debug_log(f"Error committing match revision: {str(e)}")
+			return jsonify({'error': 'Failed to update match'}), 500
+		
+	except Exception as e:
+		debug_log(f"Error in api_match_revise: {str(e)}")
+		return jsonify({'error': 'Internal server error'}), 500
+
+@views.route('/api/match/revise-multi', methods=['POST'])
+@login_required
+def api_match_revise_multi():
+	"""Revise multiple matches"""
+	if request.headers.get('X-Requested-By') != 'MTGO-Tracker':
+		return jsonify({'error': 'Forbidden'}), 403
+	
+	try:
+		data = request.get_json()
+		if not data:
+			return jsonify({'error': 'No data provided'}), 400
+		
+		match_ids = data.get('match_ids', [])
+		field_to_change = data.get('field_to_change')
+		
+		if not match_ids or not field_to_change:
+			return jsonify({'error': 'Missing required fields'}), 400
+		
+		# Get the matches
+		matches = Match.query.filter(
+			Match.match_id.in_(match_ids),
+			Match.uid == current_user.uid
+		).all()
+		
+		if not matches:
+			return jsonify({'error': 'No matches found'}), 404
+		
+		# Apply changes based on field type
+		for match in matches:
+			if field_to_change == 'P1 Deck':
+				if match.p1 == current_user.username:
+					if match.p1_arch != 'Limited' and data.get('p1_arch'):
+						match.p1_arch = data['p1_arch']
+					if data.get('p1_subarch'):
+						match.p1_subarch = data['p1_subarch']
+				else:
+					if match.p2_arch != 'Limited' and data.get('p1_arch'):
+						match.p2_arch = data['p1_arch']
+					if data.get('p1_subarch'):
+						match.p2_subarch = data['p1_subarch']
+			
+			elif field_to_change == 'P2 Deck':
+				if match.p1 == current_user.username:
+					if match.p2_arch != 'Limited' and data.get('p2_arch'):
+						match.p2_arch = data['p2_arch']
+					if data.get('p2_subarch'):
+						match.p2_subarch = data['p2_subarch']
+				else:
+					if match.p1_arch != 'Limited' and data.get('p2_arch'):
+						match.p1_arch = data['p2_arch']
+					if data.get('p2_subarch'):
+						match.p1_subarch = data['p2_subarch']
+			
+			elif field_to_change == 'Format':
+				if data.get('format'):
+					match.format = data['format']
+				if data.get('limited_format'):
+					match.limited_format = data['limited_format']
+				
+				# Handle Limited format archetype changes
+				if data.get('format') in options.get('Limited Formats', []):
+					match.p1_arch = 'Limited'
+					match.p2_arch = 'Limited'
+				else:
+					if match.p1_arch == 'Limited':
+						match.p1_arch = 'NA'
+					if match.p2_arch == 'Limited':
+						match.p2_arch = 'NA'
+			
+			elif field_to_change == 'Match Type':
+				if data.get('match_type'):
+					match.match_type = data['match_type']
+		
+		try:
+			db.session.commit()
+			return jsonify({
+				'success': True, 
+				'message': f'Updated {len(matches)} matches successfully'
+			})
+		except Exception as e:
+			db.session.rollback()
+			debug_log(f"Error committing multi-match revision: {str(e)}")
+			return jsonify({'error': 'Failed to update matches'}), 500
+		
+	except Exception as e:
+		debug_log(f"Error in api_match_revise_multi: {str(e)}")
+		return jsonify({'error': 'Internal server error'}), 500
+
+@views.route('/api/match/remove', methods=['POST'])
+@login_required
+def api_match_remove():
+	"""Remove matches (with optional ignore)"""
+	if request.headers.get('X-Requested-By') != 'MTGO-Tracker':
+		return jsonify({'error': 'Forbidden'}), 403
+	
+	try:
+		data = request.get_json()
+		if not data:
+			return jsonify({'error': 'No data provided'}), 400
+		
+		match_ids = data.get('match_ids', [])
+		remove_type = data.get('remove_type', 'Remove')  # 'Remove' or 'Ignore'
+		
+		if not match_ids:
+			return jsonify({'error': 'No match IDs provided'}), 400
+		
+		match_count = 0
+		game_count = 0
+		play_count = 0
+		
+		for match_id in match_ids:
+			# Count records before deletion
+			match_count += Match.query.filter_by(uid=current_user.uid, match_id=match_id).count()
+			game_count += Game.query.filter_by(uid=current_user.uid, match_id=match_id).count()
+			play_count += Play.query.filter_by(uid=current_user.uid, match_id=match_id).count()
+			
+			# Delete records
+			Match.query.filter_by(uid=current_user.uid, match_id=match_id).delete()
+			Game.query.filter_by(uid=current_user.uid, match_id=match_id).delete()
+			Play.query.filter_by(uid=current_user.uid, match_id=match_id).delete()
+			
+			# Add to ignored list if requested
+			if remove_type == 'Ignore':
+				new_ignore = Removed(uid=current_user.uid, match_id=match_id, reason='Ignored')
+				db.session.add(new_ignore)
+		
+		try:
+			db.session.commit()
+			return jsonify({
+				'success': True,
+				'message': f'{match_count} Matches removed, {game_count} Games removed, {play_count} Plays removed.',
+				'removed_counts': {
+					'matches': match_count,
+					'games': game_count,
+					'plays': play_count
+				}
+			})
+		except Exception as e:
+			db.session.rollback()
+			debug_log(f"Error committing match removal: {str(e)}")
+			return jsonify({'error': 'Failed to remove matches'}), 500
+		
+	except Exception as e:
+		debug_log(f"Error in api_match_remove: {str(e)}")
+		return jsonify({'error': 'Internal server error'}), 500

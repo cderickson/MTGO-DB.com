@@ -14,6 +14,33 @@
   </head>
   
   <body>
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages" id="flash-messages">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" role="alert">
+              <div class="alert-content">
+                {% if category == 'success' %}
+                  <i class="fas fa-check-circle" style="margin-right: var(--spacing-sm); color: #22c562;"></i>
+                {% elif category == 'error' %}
+                  <i class="fas fa-exclamation-circle" style="margin-right: var(--spacing-sm); color: #ef4444;"></i>
+                {% elif category == 'warning' %}
+                  <i class="fas fa-exclamation-triangle" style="margin-right: var(--spacing-sm); color: #f59e0b;"></i>
+                {% else %}
+                  <i class="fas fa-info-circle" style="margin-right: var(--spacing-sm); color: #3b82f6;"></i>
+                {% endif %}
+                {{ message }}
+              </div>
+              <button type="button" class="alert-close" onclick="this.parentElement.remove()">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
     <!-- Unified Header -->
     <header class="unified-header">
       <div class="header-left">
@@ -43,6 +70,24 @@
               <i class="fas fa-user nav-icon"></i>
               Profile
             </a>
+            <div style="border-top: 1px solid var(--border); margin: var(--spacing-sm) 0;"></div>
+            <a href="{{ url_for('views.faq') }}" class="user-dropdown-item">
+              <i class="fas fa-question-circle nav-icon"></i>
+              FAQ
+            </a>
+            <a href="{{ url_for('views.changelog') }}" class="user-dropdown-item">
+              <i class="fas fa-history nav-icon"></i>
+              Change Log
+            </a>
+            <a href="{{ url_for('views.contact') }}" class="user-dropdown-item">
+              <i class="fas fa-envelope nav-icon"></i>
+              Contact/Links
+            </a>
+            <a href="#" class="user-dropdown-item" onclick="showZipLogsModal()">
+              <i class="fas fa-file-archive nav-icon"></i>
+              Zip-MTGO-Logs Script
+            </a>
+            <div style="border-top: 1px solid var(--border); margin: var(--spacing-sm) 0;"></div>
             <a href="{{ url_for('views.logout') }}" class="user-dropdown-item">
               <i class="fas fa-sign-out-alt nav-icon"></i>
               Logout
@@ -69,6 +114,7 @@
       <nav class="sidebar" id="sidebar">
 
         <div class="sidebar-content">
+          {% if not user.is_authenticated %}
           <div class="nav-section">
             <h3 class="nav-section-title">MTGO-DB</h3>
             <ul class="nav-list">
@@ -96,20 +142,17 @@
                   <span class="nav-text">Contact/Links</span>
                 </a>
               </li>
-              <li class="nav-item">
-                <a href="{{ url_for('views.data_dict') }}" class="nav-link">
-                  <i class="fas fa-book nav-icon"></i>
-                  <span class="nav-text">Data Dictionary</span>
-                </a>
-              </li>
+              {#
               <li class="nav-item">
                 <a href="#" class="nav-link" onclick="showZipLogsModal()">
                   <i class="fas fa-file-archive nav-icon"></i>
                   <span class="nav-text">Zip-MTGO-Logs Script</span>
                 </a>
               </li>
+              #}
             </ul>
           </div>
+          {% endif %}
 
           {% if user.is_authenticated %}
           <div class="nav-section">
@@ -131,6 +174,12 @@
                 <a href="/db" class="nav-link">
                   <i class="fas fa-database nav-icon"></i>
                   <span class="nav-text">Database Inspector</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('views.data_dict') }}" class="nav-link">
+                  <i class="fas fa-book nav-icon"></i>
+                  <span class="nav-text">Data Dictionary</span>
                 </a>
               </li>
             </ul>
@@ -233,33 +282,6 @@
 
       <!-- Main Content Area -->
       <div class="main-content" id="main-content">
-        <!-- Flash Messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            <div class="flash-messages" style="padding: var(--spacing-lg) var(--spacing-lg) 0;">
-              {% for category, message in messages %}
-                <div class="alert alert-{{ category }}" role="alert">
-                  <div class="alert-content">
-                    {% if category == 'success' %}
-                      <i class="fas fa-check-circle" style="margin-right: var(--spacing-sm); color: #22c562;"></i>
-                    {% elif category == 'error' %}
-                      <i class="fas fa-exclamation-circle" style="margin-right: var(--spacing-sm); color: #ef4444;"></i>
-                    {% elif category == 'warning' %}
-                      <i class="fas fa-exclamation-triangle" style="margin-right: var(--spacing-sm); color: #f59e0b;"></i>
-                    {% else %}
-                      <i class="fas fa-info-circle" style="margin-right: var(--spacing-sm); color: #3b82f6;"></i>
-                    {% endif %}
-                    {{ message }}
-                  </div>
-                  <button type="button" class="alert-close" onclick="this.parentElement.remove()">
-                    <i class="fas fa-times"></i>
-                  </button>
-                </div>
-              {% endfor %}
-            </div>
-          {% endif %}
-        {% endwith %}
-        
         <!-- Page Content -->
         <main class="content-wrapper">
           {% block content %}{% endblock %}
@@ -274,17 +296,31 @@
       <div id="GameWinnerModal" class="modal" style="display: none;">
         <div class="modal-content" style="max-width: 800px; width: 90%;">
           <div class="modal-header">
-            <h3>Missing Game_Winners</h3>
+            <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+              <div>
+                <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Missing Game Winners</h3>
+              </div>
+            </div>
             <button type="button" class="modal-close" onclick="hideGameWinnerModal()">
               <i class="fas fa-times"></i>
             </button>
           </div>
           <div class="modal-body">
-            <div id="GameWinnerModalDate" class="text-center mb-3">
-              Date
+            <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+              <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
+                <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
+                <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Game Information</h4>
+              </div>
+              <div id="GameWinnerModalDate" style="color: var(--fg-body); font-weight: 500; font-size: 0.875rem; text-align: center;">
+                Date
+              </div>
             </div>
-            <hr>
-            <div id="EndGameActions">
+            
+            <h4 style="color: var(--fg-default); font-size: 1rem; font-weight: 600; margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm);">
+              <i class="fas fa-list" style="color: var(--fg-muted); font-size: 0.875rem;"></i>
+              End Game Actions
+            </h4>
+            <div id="EndGameActions" style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: var(--spacing-lg); border: 1px solid var(--border); font-family: monospace; font-size: 0.875rem; line-height: 1.6; color: var(--fg-body); height: calc(15 * 1.4rem + 2 * var(--spacing-lg)); overflow: hidden;">
               Game Action 1<br>
               Game Action 2<br>
               Game Action 3<br>
@@ -301,15 +337,28 @@
               Game Action 14<br>
               Game Action 15<br>
             </div>
+            
           </div>
           <div class="modal-footer">
-            <div id="GameWinnerMessage" class="text-center mb-3">
-              <strong>Game_Winner could not be automatically determined. Please choose manually.</strong>
+            <div style="background: rgba(245, 158, 11, 0.05); border-left: 4px solid #f59e0b; border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+              <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+                <i class="fas fa-exclamation-triangle" style="color: #f59e0b; font-size: 1.125rem;"></i>
+                <p style="margin: 0; color: var(--fg-body); line-height: 1.6;"><strong>Game winner could not be automatically determined.</strong> Please review the game actions above and choose the winner manually.</p>
+              </div>
             </div>
             <div class="d-flex gap-3 justify-content-center">
-              <button type="button" class="button secondary" onclick="applyGetWinner('0')">Skip</button>
-              <button type="button" class="button primary" onclick="applyGetWinner('P1')">Player 1</button>
-              <button type="button" class="button primary" onclick="applyGetWinner('P2')">Player 2</button>
+              <button type="button" class="button secondary" onclick="applyGetWinner('0')">
+                <i class="fas fa-forward" style="margin-right: var(--spacing-xs);"></i>
+                Skip
+              </button>
+              <button type="button" class="button primary" onclick="applyGetWinner('P1')">
+                <i class="fas fa-user" style="margin-right: var(--spacing-xs);"></i>
+                Player 1
+              </button>
+              <button type="button" class="button primary" onclick="applyGetWinner('P2')">
+                <i class="fas fa-user" style="margin-right: var(--spacing-xs);"></i>
+                Player 2
+              </button>
             </div>
           </div>
         </div>
@@ -319,34 +368,81 @@
       <div id="DraftIdModal" class="modal" style="display: none;">
         <div class="modal-content" style="max-width: 900px; width: 90%;">
           <div class="modal-header">
-            <h3>Apply Associated Draft_ID</h3>
+            <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+              <div>
+                <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Apply Associated Draft ID</h3>
+                <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Link limited matches to corresponding drafts</p>
+              </div>
+            </div>
             <button type="button" class="modal-close" onclick="hideDraftIdModal()">
               <i class="fas fa-times"></i>
             </button>
           </div>
           <div class="modal-body">
-            <div id="DraftIdModalDate" class="text-center mb-3">
+            <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+              <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
+                <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
+                <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Match Information</h4>
+              </div>
+              <div id="DraftIdModalDate" style="color: var(--fg-body); font-weight: 500; font-size: 0.875rem; text-align: center;">
+              </div>
             </div>
-            <hr>
-            <div class="d-grid grid-3 gap-4">
-              <div id="DraftIdLands"></div>
-              <div id="DraftIdSpells"></div>
-              <div id="DraftIdSpells2"></div>
+            
+            <div style="margin-bottom: var(--spacing-lg);">
+              <h4 style="color: var(--fg-default); font-size: 1rem; font-weight: 600; margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm);">
+                <i class="fas fa-cards" style="color: var(--fg-muted); font-size: 0.875rem;"></i>
+                Draft Pool
+              </h4>
+              <div style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: var(--spacing-lg); border: 1px solid var(--border);">
+                <div class="d-grid grid-3 gap-4">
+                  <div>
+                    <h5 style="margin: 0 0 var(--spacing-sm) 0; color: var(--fg-default); font-size: 0.875rem; font-weight: 600; display: flex; align-items: center; gap: var(--spacing-xs);">
+                      <i class="fas fa-mountain" style="color: #8B4513; font-size: 0.75rem;"></i>
+                      Lands
+                    </h5>
+                    <div id="DraftIdLands" style="font-size: 0.875rem; line-height: 1.5; color: var(--fg-body);"></div>
+                  </div>
+                  <div>
+                    <h5 style="margin: 0 0 var(--spacing-sm) 0; color: var(--fg-default); font-size: 0.875rem; font-weight: 600; display: flex; align-items: center; gap: var(--spacing-xs);">
+                      <i class="fas fa-magic" style="color: #4A90E2; font-size: 0.75rem;"></i>
+                      Spells
+                    </h5>
+                    <div id="DraftIdSpells" style="font-size: 0.875rem; line-height: 1.5; color: var(--fg-body);"></div>
+                  </div>
+                  <div>
+                    <h5 style="margin: 0 0 var(--spacing-sm) 0; color: var(--fg-default); font-size: 0.875rem; font-weight: 600; display: flex; align-items: center; gap: var(--spacing-xs);">
+                      <i class="fas fa-bolt" style="color: #E94E77; font-size: 0.75rem;"></i>
+                      More Spells
+                    </h5>
+                    <div id="DraftIdSpells2" style="font-size: 0.875rem; line-height: 1.5; color: var(--fg-body);"></div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <div class="modal-footer">
-            <div id="DraftIdMessage" class="text-center mb-3">
-              <strong>Choose the Draft_ID that should be associated with this Match.</strong>
+            <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+              <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+                <i class="fas fa-link" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
+                <p style="margin: 0; color: var(--fg-body); line-height: 1.6;"><strong>Choose the Draft ID</strong> that should be associated with this match based on the card pool.</p>
+              </div>
             </div>
             <div class="d-flex gap-3 justify-content-center">
               <div class="dropdown">
                 <button class="button secondary dropdown-toggle" type="button" id="DraftIdButton" onclick="toggleDropdown(event, 'DraftIdMenu')">
+                  <i class="fas fa-chevron-down" style="margin-right: var(--spacing-xs);"></i>
                   Associated Draft_ID
                 </button>
                 <ul class="dropdown-menu" id="DraftIdMenu"></ul>
               </div>
-              <button type="button" class="button secondary" onclick="applyGetDraftId(true)">Skip</button>
-              <button type="button" class="button primary" onclick="applyGetDraftId(false)">Apply</button>
+              <button type="button" class="button secondary" onclick="applyGetDraftId(true)">
+                <i class="fas fa-forward" style="margin-right: var(--spacing-xs);"></i>
+                Skip
+              </button>
+              <button type="button" class="button primary" onclick="applyGetDraftId(false)">
+                <i class="fas fa-check" style="margin-right: var(--spacing-xs);"></i>
+                Apply
+              </button>
             </div>
           </div>
         </div>
@@ -356,7 +452,12 @@
       <div id="BestGuessModal" class="modal" style="display: none;">
         <div class="modal-content" style="max-width: 600px; width: 90%;">
           <div class="modal-header">
-            <h3>Best Guess Deck Names</h3>
+            <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+              <div>
+                <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Best Guess Deck Names</h3>
+                <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Automatically assign deck names based on card analysis</p>
+              </div>
+            </div>
             <button type="button" class="modal-close" onclick="hideBestGuessModal()">
               <i class="fas fa-times"></i>
             </button>
@@ -364,29 +465,60 @@
           <div class="modal-body">
             <form id="getBestGuessModal" action="/best_guess" method="POST">
               <input type="hidden" name="BG_Match_Set" id="BG_Match_Set" value="All Matches">
-              <input type="hidden" name="BG_Replace" id="BG_Replace" value="NA">
+              <input type="hidden" name="BG_Replace" id="BG_Replace" value="Replace NA">
               
               <div class="form-group">
-                <label class="form-label">Match Set</label>
+                <label class="form-label" style="display: flex; align-items: center; gap: var(--spacing-sm);">
+                  <i class="fas fa-filter" style="color: var(--fg-muted); font-size: 0.875rem;"></i>
+                  Match Set
+                </label>
                 <select class="form-input" id="BG_Match_Set_Select" onchange="updateBestGuessForm()">
                   <option value="All Matches">All Matches</option>
-                  <option value="Unnamed Matches">Unnamed Matches Only</option>
+                  <option value="Limited Only">Limited Only</option>
+                  <option value="Constructed Only">Constructed Only</option>
                 </select>
+                <small style="color: var(--fg-muted); margin-top: var(--spacing-xs); display: block;">Choose which matches to analyze for deck name suggestions</small>
               </div>
               
               <div class="form-group">
-                <label class="form-label">Replace Strategy</label>
+                <label class="form-label" style="display: flex; align-items: center; gap: var(--spacing-sm);">
+                  <i class="fas fa-sync-alt" style="color: var(--fg-muted); font-size: 0.875rem;"></i>
+                  Replace Strategy
+                </label>
                 <select class="form-input" id="BG_Replace_Select" onchange="updateBestGuessForm()">
-                  <option value="NA">Don't Replace Existing Names</option>
-                  <option value="Replace">Replace All Existing Names</option>
+                  <option value="Overwrite All">Overwrite All</option>
+                  <option value="Replace NA">Replace NA</option>
                 </select>
+                <small style="color: var(--fg-muted); margin-top: var(--spacing-xs); display: block;">Decide whether to overwrite manually assigned deck names</small>
               </div>
             </form>
+            
+            <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+              <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-md);">
+                <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
+                <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">How it Works</h4>
+              </div>
+              <p style="margin: 0; color: var(--fg-body); line-height: 1.6;">This feature analyzes your deck compositions and automatically suggests appropriate deck names based on card patterns, colors, and archetypes.</p>
+            </div>
+
+            <div style="background: rgba(245, 158, 11, 0.05); border-left: 4px solid #f59e0b; border-radius: var(--radius-md); padding: var(--spacing-lg); margin-top: var(--spacing-lg);">
+              <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
+                <i class="fas fa-exclamation-triangle" style="color: #f59e0b; font-size: 1.125rem;"></i>
+                <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Important Note</h4>
+              </div>
+              <p style="margin: 0; color: var(--fg-body); line-height: 1.6;">This process may take a few minutes to complete depending on the number of matches to analyze. You can continue using other features while it runs in the background.</p>
+            </div>
           </div>
           <div class="modal-footer">
             <div class="d-flex gap-3 justify-content-end">
-              <button type="button" class="button secondary" onclick="hideBestGuessModal()">Cancel</button>
-              <button type="submit" class="button primary" form="getBestGuessModal">Apply Best Guess</button>
+              <button type="button" class="button secondary" onclick="hideBestGuessModal()">
+                <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
+                Cancel
+              </button>
+              <button type="submit" class="button primary" form="getBestGuessModal">
+                <i class="fas fa-magic" style="margin-right: var(--spacing-sm);"></i>
+                Apply Best Guess
+              </button>
             </div>
           </div>
         </div>
@@ -886,88 +1018,7 @@
       100% { transform: rotate(360deg); }
     }
        
-    /* Flash Message Alert Styles */
-    .flash-messages {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    
-    .alert {
-      position: relative;
-      padding: var(--spacing-md) var(--spacing-lg);
-      margin-bottom: var(--spacing-md);
-      border-radius: var(--radius-md);
-      border: 1px solid transparent;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 0.875rem;
-      line-height: 1.5;
-      animation: slideInFromTop 0.3s ease-out;
-    }
-    
-    .alert-content {
-      display: flex;
-      align-items: center;
-      flex: 1;
-    }
-    
-    .alert-success {
-      background: rgba(34, 197, 98, 0.1);
-      border-color: rgba(34, 197, 98, 0.3);
-      color: #16a34a;
-    }
-    
-    .alert-error {
-      background: rgba(239, 68, 68, 0.1);
-      border-color: rgba(239, 68, 68, 0.3);
-      color: #dc2626;
-    }
-    
-    .alert-warning {
-      background: rgba(245, 158, 11, 0.1);
-      border-color: rgba(245, 158, 11, 0.3);
-      color: #d97706;
-    }
-    
-    .alert-info {
-      background: rgba(59, 130, 246, 0.1);
-      border-color: rgba(59, 130, 246, 0.3);
-      color: #2563eb;
-    }
-    
-    .alert-close {
-      background: none;
-      border: none;
-      color: inherit;
-      cursor: pointer;
-      padding: var(--spacing-xs);
-      width: 28px;
-      height: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: var(--radius-sm);
-      transition: all var(--transition-fast);
-      margin-left: var(--spacing-md);
-      opacity: 0.7;
-    }
-    
-    .alert-close:hover {
-      opacity: 1;
-      background: rgba(0, 0, 0, 0.05);
-    }
-    
-    @keyframes slideInFromTop {
-      from {
-        transform: translateY(-10px);
-        opacity: 0;
-      }
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
+    /* Flash message styles moved to base-style.css */
     
     /* Header Auth Styles */
     .header-right {

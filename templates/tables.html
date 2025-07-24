@@ -1,596 +1,573 @@
 {% extends 'base.html' %}
 
-{% block page_title %}Tables{% endblock %}
+{% block page_title %}{{ table_name | capitalize }} Table{% endblock %}
 
 {% block content %}
 
 <link rel="stylesheet" href="{{ url_for('static', filename='table-style.css') }}">
 <script src="{{ url_for('static', filename='table-js.js') }}"></script>
 
-<input type="hidden" name="tname"  id="tname" value="{{ table_name }}">
+<input type="hidden" name="tname" id="tname" value="{{ table_name }}">
 
-{% if table is defined %}
-<div class="container-fluid" style="height: 50px; overflow: auto;">
-{% if (table_name | capitalize) == 'Matches' %}
-  <div class="row">
-    <div class="col text-end">
-      <button disabled id="ReviseButton" type="button" class="btn btn-dark revise-button" data-bs-toggle="modal" data-bs-target="#ReviseModal">Revise Row(s)</button>
-    </div>
-    <div class="col">
-      <button disabled id="RemoveButton" type="button" class="btn btn-dark revise-button" data-bs-toggle="modal" data-bs-target="#RemoveModal">Remove Row(s)</button>
-    </div>
+{% if table_name.lower() == 'ignored' %}
+<!-- Table Controls for Ignored -->
+<div class="table-controls">
+  <div class="control-buttons">
+    <button type="button" class="button primary" data-bs-toggle="modal" data-bs-target="#ReviseIgnoredModal">
+      <i class="fas fa-undo"></i>
+      Remove from Ignored
+    </button>
+    <a href="{{ url_for('views.profile') }}" class="button secondary">
+      <i class="fas fa-arrow-left"></i>
+      Back to Profile
+    </a>
   </div>
-{% endif %}
-{% if (table_name | capitalize) == 'Ignored' %}
-  <div class="row">
-    <div class="col text-end">
-      <button type="button" class="btn btn-primary nav-button" data-bs-toggle="modal" data-bs-target="#ReviseIgnoredModal">Remove</button>
-    </div>
-    <div class="col">
-      <a href="{{ url_for('views.profile') }}"><button type="button" class="btn btn-dark nav-button">Back to Profile</button></a>
-    </div>
-  </div>
-{% endif %}
 </div>
+{% endif %}
 
-<div class="outer-container" style="padding-left: 20px; padding-right: 20px;">
-  <div class="container-fluid">
-    <div class="main-body">
-      <div class="row justify-content-center">
-        {% if (table_name | capitalize) == 'Ignored' %}
-        <div class="col-md-4">
+<!-- Main Table Container -->
+<div class="table-container">
+  <div class="table-header">
+    <div class="table-header-left">
+      <h2 class="table-title">
+        {% if table_name.lower() == 'ignored' %}
+          <i class="fas fa-eye-slash"></i>
+          Ignored Matches
+        {% else %}
+          <i class="fas fa-table"></i>
+          {{ table_name | capitalize }} Table
         {% endif %}
-          <div class="card px-0">
-            {% if (table_name | capitalize) == 'Ignored' %}
-            <h3 class="card-header text-center"><b>{{ table_name | capitalize }} Matches</b></h3>
-            {% else %}
-            <h3 class="card-header text-center"><b>{{ table_name | capitalize }} Table</b></h3>
+      </h2>
+      
+      {% if table_name.lower() in ['matches', 'games', 'drafts'] %}
+      <div class="table-hint">
+        <i class="fas fa-info-circle"></i>
+        Double-click rows to drill down to related data
+      </div>
+      {% elif table_name.lower() in ['plays', 'picks'] %}
+      <div class="table-hint">
+        <i class="fas fa-info-circle"></i>
+        Click Back to return to the previous view
+      </div>
+      {% endif %}
+    </div>
+    
+    {% if table_name.lower() == 'matches' %}
+    <div class="table-header-right">
+      <div class="control-buttons">
+        <button disabled id="ReviseButton" type="button" class="button secondary">
+          <i class="fas fa-edit"></i>
+          Revise Row(s)
+        </button>
+        <button disabled id="RemoveButton" type="button" class="button danger">
+          <i class="fas fa-trash"></i>
+          Remove Row(s)
+        </button>
+      </div>
+    </div>
+    {% elif table_name.lower() in ['games', 'plays', 'picks'] %}
+    <div class="table-header-right">
+      <div class="control-buttons">
+        <button id="BackButton" type="button" class="button secondary" onclick="navigateBack()">
+          <i class="fas fa-arrow-left"></i>
+          Back
+        </button>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="table-wrapper">
+    <table class="modern-table">
+      <thead>
+        <tr>
+          {% if table_name.lower() == 'matches' %}
+            <th>Player 1</th>
+            <th>P1 Deck</th>
+            <th>P1 Subdeck</th>
+            <th>Player 2</th>
+            <th>P2 Deck</th>
+            <th>P2 Subdeck</th>
+            <th>P1 Roll</th>
+            <th>P2 Roll</th>
+            <th>Roll Winner</th>
+            <th>P1 Wins</th>
+            <th>P2 Wins</th>
+            <th>Match Winner</th>
+            <th>Format</th>
+            <th>Limited Format</th>
+            <th>Match Type</th>
+            <th>Date</th>
+          {% elif table_name.lower() == 'games' %}
+            <th>Player 1</th>
+            <th>Player 2</th>
+            <th>Game #</th>
+            <th>P/D Selector</th>
+            <th>P/D Choice</th>
+            <th>On Play</th>
+            <th>On Draw</th>
+            <th>P1 Mulligans</th>
+            <th>P2 Mulligans</th>
+            <th>Turns</th>
+            <th>Game Winner</th>
+          {% elif table_name.lower() == 'plays' %}
+            <th>Game #</th>
+            <th>Play #</th>
+            <th>Turn #</th>
+            <th>Casting Player</th>
+            <th>Action</th>
+            <th>Primary Card</th>
+            <th>Target 1</th>
+            <th>Target 2</th>
+            <th>Target 3</th>
+            <th>Opp Target</th>
+            <th>Self Target</th>
+            <th>Cards Drawn</th>
+            <th>Attackers</th>
+            <th>Active Player</th>
+            <th>Non-Active Player</th>
+          {% elif table_name.lower() == 'drafts' %}
+            <th>Hero</th>
+            <th>Player 2</th>
+            <th>Player 3</th>
+            <th>Player 4</th>
+            <th>Player 5</th>
+            <th>Player 6</th>
+            <th>Player 7</th>
+            <th>Player 8</th>
+            <th>Match Wins</th>
+            <th>Match Losses</th>
+            <th>Format</th>
+            <th>Date</th>
+          {% elif table_name.lower() == 'picks' %}
+            <th>Card</th>
+            <th>Pack #</th>
+            <th>Pick #</th>
+            <th>Pick Overall</th>
+            <th>Available 1</th>
+            <th>Available 2</th>
+            <th>Available 3</th>
+            <th>Available 4</th>
+            <th>Available 5</th>
+            <th>Available 6</th>
+            <th>Available 7</th>
+            <th>Available 8</th>
+            <th>Available 9</th>
+            <th>Available 10</th>
+            <th>Available 11</th>
+            <th>Available 12</th>
+            <th>Available 13</th>
+            <th>Available 14</th>
+          {% elif table_name.lower() == 'ignored' %}
+            <th>Match ID</th>
+            <th>Reason</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% if table is defined %}
+          {% for row in table %}
+          <tr class="jsTableRow" id="row{{ loop.index }}" data-index="{{ loop.index0 }}"
+              {% if table_name.lower() == 'matches' %}data-match-id="{{ row.match_id }}" data-draft-id="{{ row.draft_id }}"
+              {% elif table_name.lower() == 'games' %}data-match-id="{{ row.match_id }}" data-game-num="{{ row.game_num }}"
+              {% elif table_name.lower() == 'drafts' %}data-draft-id="{{ row.draft_id }}"
+              {% elif table_name.lower() == 'plays' %}data-match-id="{{ row.match_id }}" data-game-num="{{ row.game_num }}"
+              {% elif table_name.lower() == 'picks' %}data-draft-id="{{ row.draft_id }}"
+              {% endif %}>
+            {% if table_name.lower() == 'matches' %}
+              <td>{{ row.p1 }}</td>
+              <td>{{ row.p1_arch }}</td>
+              <td>{{ row.p1_subarch }}</td>
+              <td>{{ row.p2 }}</td>
+              <td>{{ row.p2_arch }}</td>
+              <td>{{ row.p2_subarch }}</td>
+              <td>{{ row.p1_roll }}</td>
+              <td>{{ row.p2_roll }}</td>
+              <td>{{ row.roll_winner }}</td>
+              <td>{{ row.p1_wins }}</td>
+              <td>{{ row.p2_wins }}</td>
+              <td>{{ row.match_winner }}</td>
+              <td>{{ row.format }}</td>
+              <td>{{ row.limited_format }}</td>
+              <td>{{ row.match_type }}</td>
+              <td class="cell-date">{{ row.date }}</td>
+            {% elif table_name.lower() == 'games' %}
+              <td>{{ row.p1 }}</td>
+              <td>{{ row.p2 }}</td>
+              <td>{{ row.game_num }}</td>
+              <td>{{ row.pd_selector }}</td>
+              <td>{{ row.pd_choice }}</td>
+              <td>{{ row.on_play }}</td>
+              <td>{{ row.on_draw }}</td>
+              <td>{{ row.p1_mulls }}</td>
+              <td>{{ row.p2_mulls }}</td>
+              <td>{{ row.turns }}</td>
+              <td>{{ row.game_winner }}</td>
+            {% elif table_name.lower() == 'plays' %}
+              <td>{{ row.game_num }}</td>
+              <td>{{ row.play_num }}</td>
+              <td>{{ row.turn_num }}</td>
+              <td>{{ row.casting_player }}</td>
+              <td>{{ row.action }}</td>
+              <td>{{ row.primary_card }}</td>
+              <td>{{ row.target1 }}</td>
+              <td>{{ row.target2 }}</td>
+              <td>{{ row.target3 }}</td>
+              <td>{{ row.opp_target }}</td>
+              <td>{{ row.self_target }}</td>
+              <td>{{ row.cards_drawn }}</td>
+              <td>{{ row.attackers }}</td>
+              <td>{{ row.active_player }}</td>
+              <td>{{ row.non_active_player }}</td>
+            {% elif table_name.lower() == 'drafts' %}
+              <td>{{ row.hero }}</td>
+              <td>{{ row.player2 }}</td>
+              <td>{{ row.player3 }}</td>
+              <td>{{ row.player4 }}</td>
+              <td>{{ row.player5 }}</td>
+              <td>{{ row.player6 }}</td>
+              <td>{{ row.player7 }}</td>
+              <td>{{ row.player8 }}</td>
+              <td>{{ row.match_wins }}</td>
+              <td>{{ row.match_losses }}</td>
+              <td>{{ row.format }}</td>
+              <td class="cell-date">{{ row.date }}</td>
+            {% elif table_name.lower() == 'picks' %}
+              <td class="cell-card">{{ row.card }}</td>
+              <td>{{ row.pack_num }}</td>
+              <td>{{ row.pick_num }}</td>
+              <td>{{ row.pick_ovr }}</td>
+              <td>{{ row.avail1 }}</td>
+              <td>{{ row.avail2 }}</td>
+              <td>{{ row.avail3 }}</td>
+              <td>{{ row.avail4 }}</td>
+              <td>{{ row.avail5 }}</td>
+              <td>{{ row.avail6 }}</td>
+              <td>{{ row.avail7 }}</td>
+              <td>{{ row.avail8 }}</td>
+              <td>{{ row.avail9 }}</td>
+              <td>{{ row.avail10 }}</td>
+              <td>{{ row.avail11 }}</td>
+              <td>{{ row.avail12 }}</td>
+              <td>{{ row.avail13 }}</td>
+              <td>{{ row.avail14 }}</td>
+            {% elif table_name.lower() == 'ignored' %}
+              <td class="cell-id">{{ row.match_id }}</td>
+              <td>{{ row.reason }}</td>
             {% endif %}
-            <div class="card-body">
-              <div class="table-responsive mx-auto">
+          </tr>
+          {% endfor %}
+         {% else %}
+           <tr class="no-data-row">
+             <td colspan="100%" class="no-data">
+               <div class="no-data-message">
+                 <i class="fas fa-table"></i>
+                 <p>Loading table data...</p>
+               </div>
+             </td>
+           </tr>
+         {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
 
-                <table class="table table-sm table-bordered user-select-none">
-                  <thead class="table-dark">
-                    <tr class="tr-table-page">
-                      {% if (table_name | capitalize) == 'Matches' %}
-                      <th scope="col" class="text-center th-small">Match_ID</th>
-                      <th scope="col" class="text-center th-small">Draft_ID</th>
-                      <th scope="col" class="text-center th-small">P1</th>
-                      <th scope="col" class="text-center th-small">P1_Arch</th>
-                      <th scope="col" class="text-center th-small">P1_Subarch</th>
-                      <th scope="col" class="text-center th-small">P2</th>
-                      <th scope="col" class="text-center th-small">P2_Arch</th>
-                      <th scope="col" class="text-center th-small">P2_Subarch</th>
-                      <th scope="col" class="text-center th-small">P1_Roll</th>
-                      <th scope="col" class="text-center th-small">P2_Roll</th>
-                      <th scope="col" class="text-center th-small">Roll_Winner</th>
-                      <th scope="col" class="text-center th-small">P1_Wins</th>
-                      <th scope="col" class="text-center th-small">P2_Wins</th>
-                      <th scope="col" class="text-center th-small">Match_Winner</th>
-                      <th scope="col" class="text-center th-small">Format</th>
-                      <th scope="col" class="text-center th-small">Limited_Format</th>
-                      <th scope="col" class="text-center th-small">Match_Type</th>
-                      <th scope="col" class="text-center th-small">Date</th>
-                      {% endif %}
-                      {% if (table_name | capitalize) == 'Games' %}
-                      <th scope="col" class="text-center th-small">Match_ID</th>
-                      <th scope="col" class="text-center th-small">P1</th>
-                      <th scope="col" class="text-center th-small">P2</th>
-                      <th scope="col" class="text-center th-small">Game_Num</th>
-                      <th scope="col" class="text-center th-small">PD_Selector</th>
-                      <th scope="col" class="text-center th-small">PD_Choice</th>
-                      <th scope="col" class="text-center th-small">On_Play</th>
-                      <th scope="col" class="text-center th-small">On_Draw</th>
-                      <th scope="col" class="text-center th-small">P1_Mulls</th>
-                      <th scope="col" class="text-center th-small">P2_Mulls</th>
-                      <th scope="col" class="text-center th-small">Turns</th>
-                      <th scope="col" class="text-center th-small">Game_Winner</th>
-                      {% endif %}
-                      {% if (table_name | capitalize) == 'Plays' %}
-                      <th scope="col" class="text-center th-small">Match_ID</th>
-                      <th scope="col" class="text-center th-small">Game_Num</th>
-                      <th scope="col" class="text-center th-small">Play_Num</th>
-                      <th scope="col" class="text-center th-small">Turn_Num</th>
-                      <th scope="col" class="text-center th-small">Casting_Player</th>
-                      <th scope="col" class="text-center th-small">Action</th>
-                      <th scope="col" class="text-center th-small">Primary_Card</th>
-                      <th scope="col" class="text-center th-small">Target1</th>
-                      <th scope="col" class="text-center th-small">Target2</th>
-                      <th scope="col" class="text-center th-small">Target3</th>
-                      <th scope="col" class="text-center th-small">Opp_Target</th>
-                      <th scope="col" class="text-center th-small">Self_Target</th>
-                      <th scope="col" class="text-center th-small">Cards_Drawn</th>
-                      <th scope="col" class="text-center th-small">Attackers</th>
-                      <th scope="col" class="text-center th-small">Active_Player</th>
-                      <th scope="col" class="text-center th-small">Non-Active_Player</th>
-                      {% endif %}
-                      {% if (table_name | capitalize) == 'Drafts' %}
-                      <th scope="col" class="text-center th-small">Draft_ID</th>
-                      <th scope="col" class="text-center th-small">Hero</th>
-                      <th scope="col" class="text-center th-small">Player2</th>
-                      <th scope="col" class="text-center th-small">Player3</th>
-                      <th scope="col" class="text-center th-small">Player4</th>
-                      <th scope="col" class="text-center th-small">Player5</th>
-                      <th scope="col" class="text-center th-small">Player6</th>
-                      <th scope="col" class="text-center th-small">Player7</th>
-                      <th scope="col" class="text-center th-small">Player8</th>
-                      <th scope="col" class="text-center th-small">Match_Wins</th>
-                      <th scope="col" class="text-center th-small">Match_Losses</th>
-                      <th scope="col" class="text-center th-small">Format</th>
-                      <th scope="col" class="text-center th-small">Date</th>
-                      {% endif %}
-                      {% if (table_name | capitalize) == 'Picks' %}
-                      <th scope="col" class="text-center th-small">Card</th>
-                      <th scope="col" class="text-center th-small">Pack_Num</th>
-                      <th scope="col" class="text-center th-small">Pick_Num</th>
-                      <th scope="col" class="text-center th-small">Pick_Ovr</th>
-                      <th scope="col" class="text-center th-small">Avail1</th>
-                      <th scope="col" class="text-center th-small">Avail2</th>
-                      <th scope="col" class="text-center th-small">Avail3</th>
-                      <th scope="col" class="text-center th-small">Avail4</th>
-                      <th scope="col" class="text-center th-small">Avail5</th>
-                      <th scope="col" class="text-center th-small">Avail6</th>
-                      <th scope="col" class="text-center th-small">Avail7</th>
-                      <th scope="col" class="text-center th-small">Avail8</th>
-                      <th scope="col" class="text-center th-small">Avail9</th>
-                      <th scope="col" class="text-center th-small">Avail10</th>
-                      <th scope="col" class="text-center th-small">Avail11</th>
-                      <th scope="col" class="text-center th-small">Avail12</th>
-                      <th scope="col" class="text-center th-small">Avail13</th>
-                      <th scope="col" class="text-center th-small">Avail14</th>
-                      {% endif %}
-                      {% if (table_name | capitalize) == 'Ignored' %}
-                      <th scope="col" class="text-center ignored-header">Match_ID</th>
-                      <th scope="col" class="text-center ignored-header">Reason</th>
-                      {% endif %}
-                    </tr>
-                  </thead>
-                  {% if ((table_name | capitalize) == 'Matches') or ((table_name | capitalize) == 'Games') or ((table_name | capitalize) == 'Drafts') %}
-                  <tbody style="cursor:pointer;" title="Double-click to drill-down">
-                  {% endif %}
-                    {% for row in table %}
-                    <tr class="jsTableRow" id="row{{ loop.index }}">
-                      {% if (table_name | capitalize) == 'Matches' %}
-                      <th class="th-small" scope="row">{{ row.match_id }}</th>
-                      <td class="text-center td-small">{{ row.draft_id }}</td>
-                      <td class="text-center td-small">{{ row.p1 }}</td>
-                      <td class="text-center td-small">{{ row.p1_arch }}</td>
-                      <td class="text-center td-small">{{ row.p1_subarch }}</td>
-                      <td class="text-center td-small">{{ row.p2 }}</td>
-                      <td class="text-center td-small">{{ row.p2_arch }}</td>
-                      <td class="text-center td-small">{{ row.p2_subarch }}</td>
-                      <td class="text-center td-small">{{ row.p1_roll }}</td>
-                      <td class="text-center td-small">{{ row.p2_roll }}</td>
-                      <td class="text-center td-small">{{ row.roll_winner }}</td>
-                      <td class="text-center td-small">{{ row.p1_wins }}</td>
-                      <td class="text-center td-small">{{ row.p2_wins }}</td>
-                      <td class="text-center td-small">{{ row.match_winner }}</td>
-                      <td class="text-center td-small">{{ row.format }}</td>
-                      <td class="text-center td-small">{{ row.limited_format }}</td>
-                      <td class="text-center td-small">{{ row.match_type }}</td>
-                      <td class="text-center td-small"><nobr>{{ row.date }}</nobr></td>
-                      {% endif %}
-                      {% if (table_name | capitalize) == 'Games' %}
-                      <th class="th-small" scope="row">{{ row.match_id }}</th>
-                      <td class="text-center td-small">{{ row.p1 }}</td>
-                      <td class="text-center td-small">{{ row.p2 }}</td>
-                      <td class="text-center td-small">{{ row.game_num }}</td>
-                      <td class="text-center td-small">{{ row.pd_selector }}</td>
-                      <td class="text-center td-small">{{ row.pd_choice }}</td>
-                      <td class="text-center td-small">{{ row.on_play }}</td>
-                      <td class="text-center td-small">{{ row.on_draw }}</td>
-                      <td class="text-center td-small">{{ row.p1_mulls }}</td>
-                      <td class="text-center td-small">{{ row.p2_mulls }}</td>
-                      <td class="text-center td-small">{{ row.turns }}</td>
-                      <td class="text-center td-small">{{ row.game_winner }}</td>
-                      {% endif %}
-                      {% if (table_name | capitalize) == 'Plays' %}
-                      <th class="th-small" scope="row">{{ row.match_id }}</th>
-                      <td class="text-center td-small">{{ row.game_num }}</td>
-                      <td class="text-center td-small">{{ row.play_num }}</td>
-                      <td class="text-center td-small">{{ row.turn_num }}</td>
-                      <td class="text-center td-small">{{ row.casting_player }}</td>
-                      <td class="text-center td-small">{{ row.action }}</td>
-                      <td class="text-center td-small">{{ row.primary_card }}</td>
-                      <td class="text-center td-small">{{ row.target1 }}</td>
-                      <td class="text-center td-small">{{ row.target2 }}</td>
-                      <td class="text-center td-small">{{ row.target3 }}</td>
-                      <td class="text-center td-small">{{ row.opp_target }}</td>
-                      <td class="text-center td-small">{{ row.self_target }}</td>
-                      <td class="text-center td-small">{{ row.cards_drawn }}</td>
-                      <td class="text-center td-small">{{ row.attackers }}</td>
-                      <td class="text-center td-small">{{ row.active_player }}</td>
-                      <td class="text-center td-small">{{ row.non_active_player }}</td>
-                      {% endif %}
-                      {% if (table_name | capitalize) == 'Drafts' %}
-                      <th class="th-small" scope="row">{{ row.draft_id }}</th>
-                      <td class="text-center td-small">{{ row.hero }}</td>
-                      <td class="text-center td-small">{{ row.player2 }}</td>
-                      <td class="text-center td-small">{{ row.player3 }}</td>
-                      <td class="text-center td-small">{{ row.player4 }}</td>
-                      <td class="text-center td-small">{{ row.player5 }}</td>
-                      <td class="text-center td-small">{{ row.player6 }}</td>
-                      <td class="text-center td-small">{{ row.player7 }}</td>
-                      <td class="text-center td-small">{{ row.player8 }}</td>
-                      <td class="text-center td-small">{{ row.match_wins }}</td>
-                      <td class="text-center td-small">{{ row.match_losses }}</td>
-                      <td class="text-center td-small">{{ row.format }}</td>
-                      <td class="text-center td-small">{{ row.date }}</td>
-                      {% endif %}
-                      {% if (table_name | capitalize) == 'Picks' %}
-                      <th class="th-small" scope="row">{{ row.card }}</th>
-                      <td class="text-center td-small">{{ row.pack_num }}</td>
-                      <td class="text-center td-small">{{ row.pick_num }}</td>
-                      <td class="text-center td-small">{{ row.pick_ovr }}</td>
-                      <td class="text-center td-small">{{ row.avail1 }}</td>
-                      <td class="text-center td-small">{{ row.avail2 }}</td>
-                      <td class="text-center td-small">{{ row.avail3 }}</td>
-                      <td class="text-center td-small">{{ row.avail4 }}</td>
-                      <td class="text-center td-small">{{ row.avail5 }}</td>
-                      <td class="text-center td-small">{{ row.avail6 }}</td>
-                      <td class="text-center td-small">{{ row.avail7 }}</td>
-                      <td class="text-center td-small">{{ row.avail8 }}</td>
-                      <td class="text-center td-small">{{ row.avail9 }}</td>
-                      <td class="text-center td-small">{{ row.avail10 }}</td>
-                      <td class="text-center td-small">{{ row.avail11 }}</td>
-                      <td class="text-center td-small">{{ row.avail12 }}</td>
-                      <td class="text-center td-small">{{ row.avail13 }}</td>
-                      <td class="text-center td-small">{{ row.avail14 }}</td>
-                      {% endif %}
-                      {% if (table_name | capitalize) == 'Ignored' %}
-                      <td class="ignored">{{ row.match_id }}</td>
-                      <td class="text-center ignored">{{ row.reason }}</td>
-                      {% endif %}
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
+<!-- Pagination Controls -->
+{% if page_num %}
+<div class="pagination-container">
+  <div class="pagination-controls">
+    <button id="PrevButton" type="button" class="button secondary pagination-btn" 
+            {% if page_num == 1 %}disabled{% endif %}
+            {% if page_num > 1 %}onclick="window.location.href='/table/{{ table_name }}/{{ page_num - 1 }}'"{% endif %}>
+      <i class="fas fa-chevron-left"></i>
+      Previous
+    </button>
+    
+    <div class="page-info">
+      <span>Page {{ page_num }} of {{ pages }}</span>
+    </div>
+    
+    <button id="NextButton" type="button" class="button secondary pagination-btn"
+            {% if page_num == pages %}disabled{% endif %}
+            {% if page_num < pages %}onclick="window.location.href='/table/{{ table_name }}/{{ page_num + 1 }}'"{% endif %}>
+      Next
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+</div>
+{% endif %}
 
+<!-- Modern Revision Modal -->
+<div id="ReviseModal" class="modal" style="display: none;">
+  <div class="modal-content" style="max-width: 900px; width: 90%;">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+        <div>
+          <h3 id="ReviseModalLabel" style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Revise Record</h3>
+          <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Update match information</p>
+        </div>
+      </div>
+      <button type="button" class="modal-close" onclick="hideReviseModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <!-- Game Information -->
+      <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
+          <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
+          <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Match Information</h4>
+        </div>
+        <div id="ModalDate" style="color: var(--fg-body); font-weight: 500; font-size: 0.875rem; text-align: center;">
+          Date
+        </div>
+      </div>
+
+      <!-- Players and Cards -->
+      <div style="margin-bottom: var(--spacing-lg);">
+        <h4 style="color: var(--fg-default); font-size: 1rem; font-weight: 600; margin-bottom: var(--spacing-md);">Players & Cards</h4>
+        <div class="revision-players">
+          <div class="player-section">
+            <div id="ModalP1" class="player-name">Player 1</div>
+            <div class="card-lists">
+              <div class="card-list">
+                <h5>Lands</h5>
+                <div id="ReviseLands1" class="card-content"></div>
+              </div>
+              <div class="card-list">
+                <h5>Spells</h5>
+                <div id="RevisePlays1" class="card-content"></div>
               </div>
             </div>
           </div>
-        {% if (table_name | capitalize) == 'Ignored' %}
+          <div class="player-section">
+            <div id="ModalP2" class="player-name">Player 2</div>
+            <div class="card-lists">
+              <div class="card-list">
+                <h5>Lands</h5>
+                <div id="ReviseLands2" class="card-content"></div>
+              </div>
+              <div class="card-list">
+                <h5>Spells</h5>
+                <div id="RevisePlays2" class="card-content"></div>
+              </div>
+            </div>
+          </div>
         </div>
-        {% endif %}
+      </div>
+
+      <!-- Revision Form -->
+      <form id="reviseForm">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">P1 Archetype</label>
+            <div class="dropdown">
+              <button class="button secondary dropdown-toggle" type="button" id="P1ArchButton" onclick="toggleDropdown(event, 'P1ArchMenu')">
+                P1_Arch
+              </button>
+              <ul class="dropdown-menu" id="P1ArchMenu"></ul>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">P1 Sub-archetype</label>
+            <input type="text" class="form-input" id="P1_Subarch" placeholder="P1_Subarch" value="P1_Subarch">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">P2 Archetype</label>
+            <div class="dropdown">
+              <button class="button secondary dropdown-toggle" type="button" id="P2ArchButton" onclick="toggleDropdown(event, 'P2ArchMenu')">
+                P2_Arch
+              </button>
+              <ul class="dropdown-menu" id="P2ArchMenu"></ul>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">P2 Sub-archetype</label>
+            <input type="text" class="form-input" id="P2_Subarch" placeholder="P2_Subarch" value="P2_Subarch">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Format</label>
+            <div class="dropdown">
+              <button class="button secondary dropdown-toggle" type="button" id="FormatButton" onclick="toggleDropdown(event, 'FormatMenu')">
+                Format
+              </button>
+              <ul class="dropdown-menu" id="FormatMenu"></ul>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Limited Format</label>
+            <div class="dropdown">
+              <button class="button secondary dropdown-toggle" type="button" id="LimitedFormatButton" onclick="toggleDropdown(event, 'LimitedFormatMenu')" disabled>
+                Limited_Format
+              </button>
+              <ul class="dropdown-menu" id="LimitedFormatMenu"></ul>
+            </div>
+          </div>
+          
+          <div class="form-group span-2">
+            <label class="form-label">Match Type</label>
+            <div class="dropdown">
+              <button class="button secondary dropdown-toggle" type="button" id="MatchTypeButton" onclick="toggleDropdown(event, 'MatchTypeMenu')">
+                Match_Type
+              </button>
+              <ul class="dropdown-menu" id="MatchTypeMenu"></ul>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <div class="d-flex gap-3 justify-content-end">
+        <button type="button" class="button secondary" onclick="hideReviseModal()">
+          <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
+          Cancel
+        </button>
+        <button type="button" class="button primary" onclick="changeHiddenInputs()">
+          <i class="fas fa-save" style="margin-right: var(--spacing-xs);"></i>
+          Apply Changes
+        </button>
       </div>
     </div>
   </div>
 </div>
 
-<br>
-
-{% if page_num %}
-
-  {% if (page_num | int) == 1 %}
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col text-end">
-        <button disabled id="PrevButton" type="button" class="btn btn-dark" onclick="window.location.href='/table/{{ table_name }}/{{ ((page_num | int) -1) | string }}'">Prev</button>
+<!-- Multi-Revision Modal -->
+<div id="ReviseMultiModal" class="modal" style="display: none;">
+  <div class="modal-content" style="max-width: 600px; width: 90%;">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+        <div>
+          <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Revise Multiple Records</h3>
+          <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Update multiple matches at once</p>
+        </div>
       </div>
-      <div class="col-md-auto"><span class="align-middle"><b>Page {{ page_num }} of {{ pages }}</span></b></div>
-  {% endif %}
-  {% if (page_num | int) > 1 %}
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col text-end">
-        <button id="PrevButton" type="button" class="btn btn-dark" onclick="window.location.href='/table/{{ table_name }}/{{ ((page_num | int) -1) | string }}'">Prev</button>
-      </div>
-      <div class="col-md-auto"><span class="align-middle"><b>Page {{ page_num }} of {{ pages }}</span></b></div>
-  {% endif %}
-  {% if (page_num | int) == (pages | int) %}
-      <div class="col">
-        <button disabled id="NextButton" type="button" class="btn btn-dark" onclick="window.location.href='/table/{{ table_name }}/{{ ((page_num | int) +1) | string }}'">Next</button>
-      </div>
+      <button type="button" class="modal-close" onclick="hideReviseMultiModal()">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
-  </div>
-  {% endif %}
-  {% if (page_num | int) < (pages | int) %}
-      <div class="col">
-        <button id="NextButton" type="button" class="btn btn-dark" onclick="window.location.href='/table/{{ table_name }}/{{ ((page_num | int) +1) | string }}'">Next</button>
-      </div>
-    </div>
-  </div>
-  {% endif %}
-
-{% endif %}
-
-{% endif %}
-
-<br><br><br><br><br><br><br><br><br><br>
-
-<form action="/revise" method="POST">
-  <input type="hidden" name="Page_Num"  id="Page_Num" value="{{ page_num }}">
-  <input type="hidden" name="Match_ID"  id="Match_ID" value="NA">
-  <input type="hidden" name="P1Arch"  id="P1Arch" value="NA">
-  <input type="hidden" name="P2Arch"  id="P2Arch" value="NA">
-  <input type="hidden" name="Format"  id="Format" value="NA">
-  <input type="hidden" name="Limited_Format"  id="Limited_Format" value="NA">
-  <input type="hidden" name="Match_Type"  id="Match_Type" value="NA">
-  <div class="modal fade" id="ReviseModal" tabindex="-1" aria-labelledby="ReviseModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 class="modal-title fs-5" id="ReviseModalLabel">Revise Record</h2>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div class="container-fluid">
-            <form>
-              <div class="row text-center" id="ModalDate">
-                Date
-              </div>
-              <hr>
-              <div class="row">
-                <div class="col text-center" id="ModalP1" style="font-size: 18px;">P1</div>
-                <div class="col text-center" id="ModalP2" style="font-size: 18px;">P2</div>
-              </div><br>
-              <div class="row">
-                <div class="col text-left" id="ReviseLands1" style="font-size: 14px;">lands1</div>
-                <div class="col text-left" id="RevisePlays1" style="font-size: 14px;">plays1</div>
-                <div class="col text-left" id="ReviseLands2" style="font-size: 14px;">lands2</div>
-                <div class="col text-left" id="RevisePlays2" style="font-size: 14px;">plays2</div>
-              </div>
-              <hr>
-              <div class="row">
-                <div class="col text-center">
-                  <div class="dropdown">
-                    <button class="btn btn-dark dropdown-toggle w-100" type="button" id="P1ArchButton" name="P1ArchButton" value="NA" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                      P1_Arch
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-filter" aria-labelledby="P1ArchButton" id="P1ArchMenu">
-                    </ul>
-                  </div>
-                </div>
-                <div class="col"><input type="text" class="form-control" id="P1_Subarch" name="P1_Subarch" placeholder="P1_Subarch" value="P1_Subarch"></div>
-                <div class="col text-center">
-                  <div class="dropdown">
-                    <button class="btn btn-dark dropdown-toggle w-100" type="button" id="P2ArchButton" name="P2ArchButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                      P2_Arch
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-filter" aria-labelledby="P2ArchButton" id="P2ArchMenu">
-                    </ul>
-                  </div>
-                </div>
-                <div class="col"><input type="text" class="form-control" id="P2_Subarch" name="P2_Subarch" placeholder="P2_Subarch" value="P2_Subarch"></div>
-              </div>
-              <hr>
-              <div class="row">
-                <div class="col text-end">
-                  <div class="dropdown">
-                    <button class="btn btn-dark dropdown-toggle modal-button-lg" type="button" id="FormatButton" name="FormatButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                      Format
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-filter" aria-labelledby="FormatButton" id="FormatMenu">
-                    </ul>
-                  </div>
-                </div>
-                <div class="col-md-auto">
-                  <div class="dropdown">
-                    <button class="btn btn-dark dropdown-toggle modal-button-lg" type="button" id="LimitedFormatButton" name="LimitedFormatButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true" disabled>
-                      Limited_Format
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-filter" aria-labelledby="LimitedFormatButton" id="LimitedFormatMenu">
-                    </ul>
-                  </div>
-                </div>
-                <div class="col">
-                  <div class="dropdown">
-                    <button class="btn btn-dark dropdown-toggle modal-button-lg" type="button" id="MatchTypeButton" name="MatchTypeButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                      Match_Type
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-filter" aria-labelledby="MatchTypeButton" id="MatchTypeMenu">
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-dark modal-button" data-bs-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary modal-button" onclick="changeHiddenInputs()">Apply Changes</button>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Field to Change</label>
+        <div class="dropdown">
+          <button class="button secondary dropdown-toggle" type="button" id="FieldToChangeButton" onclick="toggleDropdown(event, 'FieldToChangeMenu')">
+            P1 Deck
+          </button>
+          <ul class="dropdown-menu" id="FieldToChangeMenu">
+            <li onclick="showP1Field(this)">P1 Deck</li>
+            <li onclick="showP2Field(this)">P2 Deck</li>
+            <li onclick="showFormatField(this)">Format</li>
+            <li onclick="showMatchTypeField(this)">Match Type</li>
+          </ul>
         </div>
       </div>
-    </div>
-  </div>
-</form>
 
-<form action="/revise_multi" method="POST">
-  <input type="hidden" name="Page_Num_Multi"  id="Page_Num_Multi" value="{{ page_num }}">
-  <input type="hidden" name="FieldToChangeMulti"  id="FieldToChangeMulti" value="NA">
-  <input type="hidden" name="Match_ID_Multi"  id="Match_ID_Multi" value="NA">
-  <input type="hidden" name="P1ArchMulti"  id="P1ArchMulti" value="NA">
-  <input type="hidden" name="P2ArchMulti"  id="P2ArchMulti" value="NA">
-  <input type="hidden" name="FormatMulti"  id="FormatMulti" value="NA">
-  <input type="hidden" name="Limited_FormatMulti"  id="Limited_FormatMulti" value="NA">
-  <input type="hidden" name="Match_TypeMulti"  id="Match_TypeMulti" value="NA">
-  <div class="modal fade" id="ReviseMultiModal" tabindex="-1" aria-labelledby="ReviseMultiModal" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 class="modal-title fs-5" id="ReviseMultiModalLabel">Revise Multiple Records</h2>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div class="container-fluid">
-            <form>
-              <div class="row text-center" id="FieldToChange">
-                <div class="dropdown">
-                  <button class="btn btn-dark dropdown-toggle modal-button" type="button" id="FieldToChangeButton" name="FieldToChangeButton" value="NA" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                    P1 Deck
-                  </button>
-                  <ul class="dropdown-menu dropdown-menu-filter" id="FieldToChangeMenu">
-                    <li><a class="dropdown-item" onclick="showP1Field(this)">P1 Deck</a></li>
-                    <li><a class="dropdown-item" onclick="showP2Field(this)">P2 Deck</a></li>
-                    <li><a class="dropdown-item" onclick="showFormatField(this)">Format</a></li>
-                    <li><a class="dropdown-item" onclick="showMatchTypeField(this)">Match Type</a></li>
-                  </ul>
-                </div>
-              </div>
-              <hr>
-
-              <div class="row">
-                <div class="col-4 text-end" id="P1ArchCol1" style="display:block">
-                  <label for="P1ArchButtonMulti" class="form-label"><span class="align-middle"><b>P1_Arch:</b></span></label>
-                </div>
-                <div class="col-8" id="P1ArchCol2" style="display:block">
-                  <div class="dropdown">
-                    <button class="btn btn-dark dropdown-toggle w-100" type="button" id="P1ArchButtonMulti" name="P1ArchButtonMulti" value="NA" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                      NA
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-filter" id="P1ArchMenuMulti">
-                    </ul>
-                  </div>
-                </div>
-              </div><br id=P1DeckBR style="inline">
-
-              <div class="row">
-                <div class="col-4 text-end" id="P1SubarchCol1" style="display:block">
-                  <label for="P1_Subarch" class="form-label"><span class="align-middle"><b>P1_Subarch:</b></span></label>
-                </div>
-                <div class="col-8 text-end" id="P1SubarchCol2" style="display:block"><input type="text" class="form-control" id="P1_Subarch_Multi" name="P1_Subarch_Multi" placeholder="P1_Subarch" value="NA"></div>
-              </div>
-
-              <div class="row">
-                <div class="col-4 text-end" id="P2ArchCol1" style="display:none">
-                  <label for="P2ArchButtonMulti" class="form-label"><span class="align-middle"><b>P2_Arch:</b></span></label>
-                </div>
-                <div class="col-8" id="P2ArchCol2" style="display:none">
-                  <div class="dropdown">
-                    <button class="btn btn-dark dropdown-toggle w-100" type="button" id="P2ArchButtonMulti" name="P2ArchButtonMulti" value="NA" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                      NA
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-filter" id="P2ArchMenuMulti">
-                    </ul>
-                  </div>
-                </div>
-              </div><br id=P2DeckBR style="display:none">
-
-              <div class="row">
-                <div class="col-4 text-end" id="P2SubarchCol1" style="display:none">
-                  <label for="P2_Subarch_Multi" class="form-label"><span class="align-middle"><b>P2_Subarch:</b></span></label>
-                </div>
-                <div class="col-8 text-end" id="P2SubarchCol2" style="display:none"><input type="text" class="form-control" id="P2_Subarch_Multi" name="P2_Subarch_Multi" placeholder="P2_Subarch" value="NA"></div>
-              </div>
-
-              <div class="row">
-                <div class="col-4 text-end" id="FormatCol1" style="display:none">
-                  <label for="FormatButtonMulti" class="form-label"><span class="align-middle"><b>Format:</b></span></label>
-                </div>
-                <div class="col-8" id="FormatCol2" style="display:none">
-                  <div class="dropdown">
-                    <button class="btn btn-dark dropdown-toggle w-100" type="button" id="FormatButtonMulti" name="FormatButtonMulti" value="NA" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                      NA
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-filter" id="FormatMenuMulti">
-                    </ul>
-                  </div>
-                </div>
-              </div><br id=FormatBR style="display:none">
-
-              <div class="row">
-                <div class="col-4 text-end" id="LimitedFormatCol1" style="display:none">
-                  <label for="LimitedFormatButtonMulti" class="form-label"><span class="align-middle"><b>Limited_Format:</b></span></label>
-                </div>
-                <div class="col-8" id="LimitedFormatCol2" style="display:none">
-                  <div class="dropdown">
-                    <button disabled class="btn btn-dark dropdown-toggle w-100" type="button" id="LimitedFormatButtonMulti" name="LimitedFormatButtonMulti" value="NA" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                      NA
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-filter" id="LimitedFormatMenuMulti">
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              <div class="row">
-                <div class="col-4 text-end" id="MatchTypeCol1" style="display:none">
-                  <label for="MatchTypeButtonMulti" class="form-label"><span class="align-middle"><b>Match_Type:</b></span></label>
-                </div>
-                <div class="col-8" id="MatchTypeCol2" style="display:none">
-                  <div class="dropdown">
-                    <button class="btn btn-dark dropdown-toggle w-100" type="button" id="MatchTypeButtonMulti" name="MatchTypeButtonMulti" value="NA" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                      NA
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-filter" id="MatchTypeMenuMulti">
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-            </form>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <div class="col text-end">
-            <button type="button" class="btn btn-dark modal-button" data-bs-dismiss="modal">Close</button>
-          </div>
-          <div class="col">
-            <button type="submit" class="btn btn-primary modal-button" onclick="changeHiddenInputsMulti()">Apply Changes</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</form>
-
-<form action="/remove" method="POST">
-  <input type="hidden" name="removeType" id="removeType" value="NA">
-  <input type="hidden" name="removeMatchId" id="removeMatchId" value="NA">
-  <div class="modal fade" id="RemoveModal" tabindex="-1" aria-labelledby="RemoveModal" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 class="modal-title fs-5" id="RemoveModalLabel">Remove Record</h2>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="RemoveCloseButton"></button>
-        </div>
-        <div class="modal-body">
-          <div class="container-fluid">
-            <div class="row" id="RemoveMessage">
-              <p><b><center>This will remove all selected Matches and their associated Games/Plays from your database.</center></b></p><hr>
-              <b>Remove:</b>
-              <p class="px-5">The record will be re-parsed and included in future data imports.</p>
-              <b>Remove and Ignore:</b>
-              <p class="px-5">The record will <b>not</b> be included in future data imports. Match_IDs can be unignored from your Ignore List, but you will lose any record revisions.</p>
+      <!-- Dynamic form fields will be shown/hidden based on selection -->
+      <div id="multiRevisionFields">
+        <!-- P1 Deck Fields -->
+        <div class="field-group" id="P1DeckFields">
+          <div class="form-group" id="P1ArchCol1">
+            <label class="form-label">P1 Archetype</label>
+            <div class="dropdown">
+              <button class="button secondary dropdown-toggle" type="button" id="P1ArchButtonMulti" onclick="toggleDropdown(event, 'P1ArchMenuMulti')">
+                NA
+              </button>
+              <ul class="dropdown-menu" id="P1ArchMenuMulti"></ul>
             </div>
           </div>
-        </div>
-        <div class="modal-footer">
-          <div class="col text-end">
-            <button type="submit" class="btn btn-primary modal-button" id="RemoveButton1" onclick="removeHidden('Remove')">Remove</button>
-          </div>
-          <div class="col">
-            <button type="submit" class="btn btn-danger modal-button" id="RemoveButton2" onclick="removeHidden('Ignore')">Ignore</button>
+          <div class="form-group" id="P1SubarchCol1">
+            <label class="form-label">P1 Sub-archetype</label>
+            <input type="text" class="form-input" id="P1_Subarch_Multi" placeholder="P1_Subarch" value="NA">
           </div>
         </div>
-      </div>
-    </div>
-  </div>
-</form>
 
-<form action="/revise_ignored" method="POST">
-  <input type="hidden" name="Ignored_Match_ID_Multi"  id="Ignored_Match_ID_Multi" value="NA">
-  <div class="modal fade" id="ReviseIgnoredModal" tabindex="-1" aria-labelledby="ReviseIgnoredModal" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 class="modal-title fs-5" id="ReviseIgnoredModalLabel">Unignore Matches</h2>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div class="container-fluid">
-            <div class="row text-center">
-              <p>The selected Matches will be removed from your Ignored List and will be scanned during your next Import.
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary" onclick="changeHiddenInputsIgnored()">Apply Changes</button>
-        </div>
+        <!-- Similar structure for other field groups... -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="d-flex gap-3 justify-content-end">
+        <button type="button" class="button secondary" onclick="hideReviseMultiModal()">
+          <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
+          Cancel
+        </button>
+        <button type="button" class="button primary" onclick="changeHiddenInputsMulti()">
+          <i class="fas fa-save" style="margin-right: var(--spacing-xs);"></i>
+          Apply Changes
+        </button>
       </div>
     </div>
   </div>
-</form>
+</div>
+
+<!-- Remove Modal -->
+<div id="RemoveModal" class="modal" style="display: none;">
+  <div class="modal-content" style="max-width: 500px; width: 90%;">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+        <div>
+          <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Remove Records</h3>
+          <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Delete selected matches</p>
+        </div>
+      </div>
+      <button type="button" class="modal-close" onclick="hideRemoveModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div style="background: rgba(239, 68, 68, 0.05); border-left: 4px solid #ef4444; border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
+          <i class="fas fa-exclamation-triangle" style="color: #ef4444; font-size: 1.125rem;"></i>
+          <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Warning</h4>
+        </div>
+        <p style="margin: 0; color: var(--fg-body); line-height: 1.6;">This will remove all selected matches and their associated games/plays from your database.</p>
+      </div>
+
+      <div class="removal-options">
+        <div class="option-section">
+          <h5>Remove</h5>
+          <p>The record will be re-parsed and included in future data imports.</p>
+        </div>
+        <div class="option-section">
+          <h5>Remove and Ignore</h5>
+          <p>The record will <strong>not</strong> be included in future data imports. Match IDs can be unignored from your Ignore List, but you will lose any record revisions.</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="d-flex gap-3 justify-content-center">
+        <button type="button" class="button primary" onclick="removeHidden('Remove')">
+          <i class="fas fa-trash" style="margin-right: var(--spacing-xs);"></i>
+          Remove
+        </button>
+        <button type="button" class="button danger" onclick="removeHidden('Ignore')">
+          <i class="fas fa-eye-slash" style="margin-right: var(--spacing-xs);"></i>
+          Remove & Ignore
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal helper functions -->
+<script>
+function hideReviseModal() {
+  document.getElementById('ReviseModal').style.display = 'none';
+  document.body.style.overflow = 'auto';
+}
+
+function hideReviseMultiModal() {
+  document.getElementById('ReviseMultiModal').style.display = 'none';
+  document.body.style.overflow = 'auto';
+}
+
+function hideRemoveModal() {
+  document.getElementById('RemoveModal').style.display = 'none';
+  document.body.style.overflow = 'auto';
+}
+</script>
 
 {% endblock %}
