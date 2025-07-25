@@ -435,8 +435,6 @@ class GameWinnerManager {
     }
 
     try {
-      showProcessingModal('Updating game winner...');
-
       const payload = {
         match_id: this.currentGame.match_id,
         game_num: this.currentGame.game_num,
@@ -459,7 +457,6 @@ class GameWinnerManager {
       }
 
       const result = await response.json();
-      hideProcessingModal();
 
       if (!result.hasNextGame) {
         // No more games to process
@@ -474,7 +471,6 @@ class GameWinnerManager {
       this.updateModalContent(result.nextGame);
 
     } catch (error) {
-      hideProcessingModal();
       console.error('Error updating game winner:', error);
       this.showErrorMessage('Failed to update game winner');
     }

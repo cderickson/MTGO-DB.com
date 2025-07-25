@@ -294,7 +294,7 @@
 
       <!-- Game Winner Modal -->
       <div id="GameWinnerModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 800px; width: 90%;">
+        <div class="modal-content" style="max-width: 1000px; width: 90%;">
           <div class="modal-header">
             <div style="display: flex; align-items: center; gap: var(--spacing-md);">
               <div>
@@ -307,10 +307,6 @@
           </div>
           <div class="modal-body">
             <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
-              <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
-                <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
-                <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Game Information</h4>
-              </div>
               <div id="GameWinnerModalDate" style="color: var(--fg-body); font-weight: 500; font-size: 0.875rem; text-align: center;">
                 Date
               </div>
@@ -320,7 +316,7 @@
               <i class="fas fa-list" style="color: var(--fg-muted); font-size: 0.875rem;"></i>
               End Game Actions
             </h4>
-            <div id="EndGameActions" style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: var(--spacing-lg); border: 1px solid var(--border); font-family: monospace; font-size: 0.875rem; line-height: 1.6; color: var(--fg-body); height: calc(15 * 1.4rem + 2 * var(--spacing-lg)); overflow: hidden;">
+            <div id="EndGameActions" style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: var(--spacing-lg); border: 1px solid var(--border); font-family: monospace; font-size: 0.875rem; line-height: 1.6; color: var(--fg-body); height: calc(17 * 1.4rem + 2 * var(--spacing-lg)); overflow: hidden;">
               Game Action 1<br>
               Game Action 2<br>
               Game Action 3<br>
@@ -380,10 +376,6 @@
           </div>
           <div class="modal-body">
             <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
-              <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
-                <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
-                <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Match Information</h4>
-              </div>
               <div id="DraftIdModalDate" style="color: var(--fg-body); font-weight: 500; font-size: 0.875rem; text-align: center;">
               </div>
             </div>
@@ -537,15 +529,25 @@
             <form id="importForm" action="/load" method="POST" enctype="multipart/form-data">
               <div class="form-group">
                 <label class="form-label">Select GameLog Files</label>
-                <input type="file" class="form-input" name="file" accept=".zip" required>
-                <small style="color: var(--fg-muted);">Select the .zip file created by the Zip-MTGO-Logs script</small>
+                <input type="file" class="form-input" name="file" accept=".zip" required id="importFileInput" onchange="validateImportFiles()">
+                <small id="importFileHelpText" style="color: var(--fg-muted);">Select the .zip file created by the Zip-MTGO-Logs script</small>
               </div>
             </form>
+            <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg) 0;">
+                <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
+                  <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
+                  <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Importing Details</h4>
+                </div>
+                <ul style="margin: 0; padding-left: var(--spacing-lg); color: var(--fg-body); line-height: 1.6;">
+                  <li style="margin-bottom: var(--spacing-sm);">This may take several minutes depending on how many archived files you have to reprocess.</li>
+                  <li>A load report will be emailed upon completion.</li>
+                </ul>
+              </div>
           </div>
           <div class="modal-footer">
             <div class="d-flex gap-3 justify-content-end">
               <button type="button" class="button secondary" onclick="hideImportModal()">Cancel</button>
-              <button type="submit" class="button primary" form="importForm">Import Files</button>
+              <button type="submit" class="button primary" form="importForm" id="importSubmitBtn" disabled>Import Files</button>
             </div>
           </div>
         </div>
@@ -565,8 +567,7 @@
               <div class="form-group">
                 <label class="form-label">Select MTGO-Tracker Save Files</label>
                 <input type="file" class="form-input" name="folder" multiple required id="importAppFileInput" onchange="validateImportAppFiles()">
-                <small style="color: var(--fg-muted);">Select the ALL_DATA, DRAFTS_TABLE, and PICKS_TABLE files from your MTGO-Tracker/save/ folder</small>
-                <div id="fileValidationMessage" style="margin-top: var(--spacing-sm); font-size: 0.875rem;"></div>
+                <small id="importAppHelpText" style="color: var(--fg-muted);">Select the ALL_DATA, DRAFTS_TABLE, and PICKS_TABLE files from your MTGO-Tracker save folder.</small>
               </div>
               
               <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-top: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
@@ -774,7 +775,7 @@
     
     /* Specific modal widths */
     #GameWinnerModal .modal-content {
-      max-width: 800px !important;
+      max-width: 1000px !important;
     }
     
     #DraftIdModal .modal-content {
@@ -1257,12 +1258,22 @@
       const modal = document.getElementById('ImportModal');
       modal.style.display = 'flex';
       document.body.style.overflow = 'hidden';
+      
+      // Reset form and validation
+      document.getElementById('importForm').reset();
+      validateImportFiles();
     }
     
     function hideImportModal() {
       const modal = document.getElementById('ImportModal');
       modal.style.display = 'none';
       document.body.style.overflow = 'auto';
+      
+      // Reset form and help text
+      document.getElementById('importForm').reset();
+      const helpText = document.getElementById('importFileHelpText');
+      helpText.innerHTML = 'Select the .zip file created by the Zip-MTGO-Logs script';
+      helpText.style.color = 'var(--fg-muted)';
     }
     
     function showImportAppModal() {
@@ -1271,15 +1282,20 @@
       document.body.style.overflow = 'hidden';
       
       // Reset form and validation when modal opens
-      document.getElementById('importAppFileInput').value = '';
-      document.getElementById('importAppSubmitBtn').disabled = true;
-      document.getElementById('fileValidationMessage').innerHTML = '';
+      document.getElementById('importAppForm').reset();
+      validateImportAppFiles();
     }
     
     function hideImportAppModal() {
       const modal = document.getElementById('ImportAppModal');
       modal.style.display = 'none';
       document.body.style.overflow = 'auto';
+      
+      // Reset form and help text
+      document.getElementById('importAppForm').reset();
+      const helpText = document.getElementById('importAppHelpText');
+      helpText.innerHTML = 'Select the ALL_DATA, DRAFTS_TABLE, and PICKS_TABLE files from your MTGO-Tracker save folder.';
+      helpText.style.color = 'var(--fg-muted)';
     }
     
     function showReprocessModal() {
@@ -1372,15 +1388,14 @@
     function validateImportAppFiles() {
       const fileInput = document.getElementById('importAppFileInput');
       const submitBtn = document.getElementById('importAppSubmitBtn');
-      const messageDiv = document.getElementById('fileValidationMessage');
+      const helpText = document.getElementById('importAppHelpText');
       
       const requiredFiles = ['ALL_DATA', 'DRAFTS_TABLE', 'PICKS_TABLE'];
       const selectedFiles = Array.from(fileInput.files);
       
-      // Clear previous messages
-      messageDiv.innerHTML = '';
-      
       if (selectedFiles.length === 0) {
+        helpText.innerHTML = 'Select the ALL_DATA, DRAFTS_TABLE, and PICKS_TABLE files from your MTGO-Tracker save folder.';
+        helpText.style.color = 'var(--fg-muted)';
         submitBtn.disabled = true;
         return;
       }
@@ -1398,29 +1413,48 @@
       const missingFiles = requiredFiles.filter(required => 
         !selectedFilenames.includes(required)
       );
-      const extraFiles = selectedFilenames.filter(filename => 
-        !requiredFiles.includes(filename)
-      );
       
-      let isValid = foundFiles.length === 3 && missingFiles.length === 0 && extraFiles.length === 0;
+      let isValid = foundFiles.length === 3 && missingFiles.length === 0;
       
       // Update message and button state
       if (isValid) {
-        messageDiv.innerHTML = '<span style="color: #22c562;"><i class="fas fa-check-circle"></i> All required files selected</span>';
+        helpText.innerHTML = '<i class="fas fa-check-circle"></i> All required files selected.';
+        helpText.style.color = '#22c562';
         submitBtn.disabled = false;
       } else {
-        let messages = [];
         if (missingFiles.length > 0) {
-          messages.push(`Missing: ${missingFiles.join(', ')}`);
+          helpText.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Missing: ${missingFiles.join(', ')}.`;
+        } else {
+          helpText.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Please select exactly 3 files.';
         }
-        if (extraFiles.length > 0) {
-          messages.push(`Extra files (not needed): ${extraFiles.join(', ')}`);
-        }
-        if (selectedFiles.length !== 3) {
-          messages.push(`Expected 3 files, found ${selectedFiles.length}`);
-        }
-        
-        messageDiv.innerHTML = `<span style="color: #ef4444;"><i class="fas fa-exclamation-triangle"></i> ${messages.join(' • ')}</span>`;
+        helpText.style.color = '#ef4444';
+        submitBtn.disabled = true;
+      }
+    }
+    
+    function validateImportFiles() {
+      const fileInput = document.getElementById('importFileInput');
+      const submitBtn = document.getElementById('importSubmitBtn');
+      const helpText = document.getElementById('importFileHelpText');
+      
+      if (fileInput.files.length === 0) {
+        helpText.innerHTML = 'Select the .zip file created by the Zip-MTGO-Logs script';
+        helpText.style.color = 'var(--fg-muted)';
+        submitBtn.disabled = true;
+        return;
+      }
+      
+      const selectedFile = fileInput.files[0];
+      const fileName = selectedFile.name.toLowerCase();
+      
+      // Check if it's a zip file
+      if (fileName.endsWith('.zip')) {
+        helpText.innerHTML = '<i class="fas fa-check-circle"></i> ZIP file selected.';
+        helpText.style.color = '#22c562';
+        submitBtn.disabled = false;
+      } else {
+        helpText.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Please select a ZIP file.';
+        helpText.style.color = '#ef4444';
         submitBtn.disabled = true;
       }
     }

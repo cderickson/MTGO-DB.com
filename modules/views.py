@@ -906,22 +906,23 @@ def process_from_app(self, data):
 					debug_log(f'Adding Match: {match[0]} is not in match table')
 					new_match = Match(uid=uid,
 									match_id=match[0],
-									date=match[1],
+									draft_id=match[1],
 									p1=match[2],
 									p1_arch=match[3],
 									p1_subarch=match[4],
 									p2=match[5],
 									p2_arch=match[6],
 									p2_subarch=match[7],
-									p1_score=match[8],
-									p2_score=match[9],
-									p1_ties=match[10],
+									p1_roll=match[8],
+									p2_roll=match[9],
+									roll_winner=match[10],
 									p1_wins=match[11],
 									p2_wins=match[12],
 									match_winner=match[13],
 									format=match[14],
 									limited_format=match[15],
-									match_type=match[16])
+									match_type=match[16],
+									date=match[17])
 					db.session.add(new_match)
 					new_match_dict[match[0]] = True
 					counts['new_matches'] += 1
@@ -986,23 +987,20 @@ def process_from_app(self, data):
 					counts['new_plays'] += 1
 			debug_log(f'Starting Game Action Loop')
 			for action in data['all_data'][3]:
+				debug_log(f"🔍 DRAFTLOG DB: Processing action: {action[:-2]}")
 				if action[0][0:12].isdigit():
 					continue
-				if new_match_dict[action[0]] == False:
+				if new_match_dict[action[:-2]] == False:
 					continue
-				if Removed.query.filter_by(uid=uid, match_id=action[0]).first():
+				if Removed.query.filter_by(uid=uid, match_id=action[:-2]).first():
 					continue
-				if GameActions.query.filter_by(uid=uid, match_id=action[0], game_num=action[1], action_id=action[2]).first():
+				if GameActions.query.filter_by(uid=uid, match_id=action[:-2], game_num=action[-1]).first():
 					continue
 				else:
 					new_action = GameActions(uid=uid,
-											match_id=action[0],
-											game_num=action[1],
-											action_id=action[2],
-											turn_num=action[3],
-											event_type=action[4],
-											details=action[5],
-											event_num=action[6])
+											match_id=action[:-2],
+											game_num=action[-1],
+											game_actions='\n'.join(data['all_data'][3][action][-15:]))
 					db.session.add(new_action)
 			debug_log(f'Starting Draft Loop')
 			if len(data['drafts_table']) > 0:
@@ -1011,22 +1009,37 @@ def process_from_app(self, data):
 						continue
 					if Draft.query.filter_by(uid=uid, draft_id=draft[0]).first():
 						existing_draft = Draft.query.filter_by(uid=uid, draft_id=draft[0]).first()
-						existing_draft.date = draft[1]
-						existing_draft.format = draft[2]
-						existing_draft.picks = draft[3]
-						existing_draft.wins = draft[4]
-						existing_draft.losses = draft[5]
+						existing_draft.hero = draft[1]
+						existing_draft.player2 = draft[2]
+						existing_draft.player3 = draft[3]
+						existing_draft.player4 = draft[4]
+						existing_draft.player5 = draft[5]
+						existing_draft.player6 = draft[6]
+						existing_draft.player7 = draft[7]
+						existing_draft.player8 = draft[8]
+						existing_draft.match_wins = draft[9]
+						existing_draft.match_losses = draft[10]
+						existing_draft.format = draft[11]
+						existing_draft.date = draft[12]
 						merged_draft = db.session.merge(existing_draft)
 						db.session.add(merged_draft)
 						counts['updated_drafts'] += 1
 					else:
+						debug_log(f"🔍 DRAFTLOG DB: Creating new draft {draft[0]}")
 						new_draft = Draft(uid=uid,
 										draft_id=draft[0],
-										date=draft[1],
-										format=draft[2],
-										picks=draft[3],
-										wins=draft[4],
-										losses=draft[5])
+										hero=draft[1],
+										player2=draft[2],
+										player3=draft[3],
+										player4=draft[4],
+										player5=draft[5],
+										player6=draft[6],
+										player7=draft[7],
+										player8=draft[8],
+										match_wins=draft[9],
+										match_losses=draft[10],
+										format=draft[11],
+										date=draft[12])
 						db.session.add(new_draft)
 						counts['new_drafts'] += 1
 			debug_log(f'Starting Pick Loop')
@@ -1324,22 +1337,23 @@ def reprocess_logs(self, data):
 						else:
 							new_match = Match(uid=uid,
 											match_id=match[0],
-											date=match[1],
+											draft_id=match[1],
 											p1=match[2],
 											p1_arch=match[3],
 											p1_subarch=match[4],
 											p2=match[5],
 											p2_arch=match[6],
 											p2_subarch=match[7],
-											p1_score=match[8],
-											p2_score=match[9],
-											p1_ties=match[10],
+											p1_roll=match[8],
+											p2_roll=match[9],
+											roll_winner=match[10],
 											p1_wins=match[11],
 											p2_wins=match[12],
 											match_winner=match[13],
 											format=match[14],
 											limited_format=match[15],
-											match_type=match[16])
+											match_type=match[16],
+											date=match[17])
 							db.session.add(new_match)
 							counts['new_matches'] += 1
 					for game in parsed_data_inverted[1]:
@@ -1388,17 +1402,14 @@ def reprocess_logs(self, data):
 											non_active_player=play[15])
 							db.session.add(new_play)
 							counts['new_plays'] += 1
-					for action in parsed_data_inverted[3]:
-						existing = GameActions.query.filter_by(uid=uid, match_id=action.rsplit("-",1)[0], game_num=int(action.rsplit("-",1)[1]), game_actions=parsed_data_inverted[3][action][0]).first()
-						debug_log(f'action: {action}')
-						if existing:
+					for game in parsed_data_inverted[3]:
+						if GameActions.query.filter_by(uid=uid, match_id=game[:-2], game_num=game[-1]).first():
 							continue
-						else:
-							new_action = GameActions(uid=uid,
-													match_id=action.rsplit("-",1)[0],
-													game_num=int(action.rsplit("-",1)[1]),
-													game_actions=parsed_data_inverted[3][action][0])
-							db.session.add(new_action)
+						new_ga15 = GameActions(uid=uid,
+											match_id=game[:-2],
+											game_num=game[-1],
+											game_actions='\n'.join(parsed_data_inverted[3][game][-15:]))
+						db.session.add(new_ga15)
 					try:
 						db.session.commit()
 					except:
@@ -2180,6 +2191,13 @@ def api_game_winner_update():
 				else:
 					match.match_winner = 'NA'
 			
+			# Delete GameActions records for this game
+			GameActions.query.filter_by(
+				uid=current_user.uid,
+				match_id=match_id,
+				game_num=game_num
+			).delete()
+			
 			# Update draft win/loss records
 			update_draft_win_loss(
 				uid=current_user.uid, 
@@ -2214,9 +2232,15 @@ def api_game_winner_update():
 		).order_by(asc(Match.date), asc(Game.game_num))
 		
 		# Look for next game after current one
+		current_found = False
 		for game, match in rem_games.all():
-			# Skip current game and earlier games in same match
-			if (match.match_id == match_id) and (game.game_num <= int(game_num)):
+			# Find current game first, then return the next one
+			if (match.match_id == match_id) and (game.game_num == int(game_num)):
+				current_found = True
+				continue
+			
+			# If we haven't found the current game yet, skip this one
+			if not current_found:
 				continue
 			
 			game_actions_record = GameActions.query.filter_by(
