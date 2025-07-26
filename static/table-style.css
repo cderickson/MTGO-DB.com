@@ -278,12 +278,13 @@
   line-height: 1.5;
   color: var(--fg-body);
   font-family: var(--font-mono);
-  max-height: 120px;
+  min-height: 60px;
+  max-height: 300px;
   overflow-y: auto;
-  padding: var(--spacing-sm);
-  background: var(--bg-default);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-subtle);
+  padding: var(--spacing-xs);
+  background: transparent;
+  border: none;
+  word-wrap: break-word;
 }
 
 /* Form Grid */
@@ -441,6 +442,102 @@
     flex: 1;
     min-width: 0;
   }
+}
+
+/* Revision Form Layout - Force Equal Column Widths via Grid */
+#reviseForm .form-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* Important for text overflow */
+}
+
+#reviseForm .form-group .dropdown {
+  width: 100%;
+  min-width: 0;
+}
+
+#reviseForm .form-group .dropdown .button {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+#reviseForm .form-group .form-input {
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+}
+
+/* Reduce spacing in revision form */
+#reviseForm .form-group {
+  margin-bottom: var(--spacing-md) !important;
+}
+
+#reviseForm .form-label {
+  margin-bottom: var(--spacing-sm) !important;
+}
+
+/* Reduce modal padding for more compact layout */
+#ReviseModal .modal-body {
+  padding: var(--spacing-md) var(--spacing-lg) !important;
+}
+
+#ReviseModal .modal-footer {
+  padding: var(--spacing-md) var(--spacing-lg) !important;
+}
+
+/* Make modal footer buttons equal width */
+#ReviseModal .modal-footer .button {
+  min-width: 150px !important;
+  flex: 1 !important;
+  max-width: 150px !important;
+}
+
+/* Modal height constraints for varying card list lengths */
+#ReviseModal .modal-content {
+  min-height: 600px !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+}
+
+/* Adjust card lists to better accommodate content */
+.card-lists {
+  min-height: 120px;
+}
+
+/* Subtle visual treatment for card content areas */
+.card-content {
+  position: relative;
+}
+
+/* Empty state styling */
+.card-content:empty:after {
+  content: 'No cards played';
+  color: var(--fg-muted);
+  font-style: italic;
+  opacity: 0.7;
+}
+
+/* Fix dropdown overflow in all modals */
+.modal .modal-content {
+  overflow: visible !important;
+}
+
+.modal .modal-body {
+  overflow: visible !important;
+}
+
+/* Enhance dropdown menu positioning and z-index for all modal dropdowns */
+.modal .dropdown-menu {
+  position: fixed !important;
+  z-index: 20000 !important;
+  min-width: 180px !important;
+  max-height: 200px !important;
+  overflow-y: auto !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* Dark Mode Support */

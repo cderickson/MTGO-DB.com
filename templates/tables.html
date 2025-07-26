@@ -299,11 +299,11 @@
 
 <!-- Modern Revision Modal -->
 <div id="ReviseModal" class="modal" style="display: none;">
-  <div class="modal-content" style="max-width: 900px; width: 90%;">
+  <div class="modal-content" style="max-width: 900px !important; width: 90%;">
     <div class="modal-header">
       <div style="display: flex; align-items: center; gap: var(--spacing-md);">
         <div>
-          <h3 id="ReviseModalLabel" style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Revise Record</h3>
+          <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Revise Record</h3>
           <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Update match information</p>
         </div>
       </div>
@@ -313,10 +313,9 @@
     </div>
     <div class="modal-body">
       <!-- Game Information -->
-      <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
-        <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
-          <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
-          <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Match Information</h4>
+      <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-md);">
+        <div id="ModalMatchId" style="color: var(--fg-body); font-weight: 600; font-size: 1rem; text-align: center; margin-bottom: var(--spacing-xs);">
+          Match ID
         </div>
         <div id="ModalDate" style="color: var(--fg-body); font-weight: 500; font-size: 0.875rem; text-align: center;">
           Date
@@ -325,7 +324,6 @@
 
       <!-- Players and Cards -->
       <div style="margin-bottom: var(--spacing-lg);">
-        <h4 style="color: var(--fg-default); font-size: 1rem; font-weight: 600; margin-bottom: var(--spacing-md);">Players & Cards</h4>
         <div class="revision-players">
           <div class="player-section">
             <div id="ModalP1" class="player-name">Player 1</div>
@@ -358,7 +356,8 @@
 
       <!-- Revision Form -->
       <form id="reviseForm">
-        <div class="form-grid">
+        <!-- Row 1: Player Fields -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
           <div class="form-group">
             <label class="form-label">P1 Archetype</label>
             <div class="dropdown">
@@ -370,7 +369,7 @@
           </div>
           
           <div class="form-group">
-            <label class="form-label">P1 Sub-archetype</label>
+            <label class="form-label">P1 Subarchetype</label>
             <input type="text" class="form-input" id="P1_Subarch" placeholder="P1_Subarch" value="P1_Subarch">
           </div>
           
@@ -385,10 +384,14 @@
           </div>
           
           <div class="form-group">
-            <label class="form-label">P2 Sub-archetype</label>
+            <label class="form-label">P2 Subarchetype</label>
             <input type="text" class="form-input" id="P2_Subarch" placeholder="P2_Subarch" value="P2_Subarch">
           </div>
-          
+        </div>
+        
+        <!-- Row 2: Match Fields (Centered) -->
+        <div style="display: grid; grid-template-columns: 1fr repeat(3, minmax(0, 1fr)) 1fr; gap: var(--spacing-md); align-items: start; margin-bottom: 0;">
+          <div></div> <!-- Empty spacer -->
           <div class="form-group">
             <label class="form-label">Format</label>
             <div class="dropdown">
@@ -409,7 +412,7 @@
             </div>
           </div>
           
-          <div class="form-group span-2">
+          <div class="form-group">
             <label class="form-label">Match Type</label>
             <div class="dropdown">
               <button class="button secondary dropdown-toggle" type="button" id="MatchTypeButton" onclick="toggleDropdown(event, 'MatchTypeMenu')">
@@ -418,9 +421,11 @@
               <ul class="dropdown-menu" id="MatchTypeMenu"></ul>
             </div>
           </div>
+          <div></div> <!-- Empty spacer -->
         </div>
       </form>
     </div>
+    
     <div class="modal-footer">
       <div class="d-flex gap-3 justify-content-end">
         <button type="button" class="button secondary" onclick="hideReviseModal()">
@@ -429,7 +434,7 @@
         </button>
         <button type="button" class="button primary" onclick="changeHiddenInputs()">
           <i class="fas fa-save" style="margin-right: var(--spacing-xs);"></i>
-          Apply Changes
+          Apply
         </button>
       </div>
     </div>

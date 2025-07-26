@@ -769,7 +769,7 @@
       max-height: 90vh !important;
       width: 90% !important;
       max-width: 600px !important;
-      overflow-y: auto !important;
+      overflow: visible !important;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
     }
     
@@ -803,6 +803,10 @@
       width: 90% !important;
     }
     
+    #ReviseModal .modal-content {
+      max-width: 1000px !important;
+    }
+    
     /* Mobile responsiveness for modals */
     @media (max-width: 768px) {
       .modal-content {
@@ -816,7 +820,8 @@
       #ImportModal .modal-content,
       #ImportAppModal .modal-content,
       #ReprocessModal .modal-content,
-      #processingModal .modal-content {
+      #processingModal .modal-content,
+      #ReviseModal .modal-content {
         max-width: none !important;
         width: 95% !important;
       }
@@ -837,6 +842,8 @@
     
     .modal-body {
       padding: var(--spacing-lg) !important;
+      overflow: visible !important;
+      max-height: calc(90vh - 200px) !important;
     }
     
     .modal-footer {
@@ -1160,6 +1167,10 @@
       // Close all dropdowns and reset toggles
       document.querySelectorAll('.dropdown-menu').forEach(menu => {
         menu.classList.remove('show');
+        // Reset positioning styles
+        menu.style.left = '';
+        menu.style.top = '';
+        menu.style.position = '';
       });
       document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
         toggle.classList.remove('active');
@@ -1169,6 +1180,31 @@
       if (!isVisible) {
         dropdown.classList.add('show');
         toggle.classList.add('active');
+        
+        // Check if dropdown is inside a modal and position it fixed to viewport
+        const isInModal = toggle.closest('.modal');
+        if (isInModal && dropdown.classList.contains('dropdown-menu')) {
+          const rect = toggle.getBoundingClientRect();
+          dropdown.style.position = 'fixed';
+          dropdown.style.left = rect.left + 'px';
+          dropdown.style.top = (rect.bottom + 2) + 'px';
+          dropdown.style.zIndex = '20000';
+          
+          // Adjust if dropdown would go off-screen
+          const dropdownHeight = 200; // Approximate dropdown height
+          const viewportHeight = window.innerHeight;
+          const viewportWidth = window.innerWidth;
+          
+          // Check if dropdown goes below viewport
+          if (rect.bottom + dropdownHeight > viewportHeight) {
+            dropdown.style.top = (rect.top - dropdownHeight - 2) + 'px';
+          }
+          
+          // Check if dropdown goes off right edge
+          if (rect.left + 200 > viewportWidth) {
+            dropdown.style.left = (rect.right - 200) + 'px';
+          }
+        }
       }
     }
     

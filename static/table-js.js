@@ -418,16 +418,16 @@ class TableManager {
   }
 
   async populateReviseModal(data) {
-    // Update modal title
-    const modalLabel = document.getElementById('ReviseModalLabel');
-    if (modalLabel) {
-      modalLabel.textContent = `Revise Record - ${data.match_id}`;
+    // Update match ID
+    const modalMatchId = document.getElementById('ModalMatchId');
+    if (modalMatchId) {
+      modalMatchId.innerHTML = `<b>Match ID:</b> ${data.match_id}`;
     }
 
     // Update date
     const modalDate = document.getElementById('ModalDate');
     if (modalDate) {
-      modalDate.innerHTML = `<center><b>Date Played:</b> ${data.date}</center>`;
+      modalDate.innerHTML = `<b>Date Played:</b> ${data.date}`;
     }
 
     // Update players and card lists
@@ -439,21 +439,45 @@ class TableManager {
     const reviseLands2 = document.getElementById('ReviseLands2');
 
     if (modalP1 && modalP2) {
-      if (data.p1 === data.casting_player1) {
-        modalP1.innerHTML = `<b>P1: ${data.casting_player1}</b>`;
-        modalP2.innerHTML = `<b>P2: ${data.casting_player2}</b>`;
-        if (revisePlays1) revisePlays1.innerHTML = (data.plays1 || []).join('<br>');
-        if (revisePlays2) revisePlays2.innerHTML = (data.plays2 || []).join('<br>');
-        if (reviseLands1) reviseLands1.innerHTML = (data.lands1 || []).join('<br>');
-        if (reviseLands2) reviseLands2.innerHTML = (data.lands2 || []).join('<br>');
+      // Use p1 and p2 from match data as primary source of truth
+      const player1 = data.p1 || 'Player 1';
+      const player2 = data.p2 || 'Player 2';
+      
+      modalP1.innerHTML = `<b>P1: ${player1}</b>`;
+      modalP2.innerHTML = `<b>P2: ${player2}</b>`;
+      
+      // For card lists, use casting_player data if available, otherwise use p1/p2 mapping
+      let plays1Data = [];
+      let plays2Data = [];
+      let lands1Data = [];
+      let lands2Data = [];
+      
+      if (data.casting_player1 && data.casting_player2) {
+        // Check which casting player corresponds to which position
+        if (data.p1 === data.casting_player1) {
+          plays1Data = data.plays1 || [];
+          plays2Data = data.plays2 || [];
+          lands1Data = data.lands1 || [];
+          lands2Data = data.lands2 || [];
+        } else {
+          // Swap the data if casting players are reversed
+          plays1Data = data.plays2 || [];
+          plays2Data = data.plays1 || [];
+          lands1Data = data.lands2 || [];
+          lands2Data = data.lands1 || [];
+        }
       } else {
-        modalP1.innerHTML = `<b>P1: ${data.casting_player2}</b>`;
-        modalP2.innerHTML = `<b>P2: ${data.casting_player1}</b>`;
-        if (revisePlays1) revisePlays1.innerHTML = (data.plays2 || []).join('<br>');
-        if (revisePlays2) revisePlays2.innerHTML = (data.plays1 || []).join('<br>');
-        if (reviseLands1) reviseLands1.innerHTML = (data.lands2 || []).join('<br>');
-        if (reviseLands2) reviseLands2.innerHTML = (data.lands1 || []).join('<br>');
+        // Fallback to direct mapping if casting player data is not available
+        plays1Data = data.plays1 || [];
+        plays2Data = data.plays2 || [];
+        lands1Data = data.lands1 || [];
+        lands2Data = data.lands2 || [];
       }
+      
+      if (revisePlays1) revisePlays1.innerHTML = plays1Data.join('<br>');
+      if (revisePlays2) revisePlays2.innerHTML = plays2Data.join('<br>');
+      if (reviseLands1) reviseLands1.innerHTML = lands1Data.join('<br>');
+      if (reviseLands2) reviseLands2.innerHTML = lands2Data.join('<br>');
     }
 
     // Update form fields
