@@ -231,7 +231,7 @@
                 </a>
               </li>
               <li class="nav-item">
-                <a href="{{ url_for('views.export') }}" class="nav-link">
+                <a href="{{ url_for('views.export') }}" class="nav-link" onclick="handleExportClick(this); return false;">
                   <i class="fas fa-file-excel nav-icon"></i>
                   <span class="nav-text">Export to Excel</span>
                 </a>
@@ -316,7 +316,7 @@
               <i class="fas fa-list" style="color: var(--fg-muted); font-size: 0.875rem;"></i>
               End Game Actions
             </h4>
-            <div id="EndGameActions" style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: var(--spacing-lg); border: 1px solid var(--border); font-family: monospace; font-size: 0.875rem; line-height: 1.6; color: var(--fg-body); height: calc(17 * 1.4rem + 2 * var(--spacing-lg)); overflow: hidden;">
+            <div id="EndGameActions" style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: var(--spacing-lg); border: 1px solid var(--border); font-family: monospace; font-size: 0.875rem; line-height: 1.6; color: var(--fg-body); height: calc(17 * 1.4rem + 2 * var(--spacing-lg)); overflow: hidden; margin-bottom: var(--spacing-md);">
               Game Action 1<br>
               Game Action 2<br>
               Game Action 3<br>
@@ -333,15 +333,14 @@
               Game Action 14<br>
               Game Action 15<br>
             </div>
-            
-          </div>
-          <div class="modal-footer">
-            <div style="background: rgba(245, 158, 11, 0.05); border-left: 4px solid #f59e0b; border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+            <div style="background: rgba(245, 158, 11, 0.05); border-left: 4px solid #f59e0b; border-radius: var(--radius-md); padding: var(--spacing-lg);">
               <div style="display: flex; align-items: center; gap: var(--spacing-md);">
                 <i class="fas fa-exclamation-triangle" style="color: #f59e0b; font-size: 1.125rem;"></i>
                 <p style="margin: 0; color: var(--fg-body); line-height: 1.6;"><strong>Game winner could not be automatically determined.</strong> Please review the game actions above and choose the winner manually.</p>
               </div>
             </div>
+          </div>
+          <div class="modal-footer">
             <div class="d-flex gap-3 justify-content-center">
               <button type="button" class="button secondary" onclick="applyGetWinner('0')">
                 <i class="fas fa-forward" style="margin-right: var(--spacing-xs);"></i>
@@ -380,7 +379,7 @@
               </div>
             </div>
             
-            <div style="margin-bottom: var(--spacing-lg);">
+            <div style="margin-bottom: var(--spacing-md);">
               <h4 style="color: var(--fg-default); font-size: 1rem; font-weight: 600; margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm);">
                 <i class="fas fa-cards" style="color: var(--fg-muted); font-size: 0.875rem;"></i>
                 Draft Pool
@@ -411,19 +410,20 @@
                 </div>
               </div>
             </div>
-          </div>
-          <div class="modal-footer">
-            <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+            <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg);">
               <div style="display: flex; align-items: center; gap: var(--spacing-md);">
                 <i class="fas fa-link" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
                 <p style="margin: 0; color: var(--fg-body); line-height: 1.6;"><strong>Choose the Draft ID</strong> that should be associated with this match based on the card pool.</p>
               </div>
             </div>
+          </div>
+
+          <div class="modal-footer">
             <div class="d-flex gap-3 justify-content-center">
               <div class="dropdown">
                 <button class="button secondary dropdown-toggle" type="button" id="DraftIdButton" onclick="toggleDropdown(event, 'DraftIdMenu')">
                   <i class="fas fa-chevron-down" style="margin-right: var(--spacing-xs);"></i>
-                  Associated Draft_ID
+                  Draft ID
                 </button>
                 <ul class="dropdown-menu" id="DraftIdMenu"></ul>
               </div>
@@ -509,7 +509,7 @@
               </button>
               <button type="submit" class="button primary" form="getBestGuessModal">
                 <i class="fas fa-magic" style="margin-right: var(--spacing-sm);"></i>
-                Apply Best Guess
+                Apply
               </button>
             </div>
           </div>
@@ -651,6 +651,12 @@
             <div class="spinner" style="width: 40px; height: 40px; margin: 0 auto 20px;"></div>
             <h4>Processing...</h4>
             <p id="processingMessage">Please wait while we process your request.</p>
+            <div id="processingButtons" style="margin-top: 20px; display: none;">
+              <button type="button" class="button secondary" onclick="hideProcessingModal()">
+                <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -714,7 +720,7 @@
               <a href="https://github.com/cderickson/Scripts/raw/main/Zip-MTGO-Logs.exe" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">
                 <button type="button" class="button primary">
                   <i class="fas fa-download" style="margin-right: var(--spacing-sm);"></i>
-                  Download Script
+                  Download
                 </button>
               </a>
             </div>
@@ -1369,6 +1375,162 @@
       const modal = document.getElementById('processingModal');
       modal.style.display = 'none';
       document.body.style.overflow = 'auto';
+      
+      // Clean up export-related timeouts and intervals
+      if (exportTimeout) {
+        clearTimeout(exportTimeout);
+        exportTimeout = null;
+      }
+      if (downloadCheckInterval) {
+        clearInterval(downloadCheckInterval);
+        downloadCheckInterval = null;
+      }
+      
+      // Reset state
+      downloadStarted = false;
+      
+      // Reset modal to default state
+      document.getElementById('processingButtons').style.display = 'none';
+      document.getElementById('processingMessage').textContent = 'Please wait while we process your request.';
+    }
+    
+    let exportTimeout;
+    let downloadCheckInterval;
+    let downloadStarted = false;
+    
+    function handleExportClick(linkElement) {
+      // Reset state
+      downloadStarted = false;
+      
+      // Show processing modal
+      showProcessingModal('Preparing your Excel export...');
+      
+      // Hide cancel button initially
+      document.getElementById('processingButtons').style.display = 'none';
+      
+      // Show cancel button after 8 seconds
+      setTimeout(function() {
+        const modal = document.getElementById('processingModal');
+        if (modal.style.display === 'flex' && !downloadStarted) {
+          document.getElementById('processingButtons').style.display = 'block';
+          document.getElementById('processingMessage').textContent = 'Export is taking longer than expected. You can cancel or continue waiting.';
+        }
+      }, 8000);
+      
+      // Set up multiple download detection methods
+      setupAdvancedDownloadDetection();
+      
+      // Trigger the download
+      initiateDownload(linkElement.href);
+      
+      // Fallback: Hide modal after 60 seconds
+      exportTimeout = setTimeout(function() {
+        if (!downloadStarted) {
+          hideProcessingModal();
+        }
+      }, 60000);
+    }
+    
+    function initiateDownload(url) {
+      // Create a temporary link element for better download control
+      const tempLink = document.createElement('a');
+      tempLink.href = url;
+      tempLink.style.display = 'none';
+      document.body.appendChild(tempLink);
+      
+      // Track the original URL
+      const originalUrl = window.location.href;
+      
+      // Click the link to start download
+      tempLink.click();
+      
+      // Clean up the temporary link
+      setTimeout(function() {
+        if (document.body.contains(tempLink)) {
+          document.body.removeChild(tempLink);
+        }
+      }, 1000);
+      
+      // Check if URL changed (some browsers do this for downloads)
+      setTimeout(function() {
+        if (window.location.href !== originalUrl) {
+          downloadDetected();
+        }
+      }, 500);
+    }
+    
+    function setupAdvancedDownloadDetection() {
+      let checkCount = 0;
+      const maxChecks = 120; // Check for 2 minutes max
+      
+      // Method 1: Monitor page visibility changes
+      const visibilityHandler = function() {
+        if (document.hidden) {
+          setTimeout(function() {
+            if (!document.hidden && !downloadStarted) {
+              downloadDetected();
+            }
+          }, 1500);
+        }
+      };
+      
+      document.addEventListener('visibilitychange', visibilityHandler);
+      
+      // Method 2: Monitor for focus changes
+      const focusHandler = function() {
+        setTimeout(function() {
+          if (document.hasFocus() && !downloadStarted) {
+            downloadDetected();
+          }
+        }, 1000);
+      };
+      
+      window.addEventListener('focus', focusHandler);
+      
+      // Method 3: Periodic check for browser download behavior
+      downloadCheckInterval = setInterval(function() {
+        checkCount++;
+        
+        // Method 4: Check if any new blob URLs were created (for some download types)
+        if (performance && performance.getEntriesByType) {
+          const entries = performance.getEntriesByType('navigation');
+          if (entries.length > 0 && !downloadStarted) {
+            // Additional download indicators can be checked here
+          }
+        }
+        
+        // Stop checking after max attempts
+        if (checkCount >= maxChecks || downloadStarted) {
+          clearInterval(downloadCheckInterval);
+          document.removeEventListener('visibilitychange', visibilityHandler);
+          window.removeEventListener('focus', focusHandler);
+        }
+      }, 1000);
+      
+      // Method 5: Detect if browser shows download notification
+      setTimeout(function() {
+        if (!downloadStarted) {
+          // If we haven't detected download by now, assume it started
+          downloadDetected();
+        }
+      }, 12000); // 12 seconds should be enough for most cases
+    }
+    
+    function downloadDetected() {
+      if (downloadStarted) return; // Prevent multiple calls
+      downloadStarted = true;
+      
+      // Clear all timers and intervals
+      if (exportTimeout) clearTimeout(exportTimeout);
+      if (downloadCheckInterval) clearInterval(downloadCheckInterval);
+      
+      // Update message to show success
+      document.getElementById('processingMessage').textContent = 'Download started! The file should appear in your downloads.';
+      
+      // Close modal after 2 seconds
+      setTimeout(function() {
+        hideProcessingModal();
+      }, 2000);
     }
     
     // Form update functions
@@ -1379,21 +1541,71 @@
     
     // Close modals when clicking outside or pressing Escape
     document.addEventListener('click', function(event) {
-      if (event.target.classList.contains('modal') && !event.target.classList.contains('image-modal')) {
-        event.target.style.display = 'none';
-        document.body.style.overflow = 'auto';
+      if (event.target.classList.contains('modal') && !event.target.classList.contains('image-modal') && event.target.id !== 'processingModal') {
+        // Check which specific modal is being closed and call the appropriate close function
+        if (event.target.id === 'ReviseModal') {
+          if (typeof hideReviseModal === 'function') {
+            hideReviseModal();
+          } else {
+            event.target.style.display = 'none';
+            document.body.style.overflow = 'auto';
+          }
+        } else if (event.target.id === 'ReviseMultiModal') {
+          if (typeof hideReviseMultiModal === 'function') {
+            hideReviseMultiModal();
+          } else {
+            event.target.style.display = 'none';
+            document.body.style.overflow = 'auto';
+          }
+        } else if (event.target.id === 'RemoveModal') {
+          if (typeof hideRemoveModal === 'function') {
+            hideRemoveModal();
+          } else {
+            event.target.style.display = 'none';
+            document.body.style.overflow = 'auto';
+          }
+        } else {
+          // For other modals, use the default behavior
+          event.target.style.display = 'none';
+          document.body.style.overflow = 'auto';
+        }
       }
     });
     
     // Keyboard support for modals
     document.addEventListener('keydown', function(event) {
       if (event.key === 'Escape') {
-        // Close any open modals (except image modal which has its own handler)
-        const modals = document.querySelectorAll('.modal:not(.image-modal)');
+        // Close any open modals (except image modal and processing modal)
+        const modals = document.querySelectorAll('.modal:not(.image-modal):not(#processingModal)');
         modals.forEach(modal => {
           if (modal.style.display === 'flex') {
-            modal.style.display = 'none';
-            document.body.style.overflow = 'auto';
+            // Check which specific modal is being closed and call the appropriate close function
+            if (modal.id === 'ReviseModal') {
+              if (typeof hideReviseModal === 'function') {
+                hideReviseModal();
+              } else {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+              }
+            } else if (modal.id === 'ReviseMultiModal') {
+              if (typeof hideReviseMultiModal === 'function') {
+                hideReviseMultiModal();
+              } else {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+              }
+            } else if (modal.id === 'RemoveModal') {
+              if (typeof hideRemoveModal === 'function') {
+                hideRemoveModal();
+              } else {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+              }
+            } else {
+              // For other modals, use the default behavior
+              modal.style.display = 'none';
+              document.body.style.overflow = 'auto';
+            }
           }
         });
       }

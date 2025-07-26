@@ -848,6 +848,53 @@ body {
   color: var(--fg-default);
 }
 
+/* Standardized modal body and footer styling across all modals */
+#ReviseModal .modal-body,
+#ReviseMultiModal .modal-body,
+#RemoveModal .modal-body,
+#GameWinnerModal .modal-body,
+#DraftIdModal .modal-body,
+#BestGuessModal .modal-body,
+#ImportModal .modal-body,
+#ImportAppModal .modal-body,
+#ReprocessModal .modal-body,
+#processingModal .modal-body,
+#ZipLogsModal .modal-body,
+#resetModal .modal-body {
+  padding: var(--spacing-md) var(--spacing-lg) !important;
+}
+
+#ReviseModal .modal-footer,
+#ReviseMultiModal .modal-footer,
+#RemoveModal .modal-footer,
+#GameWinnerModal .modal-footer,
+#DraftIdModal .modal-footer,
+#BestGuessModal .modal-footer,
+#ImportModal .modal-footer,
+#ImportAppModal .modal-footer,
+#ReprocessModal .modal-footer,
+#processingModal .modal-footer,
+#ZipLogsModal .modal-footer,
+#resetModal .modal-footer {
+  padding: var(--spacing-md) var(--spacing-lg) !important;
+}
+
+/* Standardized button widths across all modals */
+#GameWinnerModal .modal-footer .button,
+#DraftIdModal .modal-footer .button,
+#BestGuessModal .modal-footer .button,
+#ImportModal .modal-footer .button,
+#ImportAppModal .modal-footer .button,
+#ReprocessModal .modal-footer .button,
+#processingModal .modal-footer .button,
+#ZipLogsModal .modal-footer .button,
+#resetModal .modal-footer .button {
+  width: 200px !important;
+  min-width: 200px !important;
+  max-width: 200px !important;
+  flex: none !important;
+}
+
 /* Form Styles */
 .form-group {
   margin-bottom: var(--spacing-lg);

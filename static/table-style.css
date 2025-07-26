@@ -456,10 +456,20 @@
   min-width: 0;
 }
 
-#reviseForm .form-group .dropdown .button {
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 100% !important;
+/* Combined width control for all inputs and action buttons */
+#reviseForm .form-group .dropdown .button,
+#ReviseModal .dropdown .button,
+#ReviseMultiModal .dropdown .button,
+#ReviseMultiModal .form-input,
+#ReviseButton,
+#RemoveButton,
+#BackButton,
+#NextButton,
+#PrevButton {
+  width: 200px !important;
+  min-width: 200px !important;
+  max-width: 200px !important;
+  flex: none !important;
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
@@ -478,22 +488,96 @@
 
 #reviseForm .form-label {
   margin-bottom: var(--spacing-sm) !important;
+  }
+
+  /* Make modal footer buttons equal width */
+#ReviseModal .modal-footer .button,
+#ReviseMultiModal .modal-footer .button,
+#RemoveModal .modal-footer .button {
+  width: 200px !important;
+  min-width: 200px !important;
+  max-width: 200px !important;
+  flex: none !important;
 }
 
-/* Reduce modal padding for more compact layout */
-#ReviseModal .modal-body {
-  padding: var(--spacing-md) var(--spacing-lg) !important;
+/* Center all form labels in both modals */
+#ReviseModal .form-label,
+#ReviseMultiModal .form-label {
+  text-align: center !important;
 }
 
-#ReviseModal .modal-footer {
-  padding: var(--spacing-md) var(--spacing-lg) !important;
+/* Style the field selector section for better visual hierarchy */
+#ReviseMultiModal .field-selector-section {
+  background: rgba(59, 130, 246, 0.05) !important;
+  border: 1px solid rgba(59, 130, 246, 0.2) !important;
+  border-radius: var(--radius-md) !important;
+  padding: var(--spacing-lg) !important;
+  margin-bottom: var(--spacing-lg) !important;
+  position: relative !important;
 }
 
-/* Make modal footer buttons equal width */
-#ReviseModal .modal-footer .button {
-  min-width: 150px !important;
-  flex: 1 !important;
-  max-width: 150px !important;
+#ReviseMultiModal .field-selector-section .form-label {
+  color: var(--sky-blue) !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+}
+
+#ReviseMultiModal .field-selector-section::before {
+  content: "1";
+  position: absolute;
+  top: -10px;
+  left: 20px;
+  background: var(--sky-blue);
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* Style the revision fields section */
+#ReviseMultiModal .revision-fields-section {
+  background: var(--bg-subtle) !important;
+  border-radius: var(--radius-md) !important;
+  padding: var(--spacing-lg) !important;
+  border: 1px solid var(--border) !important;
+  position: relative !important;
+}
+
+#ReviseMultiModal .revision-fields-section::before {
+  content: "2";
+  position: absolute;
+  top: -10px;
+  left: 20px;
+  background: var(--gray-500);
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* Text inputs now controlled by the combined rule above */
+
+/* Reduce vertical spacing in revision fields section */
+#ReviseMultiModal .revision-fields-section {
+  padding-bottom: 0 !important;
+}
+
+#ReviseMultiModal .revision-fields-section form {
+  margin-bottom: 0 !important;
+}
+
+#ReviseMultiModal .form-group:last-child {
+  margin-bottom: 0 !important;
 }
 
 /* Modal height constraints for varying card list lengths */

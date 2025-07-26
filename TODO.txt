@@ -1,0 +1,49 @@
+Apply Associated Draft ID Modal: 
+	Fix Draft ID dropdown (should be wider)
+	Center Draft Pool sections
+	Remove Processing Modal showing up after skipping through everything or applying a change
+
+Missing Game Winners Modal:
+	Window should stay open and load the next game after applying a new game winner
+
+Revise Record:
+	Spread out buttons so they don't overlap
+	Remove Processing Modal
+	After applying a revision, we should close the modal
+
+Revise Record Multi:
+	Remove Processing Modal
+	After applying a revision, we should close the modal
+	Isn't applying changes to database
+
+Remove, Remove & Ignore:
+	Should close modal after choosing an option
+
+Best Guess Deck Names:
+	Make window slightly wider
+	Test
+
+Data Dictionary:
+	Add Secondary tags
+
+Re-Process:
+	Decide how we want this function to handle new data (delete and re-parse)
+
+Dashboards:
+	Need to fix all
+
+Flash Messages:
+	Need to find a better location for them
+	Make them much wider to fit all messages
+
+Buttons:
+	Standardize button icons
+
+Profile:
+	Fix profile formatting
+	Make sure name change, etc. functionality works
+
+General
+	Add a footer
+	Play with styling, floating menu, etc.
+	Rename .js files

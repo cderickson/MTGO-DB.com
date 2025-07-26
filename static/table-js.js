@@ -418,6 +418,19 @@ class TableManager {
   }
 
   async populateReviseModal(data) {
+    // Store original form values for reset functionality
+    if (typeof originalFormValues !== 'undefined') {
+      originalFormValues = {
+        p1_arch: data.p1_arch,
+        p1_subarch: data.p1_subarch,
+        p2_arch: data.p2_arch,
+        p2_subarch: data.p2_subarch,
+        format: data.format,
+        limited_format: data.limited_format,
+        match_type: data.match_type
+      };
+    }
+
     // Update match ID
     const modalMatchId = document.getElementById('ModalMatchId');
     if (modalMatchId) {
@@ -500,8 +513,9 @@ class TableManager {
 
   updateDropdownValue(buttonId, value) {
     const button = document.getElementById(buttonId);
-    if (button && value && value !== 'NA') {
-      button.textContent = value;
+    if (button) {
+      // Always show the current value, use 'NA' as fallback for null/undefined
+      button.textContent = value || 'NA';
     }
   }
 
@@ -537,7 +551,7 @@ class TableManager {
       }
       if (limitedFormatButton) {
         limitedFormatButton.disabled = true;
-        limitedFormatButton.textContent = 'Limited_Format';
+        limitedFormatButton.textContent = 'NA';
       }
     }
   }
@@ -582,7 +596,10 @@ class TableManager {
     if (!this.inputOptions) return;
 
     // Populate archetype dropdowns
-    const archetypes = this.inputOptions['Archetypes'] || [];
+    const archetypes = [
+      ...(this.inputOptions['Archetypes'] || []),
+      'NA'
+    ];
     this.populateDropdownMenu('P1ArchMenu', archetypes, 'showP1Arch');
     this.populateDropdownMenu('P2ArchMenu', archetypes, 'showP2Arch');
     this.populateDropdownMenu('P1ArchMenuMulti', archetypes, 'showP1ArchMulti');
@@ -883,109 +900,177 @@ function removeHidden(removeType) {
   return true;
 }
 
+// Helper function to close all dropdowns
+function closeAllDropdowns() {
+  document.querySelectorAll('.dropdown-menu').forEach(menu => {
+    menu.classList.remove('show');
+    // Reset positioning styles
+    menu.style.left = '';
+    menu.style.top = '';
+    menu.style.position = '';
+  });
+  document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+    toggle.classList.remove('active');
+  });
+}
+
 // Dropdown helper functions (keeping compatibility with existing modals)
-function showP1Arch(item) { document.getElementById("P1ArchButton").innerHTML = item.innerHTML; }
-function showP2Arch(item) { document.getElementById("P2ArchButton").innerHTML = item.innerHTML; }
+function showP1Arch(item) { 
+  document.getElementById("P1ArchButton").innerHTML = item.innerHTML;
+  closeAllDropdowns();
+}
+function showP2Arch(item) { 
+  document.getElementById("P2ArchButton").innerHTML = item.innerHTML;
+  closeAllDropdowns();
+}
 function showFormat(item) { 
   document.getElementById("FormatButton").innerHTML = item.innerHTML;
+  closeAllDropdowns();
   if (tableManager) {
     // Fire and forget - don't block UI
     tableManager.handleFormatChange(item.innerHTML).catch(err => 
       console.error('Error handling format change:', err)
     );
   }
+  
+  // Populate limited format menu based on selected format
+  if (tableManager && tableManager.inputOptions) {
+    const constructedFormats = tableManager.inputOptions['Constructed Formats'] || [];
+    const limitedFormatButton = document.getElementById("LimitedFormatButton");
+    
+    if (!constructedFormats.includes(item.innerHTML) && item.innerHTML !== "NA") {
+      // This is a limited format, populate the dropdown
+      const limitedFormatMenu = document.getElementById("LimitedFormatMenu");
+      if (limitedFormatMenu && limitedFormatButton) {
+        limitedFormatButton.textContent = 'NA';
+        
+        if (item.innerHTML === "Booster Draft") {
+          const formats = tableManager.inputOptions["Booster Draft Formats"] || [];
+          limitedFormatMenu.innerHTML = formats.map(format => 
+            `<li onclick="showLimitedFormat(this)">${format}</li>`
+          ).join('');
+        } else if (item.innerHTML === "Sealed Deck") {
+          const formats = tableManager.inputOptions["Sealed Formats"] || [];
+          limitedFormatMenu.innerHTML = formats.map(format => 
+            `<li onclick="showLimitedFormat(this)">${format}</li>`
+          ).join('');
+        } else if (item.innerHTML === "Cube") {
+          const formats = tableManager.inputOptions["Cube Formats"] || [];
+          limitedFormatMenu.innerHTML = formats.map(format => 
+            `<li onclick="showLimitedFormat(this)">${format}</li>`
+          ).join('');
+        }
+      }
+    }
+  }
 }
-function showLimitedFormat(item) { document.getElementById("LimitedFormatButton").innerHTML = item.innerHTML; }
-function showMatchType(item) { document.getElementById("MatchTypeButton").innerHTML = item.innerHTML; }
+function showLimitedFormat(item) { 
+  document.getElementById("LimitedFormatButton").innerHTML = item.innerHTML;
+  closeAllDropdowns();
+}
+function showMatchType(item) { 
+  document.getElementById("MatchTypeButton").innerHTML = item.innerHTML;
+  closeAllDropdowns();
+}
 
-function showP1ArchMulti(item) { document.getElementById("P1ArchButtonMulti").innerHTML = item.innerHTML; }
-function showP2ArchMulti(item) { document.getElementById("P2ArchButtonMulti").innerHTML = item.innerHTML; }
-function showFormatMulti(item) { document.getElementById("FormatButtonMulti").innerHTML = item.innerHTML; }
-function showLimitedFormatMulti(item) { document.getElementById("LimitedFormatButtonMulti").innerHTML = item.innerHTML; }
-function showMatchTypeMulti(item) { document.getElementById("MatchTypeButtonMulti").innerHTML = item.innerHTML; }
+function showP1ArchMulti(item) { 
+  document.getElementById("P1ArchButtonMulti").innerHTML = item.innerHTML;
+  closeAllDropdowns();
+}
+function showP2ArchMulti(item) { 
+  document.getElementById("P2ArchButtonMulti").innerHTML = item.innerHTML;
+  closeAllDropdowns();
+}
+function showFormatMulti(item) { 
+  document.getElementById("FormatButtonMulti").innerHTML = item.innerHTML;
+  closeAllDropdowns();
+  
+  // Handle limited format logic
+  if (tableManager && tableManager.inputOptions) {
+    const constructedFormats = tableManager.inputOptions['Constructed Formats'] || [];
+    if (constructedFormats.includes(item.innerHTML)) {
+      document.getElementById("LimitedFormatButtonMulti").innerHTML = "NA";
+      document.getElementById("LimitedFormatButtonMulti").disabled = true;
+    } else if (item.innerHTML === "NA") {
+      document.getElementById("LimitedFormatButtonMulti").innerHTML = "NA";
+      document.getElementById("LimitedFormatButtonMulti").disabled = true;
+    } else {
+      document.getElementById("LimitedFormatButtonMulti").innerHTML = "NA";
+      document.getElementById("LimitedFormatButtonMulti").disabled = false;
+      
+      // Populate limited format menu based on selected format
+      const limitedFormatMenu = document.getElementById("LimitedFormatMenuMulti");
+      if (limitedFormatMenu && tableManager.inputOptions) {
+        if (item.innerHTML === "Booster Draft") {
+          const formats = tableManager.inputOptions["Booster Draft Formats"] || [];
+          limitedFormatMenu.innerHTML = formats.map(format => 
+            `<li onclick="showLimitedFormatMulti(this)">${format}</li>`
+          ).join('');
+        } else if (item.innerHTML === "Sealed Deck") {
+          const formats = tableManager.inputOptions["Sealed Formats"] || [];
+          limitedFormatMenu.innerHTML = formats.map(format => 
+            `<li onclick="showLimitedFormatMulti(this)">${format}</li>`
+          ).join('');
+        } else if (item.innerHTML === "Cube") {
+          const formats = tableManager.inputOptions["Cube Formats"] || [];
+          limitedFormatMenu.innerHTML = formats.map(format => 
+            `<li onclick="showLimitedFormatMulti(this)">${format}</li>`
+          ).join('');
+        }
+      }
+    }
+  }
+}
+function showLimitedFormatMulti(item) { 
+  document.getElementById("LimitedFormatButtonMulti").innerHTML = item.innerHTML;
+  closeAllDropdowns();
+}
+function showMatchTypeMulti(item) { 
+  document.getElementById("MatchTypeButtonMulti").innerHTML = item.innerHTML;
+  closeAllDropdowns();
+}
 
 // Multi-modal field switching functions
 function showP1Field(item) {
   document.getElementById("FieldToChangeButton").innerHTML = item.innerHTML;
-  // Show/hide relevant fields
-  document.getElementById("P1ArchCol1").style.display = 'block';
-  document.getElementById("P1ArchCol2").style.display = 'block';
-  document.getElementById("P1SubarchCol1").style.display = 'block';
-  document.getElementById("P1SubarchCol2").style.display = 'block';
-  document.getElementById("P2ArchCol1").style.display = 'none';
-  document.getElementById("P2ArchCol2").style.display = 'none';
-  document.getElementById("P2SubarchCol1").style.display = 'none';
-  document.getElementById("P2SubarchCol2").style.display = 'none';
-  document.getElementById("FormatCol1").style.display = 'none';
-  document.getElementById("FormatCol2").style.display = 'none';
-  document.getElementById("LimitedFormatCol1").style.display = 'none';
-  document.getElementById("LimitedFormatCol2").style.display = 'none';
-  document.getElementById("MatchTypeCol1").style.display = 'none';
-  document.getElementById("MatchTypeCol2").style.display = 'none';
-  document.getElementById("P1DeckBR").style.display = "inline";
-  document.getElementById("P2DeckBR").style.display = "none";
-  document.getElementById("FormatBR").style.display = "none";
+  closeAllDropdowns();
+  
+  // Show P1 container, hide all others
+  document.getElementById("P1FieldsContainer").style.display = 'block';
+  document.getElementById("P2FieldsContainer").style.display = 'none';
+  document.getElementById("FormatFieldsContainer").style.display = 'none';
+  document.getElementById("MatchTypeFieldsContainer").style.display = 'none';
 }
 
 function showP2Field(item) {
   document.getElementById("FieldToChangeButton").innerHTML = item.innerHTML;
-  document.getElementById("P1ArchCol1").style.display = 'none';
-  document.getElementById("P1ArchCol2").style.display = 'none';
-  document.getElementById("P1SubarchCol1").style.display = 'none';
-  document.getElementById("P1SubarchCol2").style.display = 'none';
-  document.getElementById("P2ArchCol1").style.display = 'block';
-  document.getElementById("P2ArchCol2").style.display = 'block';
-  document.getElementById("P2SubarchCol1").style.display = 'block';
-  document.getElementById("P2SubarchCol2").style.display = 'block';
-  document.getElementById("FormatCol1").style.display = 'none';
-  document.getElementById("FormatCol2").style.display = 'none';
-  document.getElementById("LimitedFormatCol1").style.display = 'none';
-  document.getElementById("LimitedFormatCol2").style.display = 'none';
-  document.getElementById("MatchTypeCol1").style.display = 'none';
-  document.getElementById("MatchTypeCol2").style.display = 'none';
-  document.getElementById("P1DeckBR").style.display = "none";
-  document.getElementById("P2DeckBR").style.display = "inline";
-  document.getElementById("FormatBR").style.display = "none";
+  closeAllDropdowns();
+  
+  // Show P2 container, hide all others
+  document.getElementById("P1FieldsContainer").style.display = 'none';
+  document.getElementById("P2FieldsContainer").style.display = 'block';
+  document.getElementById("FormatFieldsContainer").style.display = 'none';
+  document.getElementById("MatchTypeFieldsContainer").style.display = 'none';
 }
 
 function showFormatField(item) {
   document.getElementById("FieldToChangeButton").innerHTML = item.innerHTML;
-  document.getElementById("P1ArchCol1").style.display = 'none';
-  document.getElementById("P1ArchCol2").style.display = 'none';
-  document.getElementById("P1SubarchCol1").style.display = 'none';
-  document.getElementById("P1SubarchCol2").style.display = 'none';
-  document.getElementById("P2ArchCol1").style.display = 'none';
-  document.getElementById("P2ArchCol2").style.display = 'none';
-  document.getElementById("P2SubarchCol1").style.display = 'none';
-  document.getElementById("P2SubarchCol2").style.display = 'none';
-  document.getElementById("FormatCol1").style.display = 'block';
-  document.getElementById("FormatCol2").style.display = 'block';
-  document.getElementById("LimitedFormatCol1").style.display = 'block';
-  document.getElementById("LimitedFormatCol2").style.display = 'block';
-  document.getElementById("MatchTypeCol1").style.display = 'none';
-  document.getElementById("MatchTypeCol2").style.display = 'none';
-  document.getElementById("P1DeckBR").style.display = "none";
-  document.getElementById("P2DeckBR").style.display = "none";
-  document.getElementById("FormatBR").style.display = "inline";
+  closeAllDropdowns();
+  
+  // Show format container, hide all others
+  document.getElementById("P1FieldsContainer").style.display = 'none';
+  document.getElementById("P2FieldsContainer").style.display = 'none';
+  document.getElementById("FormatFieldsContainer").style.display = 'block';
+  document.getElementById("MatchTypeFieldsContainer").style.display = 'none';
 }
 
 function showMatchTypeField(item) {
   document.getElementById("FieldToChangeButton").innerHTML = item.innerHTML;
-  document.getElementById("P1ArchCol1").style.display = 'none';
-  document.getElementById("P1ArchCol2").style.display = 'none';
-  document.getElementById("P1SubarchCol1").style.display = 'none';
-  document.getElementById("P1SubarchCol2").style.display = 'none';
-  document.getElementById("P2ArchCol1").style.display = 'none';
-  document.getElementById("P2ArchCol2").style.display = 'none';
-  document.getElementById("P2SubarchCol1").style.display = 'none';
-  document.getElementById("P2SubarchCol2").style.display = 'none';
-  document.getElementById("FormatCol1").style.display = 'none';
-  document.getElementById("FormatCol2").style.display = 'none';
-  document.getElementById("LimitedFormatCol1").style.display = 'none';
-  document.getElementById("LimitedFormatCol2").style.display = 'none';
-  document.getElementById("MatchTypeCol1").style.display = 'block';
-  document.getElementById("MatchTypeCol2").style.display = 'block';
-  document.getElementById("P1DeckBR").style.display = "none";
-  document.getElementById("P2DeckBR").style.display = "none";
-  document.getElementById("FormatBR").style.display = "none";
+  closeAllDropdowns();
+  
+  // Show match type container, hide all others
+  document.getElementById("P1FieldsContainer").style.display = 'none';
+  document.getElementById("P2FieldsContainer").style.display = 'none';
+  document.getElementById("FormatFieldsContainer").style.display = 'none';
+  document.getElementById("MatchTypeFieldsContainer").style.display = 'block';
 }
