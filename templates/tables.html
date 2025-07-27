@@ -9,661 +9,665 @@
 
 <input type="hidden" name="tname" id="tname" value="{{ table_name }}">
 
-<!-- Main Table Container -->
-<div class="table-container">
-  <div class="table-header">
-    <div class="table-header-left">
-      <h2 class="table-title">
-        {% if table_name.lower() == 'ignored' %}
-          <i class="fas fa-eye-slash"></i>
-          Ignored Matches
-        {% else %}
-          <i class="fas fa-table"></i>
-          {{ table_name | capitalize }} Table
+<div class="content-wrapper">
+  <div class="tables-container">
+    <!-- Main Table Container -->
+    <div class="table-container">
+      <div class="table-header">
+        <div class="table-header-left">
+          <h2 class="table-title">
+            {% if table_name.lower() == 'ignored' %}
+              <i class="fas fa-eye-slash"></i>
+              Ignored Matches
+            {% else %}
+              <i class="fas fa-table"></i>
+              {{ table_name | capitalize }} Table
+            {% endif %}
+          </h2>
+          
+          {% if table_name.lower() in ['matches', 'games', 'drafts'] %}
+          <div class="table-hint">
+            <i class="fas fa-info-circle"></i>
+            Double-click rows to drill down to related data
+          </div>
+          {% elif table_name.lower() in ['plays', 'picks'] %}
+          <div class="table-hint">
+            <i class="fas fa-info-circle"></i>
+            Click Back to return to the previous view
+          </div>
+          {% elif table_name.lower() in ['ignored'] %}
+          <div class="table-hint">
+            <i class="fas fa-info-circle"></i>
+            Remove matches from your Ignored list and they will be scanned during your next import
+          </div>
+          {% endif %}
+        </div>
+        
+        {% if table_name.lower() == 'matches' %}
+        <div class="table-header-right">
+          <div class="control-buttons">
+            <button disabled id="ReviseButton" type="button" class="button secondary">
+              <i class="fas fa-edit"></i>
+              Revise Row(s)
+            </button>
+            <button disabled id="RemoveButton" type="button" class="button danger">
+              <i class="fas fa-trash"></i>
+              Remove Row(s)
+            </button>
+          </div>
+        </div>
+        {% elif table_name.lower() in ['games', 'plays', 'picks'] %}
+        <div class="table-header-right">
+          <div class="control-buttons">
+            <button id="BackButton" type="button" class="button secondary" onclick="navigateBack()">
+              <i class="fas fa-arrow-left"></i>
+              Back
+            </button>
+          </div>
+        </div>
+        {% elif table_name.lower() in ['ignored'] %}
+        <div class="table-header-right">
+          <div class="control-buttons">
+            <button id="RemoveIgnoredButton" type="button" class="button primary" data-bs-toggle="modal" data-bs-target="#ReviseIgnoredModal">
+              <i class="fas fa-undo"></i>
+              Unignore Match
+            </button>
+          </div>
+        </div>
         {% endif %}
-      </h2>
-      
-      {% if table_name.lower() in ['matches', 'games', 'drafts'] %}
-      <div class="table-hint">
-        <i class="fas fa-info-circle"></i>
-        Double-click rows to drill down to related data
       </div>
-      {% elif table_name.lower() in ['plays', 'picks'] %}
-      <div class="table-hint">
-        <i class="fas fa-info-circle"></i>
-        Click Back to return to the previous view
+
+      <div class="table-wrapper">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              {% if table_name.lower() == 'matches' %}
+                <th>Player 1</th>
+                <th>P1 Deck</th>
+                <th>P1 Subdeck</th>
+                <th>Player 2</th>
+                <th>P2 Deck</th>
+                <th>P2 Subdeck</th>
+                <th>P1 Roll</th>
+                <th>P2 Roll</th>
+                <th>Roll Winner</th>
+                <th>P1 Wins</th>
+                <th>P2 Wins</th>
+                <th>Match Winner</th>
+                <th>Format</th>
+                <th>Limited Format</th>
+                <th>Match Type</th>
+                <th>Date</th>
+              {% elif table_name.lower() == 'games' %}
+                <th>Player 1</th>
+                <th>Player 2</th>
+                <th>Game #</th>
+                <th>P/D Selector</th>
+                <th>P/D Choice</th>
+                <th>On Play</th>
+                <th>On Draw</th>
+                <th>P1 Mulligans</th>
+                <th>P2 Mulligans</th>
+                <th>Turns</th>
+                <th>Game Winner</th>
+              {% elif table_name.lower() == 'plays' %}
+                <th>Game #</th>
+                <th>Play #</th>
+                <th>Turn #</th>
+                <th>Casting Player</th>
+                <th>Action</th>
+                <th>Primary Card</th>
+                <th>Target 1</th>
+                <th>Target 2</th>
+                <th>Target 3</th>
+                <th>Opp Target</th>
+                <th>Self Target</th>
+                <th>Cards Drawn</th>
+                <th>Attackers</th>
+                <th>Active Player</th>
+                <th>Non-Active Player</th>
+              {% elif table_name.lower() == 'drafts' %}
+                <th>Hero</th>
+                <th>Player 2</th>
+                <th>Player 3</th>
+                <th>Player 4</th>
+                <th>Player 5</th>
+                <th>Player 6</th>
+                <th>Player 7</th>
+                <th>Player 8</th>
+                <th>Match Wins</th>
+                <th>Match Losses</th>
+                <th>Format</th>
+                <th>Date</th>
+              {% elif table_name.lower() == 'picks' %}
+                <th>Card</th>
+                <th>Pack #</th>
+                <th>Pick #</th>
+                <th>Pick Overall</th>
+                <th>Available 1</th>
+                <th>Available 2</th>
+                <th>Available 3</th>
+                <th>Available 4</th>
+                <th>Available 5</th>
+                <th>Available 6</th>
+                <th>Available 7</th>
+                <th>Available 8</th>
+                <th>Available 9</th>
+                <th>Available 10</th>
+                <th>Available 11</th>
+                <th>Available 12</th>
+                <th>Available 13</th>
+                <th>Available 14</th>
+              {% elif table_name.lower() == 'ignored' %}
+                <th>Match ID</th>
+                <th>Reason</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% if table is defined %}
+              {% for row in table %}
+              <tr class="jsTableRow" id="row{{ loop.index }}" data-index="{{ loop.index0 }}"
+                  {% if table_name.lower() == 'matches' %}data-match-id="{{ row.match_id }}" data-draft-id="{{ row.draft_id }}"
+                  {% elif table_name.lower() == 'games' %}data-match-id="{{ row.match_id }}" data-game-num="{{ row.game_num }}"
+                  {% elif table_name.lower() == 'drafts' %}data-draft-id="{{ row.draft_id }}"
+                  {% elif table_name.lower() == 'plays' %}data-match-id="{{ row.match_id }}" data-game-num="{{ row.game_num }}"
+                  {% elif table_name.lower() == 'picks' %}data-draft-id="{{ row.draft_id }}"
+                  {% endif %}>
+                {% if table_name.lower() == 'matches' %}
+                  <td>{{ row.p1 }}</td>
+                  <td>{{ row.p1_arch }}</td>
+                  <td>{{ row.p1_subarch }}</td>
+                  <td>{{ row.p2 }}</td>
+                  <td>{{ row.p2_arch }}</td>
+                  <td>{{ row.p2_subarch }}</td>
+                  <td>{{ row.p1_roll }}</td>
+                  <td>{{ row.p2_roll }}</td>
+                  <td>{{ row.roll_winner }}</td>
+                  <td>{{ row.p1_wins }}</td>
+                  <td>{{ row.p2_wins }}</td>
+                  <td>{{ row.match_winner }}</td>
+                  <td>{{ row.format }}</td>
+                  <td>{{ row.limited_format }}</td>
+                  <td>{{ row.match_type }}</td>
+                  <td class="cell-date">{{ row.date }}</td>
+                {% elif table_name.lower() == 'games' %}
+                  <td>{{ row.p1 }}</td>
+                  <td>{{ row.p2 }}</td>
+                  <td>{{ row.game_num }}</td>
+                  <td>{{ row.pd_selector }}</td>
+                  <td>{{ row.pd_choice }}</td>
+                  <td>{{ row.on_play }}</td>
+                  <td>{{ row.on_draw }}</td>
+                  <td>{{ row.p1_mulls }}</td>
+                  <td>{{ row.p2_mulls }}</td>
+                  <td>{{ row.turns }}</td>
+                  <td>{{ row.game_winner }}</td>
+                {% elif table_name.lower() == 'plays' %}
+                  <td>{{ row.game_num }}</td>
+                  <td>{{ row.play_num }}</td>
+                  <td>{{ row.turn_num }}</td>
+                  <td>{{ row.casting_player }}</td>
+                  <td>{{ row.action }}</td>
+                  <td>{{ row.primary_card }}</td>
+                  <td>{{ row.target1 }}</td>
+                  <td>{{ row.target2 }}</td>
+                  <td>{{ row.target3 }}</td>
+                  <td>{{ row.opp_target }}</td>
+                  <td>{{ row.self_target }}</td>
+                  <td>{{ row.cards_drawn }}</td>
+                  <td>{{ row.attackers }}</td>
+                  <td>{{ row.active_player }}</td>
+                  <td>{{ row.non_active_player }}</td>
+                {% elif table_name.lower() == 'drafts' %}
+                  <td>{{ row.hero }}</td>
+                  <td>{{ row.player2 }}</td>
+                  <td>{{ row.player3 }}</td>
+                  <td>{{ row.player4 }}</td>
+                  <td>{{ row.player5 }}</td>
+                  <td>{{ row.player6 }}</td>
+                  <td>{{ row.player7 }}</td>
+                  <td>{{ row.player8 }}</td>
+                  <td>{{ row.match_wins }}</td>
+                  <td>{{ row.match_losses }}</td>
+                  <td>{{ row.format }}</td>
+                  <td class="cell-date">{{ row.date }}</td>
+                {% elif table_name.lower() == 'picks' %}
+                  <td class="cell-card">{{ row.card }}</td>
+                  <td>{{ row.pack_num }}</td>
+                  <td>{{ row.pick_num }}</td>
+                  <td>{{ row.pick_ovr }}</td>
+                  <td>{{ row.avail1 }}</td>
+                  <td>{{ row.avail2 }}</td>
+                  <td>{{ row.avail3 }}</td>
+                  <td>{{ row.avail4 }}</td>
+                  <td>{{ row.avail5 }}</td>
+                  <td>{{ row.avail6 }}</td>
+                  <td>{{ row.avail7 }}</td>
+                  <td>{{ row.avail8 }}</td>
+                  <td>{{ row.avail9 }}</td>
+                  <td>{{ row.avail10 }}</td>
+                  <td>{{ row.avail11 }}</td>
+                  <td>{{ row.avail12 }}</td>
+                  <td>{{ row.avail13 }}</td>
+                  <td>{{ row.avail14 }}</td>
+                {% elif table_name.lower() == 'ignored' %}
+                  <td>{{ row.match_id }}</td>
+                  <td>{{ row.reason }}</td>
+                {% endif %}
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr class="no-data-row">
+                <td colspan="100%" class="no-data">
+                  <div class="no-data-message">
+                    <i class="fas fa-table"></i>
+                    <p>Loading table data...</p>
+                  </div>
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
       </div>
-      {% elif table_name.lower() in ['ignored'] %}
-      <div class="table-hint">
-        <i class="fas fa-info-circle"></i>
-        Remove matches from your Ignored list and they will be scanned during your next import
-      </div>
-      {% endif %}
     </div>
-    
-    {% if table_name.lower() == 'matches' %}
-    <div class="table-header-right">
-      <div class="control-buttons">
-        <button disabled id="ReviseButton" type="button" class="button secondary">
-          <i class="fas fa-edit"></i>
-          Revise Row(s)
+
+    <!-- Pagination Controls -->
+    {% if page_num %}
+    <div class="pagination-container">
+      <div class="pagination-controls">
+        <button id="PrevButton" type="button" class="button secondary pagination-btn" 
+                {% if page_num == 1 %}disabled{% endif %}
+                {% if page_num > 1 %}onclick="window.location.href='/table/{{ table_name }}/{{ page_num - 1 }}'"{% endif %}>
+          <i class="fas fa-chevron-left"></i>
+          Previous
         </button>
-        <button disabled id="RemoveButton" type="button" class="button danger">
-          <i class="fas fa-trash"></i>
-          Remove Row(s)
-        </button>
-      </div>
-    </div>
-    {% elif table_name.lower() in ['games', 'plays', 'picks'] %}
-    <div class="table-header-right">
-      <div class="control-buttons">
-        <button id="BackButton" type="button" class="button secondary" onclick="navigateBack()">
-          <i class="fas fa-arrow-left"></i>
-          Back
-        </button>
-      </div>
-    </div>
-    {% elif table_name.lower() in ['ignored'] %}
-    <div class="table-header-right">
-      <div class="control-buttons">
-        <button id="RemoveIgnoredButton" type="button" class="button primary" data-bs-toggle="modal" data-bs-target="#ReviseIgnoredModal">
-          <i class="fas fa-undo"></i>
-          Unignore Match
+        
+        <div class="page-info">
+          <span>Page {{ page_num }} of {{ pages }}</span>
+        </div>
+        
+        <button id="NextButton" type="button" class="button secondary pagination-btn"
+                {% if page_num == pages %}disabled{% endif %}
+                {% if page_num < pages %}onclick="window.location.href='/table/{{ table_name }}/{{ page_num + 1 }}'"{% endif %}>
+          Next
+          <i class="fas fa-chevron-right"></i>
         </button>
       </div>
     </div>
     {% endif %}
-  </div>
 
-  <div class="table-wrapper">
-    <table class="modern-table">
-      <thead>
-        <tr>
-          {% if table_name.lower() == 'matches' %}
-            <th>Player 1</th>
-            <th>P1 Deck</th>
-            <th>P1 Subdeck</th>
-            <th>Player 2</th>
-            <th>P2 Deck</th>
-            <th>P2 Subdeck</th>
-            <th>P1 Roll</th>
-            <th>P2 Roll</th>
-            <th>Roll Winner</th>
-            <th>P1 Wins</th>
-            <th>P2 Wins</th>
-            <th>Match Winner</th>
-            <th>Format</th>
-            <th>Limited Format</th>
-            <th>Match Type</th>
-            <th>Date</th>
-          {% elif table_name.lower() == 'games' %}
-            <th>Player 1</th>
-            <th>Player 2</th>
-            <th>Game #</th>
-            <th>P/D Selector</th>
-            <th>P/D Choice</th>
-            <th>On Play</th>
-            <th>On Draw</th>
-            <th>P1 Mulligans</th>
-            <th>P2 Mulligans</th>
-            <th>Turns</th>
-            <th>Game Winner</th>
-          {% elif table_name.lower() == 'plays' %}
-            <th>Game #</th>
-            <th>Play #</th>
-            <th>Turn #</th>
-            <th>Casting Player</th>
-            <th>Action</th>
-            <th>Primary Card</th>
-            <th>Target 1</th>
-            <th>Target 2</th>
-            <th>Target 3</th>
-            <th>Opp Target</th>
-            <th>Self Target</th>
-            <th>Cards Drawn</th>
-            <th>Attackers</th>
-            <th>Active Player</th>
-            <th>Non-Active Player</th>
-          {% elif table_name.lower() == 'drafts' %}
-            <th>Hero</th>
-            <th>Player 2</th>
-            <th>Player 3</th>
-            <th>Player 4</th>
-            <th>Player 5</th>
-            <th>Player 6</th>
-            <th>Player 7</th>
-            <th>Player 8</th>
-            <th>Match Wins</th>
-            <th>Match Losses</th>
-            <th>Format</th>
-            <th>Date</th>
-          {% elif table_name.lower() == 'picks' %}
-            <th>Card</th>
-            <th>Pack #</th>
-            <th>Pick #</th>
-            <th>Pick Overall</th>
-            <th>Available 1</th>
-            <th>Available 2</th>
-            <th>Available 3</th>
-            <th>Available 4</th>
-            <th>Available 5</th>
-            <th>Available 6</th>
-            <th>Available 7</th>
-            <th>Available 8</th>
-            <th>Available 9</th>
-            <th>Available 10</th>
-            <th>Available 11</th>
-            <th>Available 12</th>
-            <th>Available 13</th>
-            <th>Available 14</th>
-          {% elif table_name.lower() == 'ignored' %}
-            <th>Match ID</th>
-            <th>Reason</th>
-          {% endif %}
-        </tr>
-      </thead>
-      <tbody>
-        {% if table is defined %}
-          {% for row in table %}
-          <tr class="jsTableRow" id="row{{ loop.index }}" data-index="{{ loop.index0 }}"
-              {% if table_name.lower() == 'matches' %}data-match-id="{{ row.match_id }}" data-draft-id="{{ row.draft_id }}"
-              {% elif table_name.lower() == 'games' %}data-match-id="{{ row.match_id }}" data-game-num="{{ row.game_num }}"
-              {% elif table_name.lower() == 'drafts' %}data-draft-id="{{ row.draft_id }}"
-              {% elif table_name.lower() == 'plays' %}data-match-id="{{ row.match_id }}" data-game-num="{{ row.game_num }}"
-              {% elif table_name.lower() == 'picks' %}data-draft-id="{{ row.draft_id }}"
-              {% endif %}>
-            {% if table_name.lower() == 'matches' %}
-              <td>{{ row.p1 }}</td>
-              <td>{{ row.p1_arch }}</td>
-              <td>{{ row.p1_subarch }}</td>
-              <td>{{ row.p2 }}</td>
-              <td>{{ row.p2_arch }}</td>
-              <td>{{ row.p2_subarch }}</td>
-              <td>{{ row.p1_roll }}</td>
-              <td>{{ row.p2_roll }}</td>
-              <td>{{ row.roll_winner }}</td>
-              <td>{{ row.p1_wins }}</td>
-              <td>{{ row.p2_wins }}</td>
-              <td>{{ row.match_winner }}</td>
-              <td>{{ row.format }}</td>
-              <td>{{ row.limited_format }}</td>
-              <td>{{ row.match_type }}</td>
-              <td class="cell-date">{{ row.date }}</td>
-            {% elif table_name.lower() == 'games' %}
-              <td>{{ row.p1 }}</td>
-              <td>{{ row.p2 }}</td>
-              <td>{{ row.game_num }}</td>
-              <td>{{ row.pd_selector }}</td>
-              <td>{{ row.pd_choice }}</td>
-              <td>{{ row.on_play }}</td>
-              <td>{{ row.on_draw }}</td>
-              <td>{{ row.p1_mulls }}</td>
-              <td>{{ row.p2_mulls }}</td>
-              <td>{{ row.turns }}</td>
-              <td>{{ row.game_winner }}</td>
-            {% elif table_name.lower() == 'plays' %}
-              <td>{{ row.game_num }}</td>
-              <td>{{ row.play_num }}</td>
-              <td>{{ row.turn_num }}</td>
-              <td>{{ row.casting_player }}</td>
-              <td>{{ row.action }}</td>
-              <td>{{ row.primary_card }}</td>
-              <td>{{ row.target1 }}</td>
-              <td>{{ row.target2 }}</td>
-              <td>{{ row.target3 }}</td>
-              <td>{{ row.opp_target }}</td>
-              <td>{{ row.self_target }}</td>
-              <td>{{ row.cards_drawn }}</td>
-              <td>{{ row.attackers }}</td>
-              <td>{{ row.active_player }}</td>
-              <td>{{ row.non_active_player }}</td>
-            {% elif table_name.lower() == 'drafts' %}
-              <td>{{ row.hero }}</td>
-              <td>{{ row.player2 }}</td>
-              <td>{{ row.player3 }}</td>
-              <td>{{ row.player4 }}</td>
-              <td>{{ row.player5 }}</td>
-              <td>{{ row.player6 }}</td>
-              <td>{{ row.player7 }}</td>
-              <td>{{ row.player8 }}</td>
-              <td>{{ row.match_wins }}</td>
-              <td>{{ row.match_losses }}</td>
-              <td>{{ row.format }}</td>
-              <td class="cell-date">{{ row.date }}</td>
-            {% elif table_name.lower() == 'picks' %}
-              <td class="cell-card">{{ row.card }}</td>
-              <td>{{ row.pack_num }}</td>
-              <td>{{ row.pick_num }}</td>
-              <td>{{ row.pick_ovr }}</td>
-              <td>{{ row.avail1 }}</td>
-              <td>{{ row.avail2 }}</td>
-              <td>{{ row.avail3 }}</td>
-              <td>{{ row.avail4 }}</td>
-              <td>{{ row.avail5 }}</td>
-              <td>{{ row.avail6 }}</td>
-              <td>{{ row.avail7 }}</td>
-              <td>{{ row.avail8 }}</td>
-              <td>{{ row.avail9 }}</td>
-              <td>{{ row.avail10 }}</td>
-              <td>{{ row.avail11 }}</td>
-              <td>{{ row.avail12 }}</td>
-              <td>{{ row.avail13 }}</td>
-              <td>{{ row.avail14 }}</td>
-            {% elif table_name.lower() == 'ignored' %}
-              <td>{{ row.match_id }}</td>
-              <td>{{ row.reason }}</td>
-            {% endif %}
-          </tr>
-          {% endfor %}
-         {% else %}
-           <tr class="no-data-row">
-             <td colspan="100%" class="no-data">
-               <div class="no-data-message">
-                 <i class="fas fa-table"></i>
-                 <p>Loading table data...</p>
-               </div>
-             </td>
-           </tr>
-         {% endif %}
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<!-- Pagination Controls -->
-{% if page_num %}
-<div class="pagination-container">
-  <div class="pagination-controls">
-    <button id="PrevButton" type="button" class="button secondary pagination-btn" 
-            {% if page_num == 1 %}disabled{% endif %}
-            {% if page_num > 1 %}onclick="window.location.href='/table/{{ table_name }}/{{ page_num - 1 }}'"{% endif %}>
-      <i class="fas fa-chevron-left"></i>
-      Previous
-    </button>
-    
-    <div class="page-info">
-      <span>Page {{ page_num }} of {{ pages }}</span>
-    </div>
-    
-    <button id="NextButton" type="button" class="button secondary pagination-btn"
-            {% if page_num == pages %}disabled{% endif %}
-            {% if page_num < pages %}onclick="window.location.href='/table/{{ table_name }}/{{ page_num + 1 }}'"{% endif %}>
-      Next
-      <i class="fas fa-chevron-right"></i>
-    </button>
-  </div>
-</div>
-{% endif %}
-
-<!-- Modern Revision Modal -->
-<div id="ReviseModal" class="modal" style="display: none;">
-  <div class="modal-content" style="max-width: 900px !important; width: 90%;">
-    <div class="modal-header">
-      <div style="display: flex; align-items: center; gap: var(--spacing-md);">
-        <div>
-          <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Revise Record</h3>
-          <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Update match information</p>
+    <!-- Modern Revision Modal -->
+    <div id="ReviseModal" class="modal" style="display: none;">
+      <div class="modal-content" style="max-width: 900px !important; width: 90%;">
+        <div class="modal-header">
+          <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+            <div>
+              <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Revise Record</h3>
+              <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Update match information</p>
+            </div>
+          </div>
+          <button type="button" class="modal-close" onclick="hideReviseModal()">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
-      </div>
-      <button type="button" class="modal-close" onclick="hideReviseModal()">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-    <div class="modal-body">
-      <!-- Game Information -->
-      <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-md);">
-        <div id="ModalMatchId" style="color: var(--fg-body); font-weight: 600; font-size: 1rem; text-align: center; margin-bottom: var(--spacing-xs);">
-          Match ID
-        </div>
-        <div id="ModalDate" style="color: var(--fg-body); font-weight: 500; font-size: 0.875rem; text-align: center;">
-          Date
-        </div>
-      </div>
+        <div class="modal-body">
+          <!-- Game Information -->
+          <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-md);">
+            <div id="ModalMatchId" style="color: var(--fg-body); font-weight: 600; font-size: 1rem; text-align: center; margin-bottom: var(--spacing-xs);">
+              Match ID
+            </div>
+            <div id="ModalDate" style="color: var(--fg-body); font-weight: 500; font-size: 0.875rem; text-align: center;">
+              Date
+            </div>
+          </div>
 
-      <!-- Players and Cards -->
-      <div style="margin-bottom: var(--spacing-lg);">
-        <div class="revision-players">
-          <div class="player-section">
-            <div id="ModalP1" class="player-name">Player 1</div>
-            <div class="card-lists">
-              <div class="card-list">
-                <h5>Lands</h5>
-                <div id="ReviseLands1" class="card-content"></div>
+          <!-- Players and Cards -->
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div class="revision-players">
+              <div class="player-section">
+                <div id="ModalP1" class="player-name">Player 1</div>
+                <div class="card-lists">
+                  <div class="card-list">
+                    <h5>Lands</h5>
+                    <div id="ReviseLands1" class="card-content"></div>
+                  </div>
+                  <div class="card-list">
+                    <h5>Spells</h5>
+                    <div id="RevisePlays1" class="card-content"></div>
+                  </div>
+                </div>
               </div>
-              <div class="card-list">
-                <h5>Spells</h5>
-                <div id="RevisePlays1" class="card-content"></div>
+              <div class="player-section">
+                <div id="ModalP2" class="player-name">Player 2</div>
+                <div class="card-lists">
+                  <div class="card-list">
+                    <h5>Lands</h5>
+                    <div id="ReviseLands2" class="card-content"></div>
+                  </div>
+                  <div class="card-list">
+                    <h5>Spells</h5>
+                    <div id="RevisePlays2" class="card-content"></div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-          <div class="player-section">
-            <div id="ModalP2" class="player-name">Player 2</div>
-            <div class="card-lists">
-              <div class="card-list">
-                <h5>Lands</h5>
-                <div id="ReviseLands2" class="card-content"></div>
-              </div>
-              <div class="card-list">
-                <h5>Spells</h5>
-                <div id="RevisePlays2" class="card-content"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Revision Form -->
-      <form id="reviseForm">
-        <!-- Row 1: Player Fields -->
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
-          <div class="form-group">
-            <label class="form-label">P1 Archetype</label>
-            <div class="dropdown">
-              <button class="button secondary dropdown-toggle" type="button" id="P1ArchButton" onclick="toggleDropdown(event, 'P1ArchMenu')">
-                Loading...
-              </button>
-              <ul class="dropdown-menu" id="P1ArchMenu"></ul>
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label">P1 Subarchetype</label>
-            <input type="text" class="form-input" id="P1_Subarch" placeholder="Loading..." value="">
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label">P2 Archetype</label>
-            <div class="dropdown">
-              <button class="button secondary dropdown-toggle" type="button" id="P2ArchButton" onclick="toggleDropdown(event, 'P2ArchMenu')">
-                Loading...
-              </button>
-              <ul class="dropdown-menu" id="P2ArchMenu"></ul>
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label">P2 Subarchetype</label>
-            <input type="text" class="form-input" id="P2_Subarch" placeholder="Loading..." value="">
-          </div>
-        </div>
-        
-        <!-- Row 2: Match Fields (Centered) -->
-        <div style="display: grid; grid-template-columns: 1fr repeat(3, minmax(200px, 1fr)) 1fr; gap: var(--spacing-md); align-items: start; margin-bottom: 0;">
-          <div></div> <!-- Empty spacer -->
-          <div class="form-group">
-            <label class="form-label">Format</label>
-            <div class="dropdown">
-              <button class="button secondary dropdown-toggle" type="button" id="FormatButton" onclick="toggleDropdown(event, 'FormatMenu')">
-                Loading...
-              </button>
-              <ul class="dropdown-menu" id="FormatMenu"></ul>
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label">Limited Format</label>
-            <div class="dropdown">
-              <button class="button secondary dropdown-toggle" type="button" id="LimitedFormatButton" onclick="toggleDropdown(event, 'LimitedFormatMenu')" disabled>
-                Loading...
-              </button>
-              <ul class="dropdown-menu" id="LimitedFormatMenu"></ul>
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label">Match Type</label>
-            <div class="dropdown">
-              <button class="button secondary dropdown-toggle" type="button" id="MatchTypeButton" onclick="toggleDropdown(event, 'MatchTypeMenu')">
-                Loading...
-              </button>
-              <ul class="dropdown-menu" id="MatchTypeMenu"></ul>
-            </div>
-          </div>
-          <div></div> <!-- Empty spacer -->
-        </div>
-      </form>
-    </div>
-    
-    <div class="modal-footer">
-      <div class="d-flex gap-3 justify-content-end">
-        <button type="button" class="button secondary" onclick="hideReviseModal()">
-          <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
-          Cancel
-        </button>
-        <button type="button" class="button primary" onclick="changeHiddenInputs()">
-          <i class="fas fa-save" style="margin-right: var(--spacing-xs);"></i>
-          Apply
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Multi-Revision Modal -->
-<div id="ReviseMultiModal" class="modal" style="display: none;">
-  <div class="modal-content">
-    <div class="modal-header">
-      <div style="display: flex; align-items: center; gap: var(--spacing-md);">
-        <div>
-          <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Revise Multiple Records</h3>
-          <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Update multiple matches at once</p>
-        </div>
-      </div>
-      <button type="button" class="modal-close" onclick="hideReviseMultiModal()">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-    <div class="modal-body">
-      <!-- Step 1: Field Selector -->
-      <div class="field-selector-section">
-        <div class="form-group" style="text-align: center; margin-bottom: 0;">
-          <label class="form-label">Step 1: Select Field to Change</label>
-          <div class="dropdown" style="display: inline-block;">
-            <button class="button secondary dropdown-toggle" type="button" id="FieldToChangeButton" onclick="toggleDropdown(event, 'FieldToChangeMenu')" style="width: 200px;">
-              P1 Deck
-            </button>
-            <ul class="dropdown-menu" id="FieldToChangeMenu">
-              <li onclick="showP1Field(this)">P1 Deck</li>
-              <li onclick="showP2Field(this)">P2 Deck</li>
-              <li onclick="showFormatField(this)">Format</li>
-              <li onclick="showMatchTypeField(this)">Match Type</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 2: Revision Fields -->
-      <div class="revision-fields-section">
-        <div style="text-align: center; margin-bottom: var(--spacing-md);">
-          <label class="form-label" style="color: var(--fg-muted); font-size: 0.875rem;">Step 2: Set New Values</label>
-        </div>
-        <form>
-          <!-- P1 Deck Fields (Side by Side) -->
-          <div id="P1FieldsContainer" style="display: block;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
-              <div class="form-group" style="text-align: center;">
+          <!-- Revision Form -->
+          <form id="reviseForm">
+            <!-- Row 1: Player Fields -->
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
+              <div class="form-group">
                 <label class="form-label">P1 Archetype</label>
                 <div class="dropdown">
-                  <button class="button secondary dropdown-toggle" type="button" id="P1ArchButtonMulti" onclick="toggleDropdown(event, 'P1ArchMenuMulti')">
-                    NA
+                  <button class="button secondary dropdown-toggle" type="button" id="P1ArchButton" onclick="toggleDropdown(event, 'P1ArchMenu')">
+                    Loading...
                   </button>
-                  <ul class="dropdown-menu" id="P1ArchMenuMulti"></ul>
+                  <ul class="dropdown-menu" id="P1ArchMenu"></ul>
                 </div>
               </div>
-
-              <div class="form-group" style="text-align: center;">
+              
+              <div class="form-group">
                 <label class="form-label">P1 Subarchetype</label>
-                <input type="text" class="form-input" id="P1_Subarch_Multi" placeholder="P1_Subarch" value="NA">
+                <input type="text" class="form-input" id="P1_Subarch" placeholder="Loading..." value="">
               </div>
-            </div>
-          </div>
-
-          <!-- P2 Deck Fields (Side by Side) -->
-          <div id="P2FieldsContainer" style="display: none;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
-              <div class="form-group" style="text-align: center;">
+              
+              <div class="form-group">
                 <label class="form-label">P2 Archetype</label>
                 <div class="dropdown">
-                  <button class="button secondary dropdown-toggle" type="button" id="P2ArchButtonMulti" onclick="toggleDropdown(event, 'P2ArchMenuMulti')">
-                    NA
+                  <button class="button secondary dropdown-toggle" type="button" id="P2ArchButton" onclick="toggleDropdown(event, 'P2ArchMenu')">
+                    Loading...
                   </button>
-                  <ul class="dropdown-menu" id="P2ArchMenuMulti"></ul>
+                  <ul class="dropdown-menu" id="P2ArchMenu"></ul>
                 </div>
               </div>
-
-              <div class="form-group" style="text-align: center;">
+              
+              <div class="form-group">
                 <label class="form-label">P2 Subarchetype</label>
-                <input type="text" class="form-input" id="P2_Subarch_Multi" placeholder="P2_Subarch" value="NA">
+                <input type="text" class="form-input" id="P2_Subarch" placeholder="Loading..." value="">
               </div>
             </div>
-          </div>
-
-          <!-- Format Fields (Side by Side) -->
-          <div id="FormatFieldsContainer" style="display: none;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
-              <div class="form-group" style="text-align: center;">
+            
+            <!-- Row 2: Match Fields (Centered) -->
+            <div style="display: grid; grid-template-columns: 1fr repeat(3, minmax(200px, 1fr)) 1fr; gap: var(--spacing-md); align-items: start; margin-bottom: 0;">
+              <div></div> <!-- Empty spacer -->
+              <div class="form-group">
                 <label class="form-label">Format</label>
                 <div class="dropdown">
-                  <button class="button secondary dropdown-toggle" type="button" id="FormatButtonMulti" onclick="toggleDropdown(event, 'FormatMenuMulti')">
-                    NA
+                  <button class="button secondary dropdown-toggle" type="button" id="FormatButton" onclick="toggleDropdown(event, 'FormatMenu')">
+                    Loading...
                   </button>
-                  <ul class="dropdown-menu" id="FormatMenuMulti"></ul>
+                  <ul class="dropdown-menu" id="FormatMenu"></ul>
                 </div>
               </div>
-
-              <div class="form-group" style="text-align: center;">
+              
+              <div class="form-group">
                 <label class="form-label">Limited Format</label>
                 <div class="dropdown">
-                  <button class="button secondary dropdown-toggle" type="button" id="LimitedFormatButtonMulti" onclick="toggleDropdown(event, 'LimitedFormatMenuMulti')" disabled>
-                    NA
+                  <button class="button secondary dropdown-toggle" type="button" id="LimitedFormatButton" onclick="toggleDropdown(event, 'LimitedFormatMenu')" disabled>
+                    Loading...
                   </button>
-                  <ul class="dropdown-menu" id="LimitedFormatMenuMulti"></ul>
+                  <ul class="dropdown-menu" id="LimitedFormatMenu"></ul>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <!-- Match Type Field (Centered across full width) -->
-          <div id="MatchTypeFieldsContainer" style="display: none;">
-            <div style="display: flex; justify-content: center;">
-              <div class="form-group" style="width: 300px; text-align: center;">
+              
+              <div class="form-group">
                 <label class="form-label">Match Type</label>
                 <div class="dropdown">
-                  <button class="button secondary dropdown-toggle" type="button" id="MatchTypeButtonMulti" onclick="toggleDropdown(event, 'MatchTypeMenuMulti')">
-                    NA
+                  <button class="button secondary dropdown-toggle" type="button" id="MatchTypeButton" onclick="toggleDropdown(event, 'MatchTypeMenu')">
+                    Loading...
                   </button>
-                  <ul class="dropdown-menu" id="MatchTypeMenuMulti"></ul>
+                  <ul class="dropdown-menu" id="MatchTypeMenu"></ul>
                 </div>
+              </div>
+              <div></div> <!-- Empty spacer -->
+            </div>
+          </form>
+        </div>
+        
+        <div class="modal-footer">
+          <div class="d-flex gap-3 justify-content-end">
+            <button type="button" class="button secondary" onclick="hideReviseModal()">
+              <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
+              Cancel
+            </button>
+            <button type="button" class="button primary" onclick="changeHiddenInputs()">
+              <i class="fas fa-save" style="margin-right: var(--spacing-xs);"></i>
+              Apply
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Multi-Revision Modal -->
+    <div id="ReviseMultiModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+            <div>
+              <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Revise Multiple Records</h3>
+              <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Update multiple matches at once</p>
+            </div>
+          </div>
+          <button type="button" class="modal-close" onclick="hideReviseMultiModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <!-- Step 1: Field Selector -->
+          <div class="field-selector-section">
+            <div class="form-group" style="text-align: center; margin-bottom: 0;">
+              <label class="form-label">Step 1: Select Field to Change</label>
+              <div class="dropdown" style="display: inline-block;">
+                <button class="button secondary dropdown-toggle" type="button" id="FieldToChangeButton" onclick="toggleDropdown(event, 'FieldToChangeMenu')" style="width: 200px;">
+                  P1 Deck
+                </button>
+                <ul class="dropdown-menu" id="FieldToChangeMenu">
+                  <li onclick="showP1Field(this)">P1 Deck</li>
+                  <li onclick="showP2Field(this)">P2 Deck</li>
+                  <li onclick="showFormatField(this)">Format</li>
+                  <li onclick="showMatchTypeField(this)">Match Type</li>
+                </ul>
               </div>
             </div>
           </div>
-        </form>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <div class="d-flex gap-3 justify-content-end">
-        <button type="button" class="button secondary" onclick="hideReviseMultiModal()">
-          <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
-          Cancel
-        </button>
-        <button type="button" class="button primary" onclick="changeHiddenInputsMulti()">
-          <i class="fas fa-save" style="margin-right: var(--spacing-xs);"></i>
-          Apply
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- Remove Modal -->
-<div id="RemoveModal" class="modal" style="display: none;">
-  <div class="modal-content" style="max-width: 500px; width: 90%;">
-    <div class="modal-header">
-      <div style="display: flex; align-items: center; gap: var(--spacing-md);">
-        <div>
-          <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Remove Records</h3>
-          <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Delete selected matches</p>
-        </div>
-      </div>
-      <button type="button" class="modal-close" onclick="hideRemoveModal()">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-    <div class="modal-body">
-      <div style="background: rgba(239, 68, 68, 0.05); border-left: 4px solid #ef4444; border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
-        <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
-          <i class="fas fa-exclamation-triangle" style="color: #ef4444; font-size: 1.125rem;"></i>
-          <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Warning</h4>
-        </div>
-        <p style="margin: 0; color: var(--fg-body); line-height: 1.6;">This will remove all selected matches and their associated games/plays from your database.</p>
-      </div>
+          <!-- Step 2: Revision Fields -->
+          <div class="revision-fields-section">
+            <div style="text-align: center; margin-bottom: var(--spacing-md);">
+              <label class="form-label" style="color: var(--fg-muted); font-size: 0.875rem;">Step 2: Set New Values</label>
+            </div>
+            <form>
+              <!-- P1 Deck Fields (Side by Side) -->
+              <div id="P1FieldsContainer" style="display: block;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                  <div class="form-group" style="text-align: center;">
+                    <label class="form-label">P1 Archetype</label>
+                    <div class="dropdown">
+                      <button class="button secondary dropdown-toggle" type="button" id="P1ArchButtonMulti" onclick="toggleDropdown(event, 'P1ArchMenuMulti')">
+                        NA
+                      </button>
+                      <ul class="dropdown-menu" id="P1ArchMenuMulti"></ul>
+                    </div>
+                  </div>
 
-      <div class="removal-options">
-        <div class="option-section">
-          <h5>Remove</h5>
-          <p>The record will be re-parsed and included in future data imports.</p>
-        </div>
-        <div class="option-section">
-          <h5>Remove & Ignore</h5>
-          <p>The record will <strong>not</strong> be included in future data imports. Match IDs can be unignored from your Ignore List, but you will lose any record revisions.</p>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <div class="d-flex gap-3 justify-content-center">
-        <button type="button" class="button danger" onclick="removeHidden('Remove')">
-          <i class="fas fa-trash" style="margin-right: var(--spacing-xs);"></i>
-          Remove
-        </button>
-        <button type="button" class="button danger" onclick="removeHidden('Ignore')">
-          <i class="fas fa-eye-slash" style="margin-right: var(--spacing-xs);"></i>
-          Remove & Ignore
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+                  <div class="form-group" style="text-align: center;">
+                    <label class="form-label">P1 Subarchetype</label>
+                    <input type="text" class="form-input" id="P1_Subarch_Multi" placeholder="P1_Subarch" value="NA">
+                  </div>
+                </div>
+              </div>
 
-<!-- Revise Ignored Modal -->
-<div id="ReviseIgnoredModal" class="modal" style="display: none;">
-  <div class="modal-content" style="max-width: 500px; width: 90%;">
-    <div class="modal-header">
-      <div style="display: flex; align-items: center; gap: var(--spacing-md);">
-        <div>
-          <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Unignore Match</h3>
-          <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Remove from ignored list</p>
+              <!-- P2 Deck Fields (Side by Side) -->
+              <div id="P2FieldsContainer" style="display: none;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                  <div class="form-group" style="text-align: center;">
+                    <label class="form-label">P2 Archetype</label>
+                    <div class="dropdown">
+                      <button class="button secondary dropdown-toggle" type="button" id="P2ArchButtonMulti" onclick="toggleDropdown(event, 'P2ArchMenuMulti')">
+                        NA
+                      </button>
+                      <ul class="dropdown-menu" id="P2ArchMenuMulti"></ul>
+                    </div>
+                  </div>
+
+                  <div class="form-group" style="text-align: center;">
+                    <label class="form-label">P2 Subarchetype</label>
+                    <input type="text" class="form-input" id="P2_Subarch_Multi" placeholder="P2_Subarch" value="NA">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Format Fields (Side by Side) -->
+              <div id="FormatFieldsContainer" style="display: none;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                  <div class="form-group" style="text-align: center;">
+                    <label class="form-label">Format</label>
+                    <div class="dropdown">
+                      <button class="button secondary dropdown-toggle" type="button" id="FormatButtonMulti" onclick="toggleDropdown(event, 'FormatMenuMulti')">
+                        NA
+                      </button>
+                      <ul class="dropdown-menu" id="FormatMenuMulti"></ul>
+                    </div>
+                  </div>
+
+                  <div class="form-group" style="text-align: center;">
+                    <label class="form-label">Limited Format</label>
+                    <div class="dropdown">
+                      <button class="button secondary dropdown-toggle" type="button" id="LimitedFormatButtonMulti" onclick="toggleDropdown(event, 'LimitedFormatMenuMulti')" disabled>
+                        NA
+                      </button>
+                      <ul class="dropdown-menu" id="LimitedFormatMenuMulti"></ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Match Type Field (Centered across full width) -->
+              <div id="MatchTypeFieldsContainer" style="display: none;">
+                <div style="display: flex; justify-content: center;">
+                  <div class="form-group" style="width: 300px; text-align: center;">
+                    <label class="form-label">Match Type</label>
+                    <div class="dropdown">
+                      <button class="button secondary dropdown-toggle" type="button" id="MatchTypeButtonMulti" onclick="toggleDropdown(event, 'MatchTypeMenuMulti')">
+                        NA
+                      </button>
+                      <ul class="dropdown-menu" id="MatchTypeMenuMulti"></ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div class="d-flex gap-3 justify-content-end">
+            <button type="button" class="button secondary" onclick="hideReviseMultiModal()">
+              <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
+              Cancel
+            </button>
+            <button type="button" class="button primary" onclick="changeHiddenInputsMulti()">
+              <i class="fas fa-save" style="margin-right: var(--spacing-xs);"></i>
+              Apply
+            </button>
+          </div>
         </div>
       </div>
-      <button type="button" class="modal-close" onclick="hideReviseIgnoredModal()">
-        <i class="fas fa-times"></i>
-      </button>
     </div>
-    <div class="modal-body">
-      <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
-        <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
-          <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
-          <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Confirmation</h4>
+
+    <!-- Remove Modal -->
+    <div id="RemoveModal" class="modal" style="display: none;">
+      <div class="modal-content" style="max-width: 500px; width: 90%;">
+        <div class="modal-header">
+          <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+            <div>
+              <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Remove Records</h3>
+              <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Delete selected matches</p>
+            </div>
+          </div>
+          <button type="button" class="modal-close" onclick="hideRemoveModal()">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
-        <p style="margin: 0; color: var(--fg-body); line-height: 1.6;">
-          This will remove the selected match from your ignored list. The match will be included in future data imports.
-        </p>
-      </div>
-      <div style="text-align: center; padding: var(--spacing-md);">
-        <div style="font-family: var(--font-mono); font-weight: 600; font-size: 1.125rem; color: var(--fg-default);">
-          Match ID: <span id="selectedMatchId">None selected</span>
+        <div class="modal-body">
+          <div style="background: rgba(239, 68, 68, 0.05); border-left: 4px solid #ef4444; border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+            <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
+              <i class="fas fa-exclamation-triangle" style="color: #ef4444; font-size: 1.125rem;"></i>
+              <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Warning</h4>
+            </div>
+            <p style="margin: 0; color: var(--fg-body); line-height: 1.6;">This will remove all selected matches and their associated games/plays from your database.</p>
+          </div>
+
+          <div class="removal-options">
+            <div class="option-section">
+              <h5>Remove</h5>
+              <p>The record will be re-parsed and included in future data imports.</p>
+            </div>
+            <div class="option-section">
+              <h5>Remove & Ignore</h5>
+              <p>The record will <strong>not</strong> be included in future data imports. Match IDs can be unignored from your Ignore List, but you will lose any record revisions.</p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div class="d-flex gap-3 justify-content-center">
+            <button type="button" class="button danger" onclick="removeHidden('Remove')">
+              <i class="fas fa-trash" style="margin-right: var(--spacing-xs);"></i>
+              Remove
+            </button>
+            <button type="button" class="button danger" onclick="removeHidden('Ignore')">
+              <i class="fas fa-eye-slash" style="margin-right: var(--spacing-xs);"></i>
+              Remove & Ignore
+            </button>
+          </div>
         </div>
       </div>
     </div>
-    <div class="modal-footer">
-      <div class="d-flex gap-3 justify-content-end">
-        <button type="button" class="button secondary" onclick="hideReviseIgnoredModal()">
-          <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
-          Cancel
-        </button>
-        <button type="button" class="button danger" onclick="unignoreMatch()">
-          <i class="fas fa-undo" style="margin-right: var(--spacing-xs);"></i>
-          Unignore Match
-        </button>
+
+    <!-- Revise Ignored Modal -->
+    <div id="ReviseIgnoredModal" class="modal" style="display: none;">
+      <div class="modal-content" style="max-width: 500px; width: 90%;">
+        <div class="modal-header">
+          <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+            <div>
+              <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Unignore Match</h3>
+              <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Remove from ignored list</p>
+            </div>
+          </div>
+          <button type="button" class="modal-close" onclick="hideReviseIgnoredModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+            <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
+              <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
+              <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Confirmation</h4>
+            </div>
+            <p style="margin: 0; color: var(--fg-body); line-height: 1.6;">
+              This will remove the selected match from your ignored list. The match will be included in future data imports.
+            </p>
+          </div>
+          <div style="text-align: center; padding: var(--spacing-md);">
+            <div style="font-family: var(--font-mono); font-weight: 600; font-size: 1.125rem; color: var(--fg-default);">
+              Match ID: <span id="selectedMatchId">None selected</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div class="d-flex gap-3 justify-content-end">
+            <button type="button" class="button secondary" onclick="hideReviseIgnoredModal()">
+              <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
+              Cancel
+            </button>
+            <button type="button" class="button danger" onclick="unignoreMatch()">
+              <i class="fas fa-undo" style="margin-right: var(--spacing-xs);"></i>
+              Unignore Match
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

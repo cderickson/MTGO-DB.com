@@ -1,4 +1,19 @@
 /* Profile Page Styles */
+
+/* Override global layout min-heights to prevent unwanted scrolling */
+.app-layout {
+  min-height: auto !important;
+}
+
+.main-content {
+  min-height: auto !important;
+}
+
+.content-wrapper {
+  flex: none !important;
+  padding: var(--spacing-md) !important;
+}
+
 .profile-container {
   width: 900px !important;
   max-width: 900px !important;

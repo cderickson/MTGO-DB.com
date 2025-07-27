@@ -1,0 +1,867 @@
+{% extends 'base.html' %}
+
+{% block page_title %}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Override global layout min-heights to prevent unwanted scrolling */
+.app-layout {
+  min-height: auto !important;
+}
+
+.main-content {
+  min-height: auto !important;
+}
+
+.content-wrapper {
+  flex: none !important;
+  padding: var(--spacing-md) !important;
+}
+
+/* Dashboard Container - Fixed Width like Profile */
+.dashboard-container {
+  width: 1200px !important;
+  max-width: 1200px !important;
+  min-width: 1200px !important;
+  margin: 0 auto;
+  padding: 0;
+  position: relative;
+  flex: none !important;
+}
+
+/* Dashboard Layout */
+.dashboard-layout {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+  min-height: calc(100vh - 200px);
+}
+
+/* Filters Sidebar */
+.filters-sidebar {
+  width: 260px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  height: fit-content;
+  position: sticky;
+  top: var(--spacing-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.filters-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--border);
+}
+
+.filters-header h3 {
+  margin: 0;
+  color: var(--fg-default);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.filter-group {
+  margin-bottom: var(--spacing-md);
+}
+
+.filter-label {
+  display: block;
+  font-weight: 600;
+  color: var(--fg-body);
+  margin-bottom: var(--spacing-xs);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.filter-select {
+  width: 100%;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.75rem;
+  background: var(--form-input-bg);
+  border: 1px solid var(--form-input-border);
+  border-radius: var(--radius-md);
+  color: var(--form-input-fg);
+  transition: all var(--transition-fast);
+  min-height: 32px;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--form-input-focused-border);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.date-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.filters-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--border);
+}
+
+/* Main Dashboard Content */
+.dashboard-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-header {
+  background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.dashboard-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  justify-content: space-between;
+}
+
+.dashboard-selector {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.dashboard-selector label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--fg-body);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dashboard-type-select {
+  min-width: 220px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.75rem;
+  background: var(--form-input-bg);
+  border: 1px solid var(--form-input-border);
+  border-radius: var(--radius-md);
+  color: var(--form-input-fg);
+  transition: all var(--transition-fast);
+  min-height: 32px;
+}
+
+.dashboard-type-select:focus {
+  outline: none;
+  border-color: var(--form-input-focused-border);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.generate-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: var(--primary-button-bg);
+  color: var(--primary-button-fg);
+  border: 1px solid var(--primary-button-border);
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-height: 32px;
+}
+
+.generate-btn:hover {
+  background: var(--primary-button-bg-hover);
+  border-color: var(--primary-button-border-hover);
+}
+
+/* Dashboard Content Area */
+.dashboard-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-sm);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  text-align: center;
+  color: var(--fg-muted);
+}
+
+.empty-state i {
+  font-size: 2rem;
+  margin-bottom: var(--spacing-sm);
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  margin: 0 0 var(--spacing-xs) 0;
+  color: var(--fg-default);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+/* Loading State */
+.loading-state {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  text-align: center;
+}
+
+.loading-state h3 {
+  margin: 0;
+  color: var(--fg-default);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.loading-state p {
+  margin: var(--spacing-xs) 0 0 0;
+  color: var(--fg-muted);
+  font-size: 0.75rem;
+}
+
+.spinner {
+  border: 2px solid var(--border);
+  border-top: 2px solid var(--sky-blue);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  animation: spin 1s linear infinite;
+  margin-bottom: var(--spacing-sm);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Filter Action Buttons */
+.filters-actions .button {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+  min-height: 28px;
+  gap: var(--spacing-xs);
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.button.secondary {
+  background: var(--secondary-button-bg);
+  color: var(--secondary-button-fg);
+  border: 1px solid var(--secondary-button-border);
+}
+
+.button.secondary:hover {
+  background: var(--secondary-button-bg-hover);
+  border-color: var(--secondary-button-border-hover);
+}
+
+.button.primary {
+  background: var(--primary-button-bg);
+  color: var(--primary-button-fg);
+  border: 1px solid var(--primary-button-border);
+}
+
+.button.primary:hover {
+  background: var(--primary-button-bg-hover);
+  border-color: var(--primary-button-border-hover);
+}
+
+/* Responsive Design */
+@media (max-width: 1300px) {
+  .dashboard-container {
+    width: 95% !important;
+    max-width: 95% !important;
+    min-width: 95% !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .dashboard-layout {
+    flex-direction: column;
+  }
+  
+  .filters-sidebar {
+    width: 100%;
+    position: static;
+  }
+  
+  .dashboard-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-sm);
+  }
+  
+  .dashboard-selector {
+    justify-content: space-between;
+  }
+  
+  .dashboard-type-select {
+    min-width: auto;
+    flex: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-selector {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .generate-btn {
+    justify-content: center;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="content-wrapper">
+  <div class="dashboard-container">
+    <div class="dashboard-layout">
+  <!-- Filters Sidebar -->
+  <div class="filters-sidebar">
+    <div class="filters-header">
+      <i class="fas fa-filter" style="color: var(--fg-muted);"></i>
+      <h3>Filters</h3>
+    </div>
+    
+    <form id="dashboardFilters">
+      <div class="filter-group">
+        <label class="filter-label" for="cardFilter">Card</label>
+        <select class="filter-select" id="cardFilter" name="card">
+          <option value="">All Cards</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label" for="opponentFilter">Opponent</label>
+        <select class="filter-select" id="opponentFilter" name="opponent">
+          <option value="">All Opponents</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label" for="formatFilter">Format</label>
+        <select class="filter-select" id="formatFilter" name="format">
+          <option value="">All Formats</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label" for="limitedFormatFilter">Limited Format</label>
+        <select class="filter-select" id="limitedFormatFilter" name="limitedFormat">
+          <option value="">All Limited Formats</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label" for="deckFilter">Deck</label>
+        <select class="filter-select" id="deckFilter" name="deck">
+          <option value="">All Decks</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label" for="oppDeckFilter">Opp. Deck</label>
+        <select class="filter-select" id="oppDeckFilter" name="oppDeck">
+          <option value="">All Opp. Decks</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label">Date Range</label>
+        <div class="date-inputs">
+          <input type="date" class="filter-select" id="startDate" name="startDate" placeholder="Start Date">
+          <input type="date" class="filter-select" id="endDate" name="endDate" placeholder="End Date">
+        </div>
+      </div>
+      
+      <div class="filters-actions">
+        <button type="button" class="button secondary" onclick="clearFilters()">
+          <i class="fas fa-times"></i>
+          Clear Filters
+        </button>
+        <button type="button" class="button primary" onclick="applyFilters()">
+          <i class="fas fa-check"></i>
+          Apply Filters
+        </button>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Main Dashboard Content -->
+  <div class="dashboard-main">
+    <!-- Dashboard Header with Controls -->
+    <div class="dashboard-header">
+      <div class="dashboard-controls">
+        <div class="dashboard-selector">
+          <label for="dashboardType" style="font-weight: 500; color: var(--fg-default); font-size: 0.875rem;">Dashboard Type:</label>
+          <select class="dashboard-type-select" id="dashboardType" name="dashboardType">
+            <option value="match-performance" selected>Match Performance</option>
+            <option value="card-analysis">Card Analysis</option>
+            <option value="opponent-analysis">Opponent Analysis</option>
+            <option value="format-breakdown">Format Breakdown</option>
+            <option value="deck-performance">Deck Performance</option>
+            <option value="time-trends">Time Trends</option>
+          </select>
+        </div>
+        
+        <button type="button" class="generate-btn" onclick="generateDashboard()">
+          <i class="fas fa-chart-bar"></i>
+          Generate Dashboard
+        </button>
+      </div>
+    </div>
+    
+    <!-- Dashboard Content Area -->
+    <div class="dashboard-content" id="dashboardContent">
+      <!-- Empty State -->
+      <div class="empty-state" id="emptyState">
+        <i class="fas fa-chart-line"></i>
+        <h3>No Dashboard Selected</h3>
+        <p>Choose a dashboard type from the dropdown above and click "Generate Dashboard" to view your data visualizations.</p>
+      </div>
+      
+      <!-- Loading State -->
+      <div class="loading-state" id="loadingState">
+        <div class="spinner"></div>
+        <h3 style="margin: 0; color: var(--fg-default);">Generating Dashboard...</h3>
+        <p style="margin: var(--spacing-sm) 0 0 0; color: var(--fg-muted);">Please wait while we process your data.</p>
+      </div>
+      
+      <!-- Dashboard Results -->
+      <div id="dashboardResults" style="display: none;">
+        <!-- Dashboard content will be loaded here -->
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+// Dashboard functionality
+let filterOptions = {};
+let isUpdatingFilters = false; // Prevent recursive updates
+
+// Load filter options on page load
+document.addEventListener('DOMContentLoaded', function() {
+  loadFilterOptions().then(() => {
+    // Auto-load Match Performance dashboard after filters are loaded
+    generateDashboard();
+  });
+  setupFilterEventListeners();
+});
+
+async function loadFilterOptions() {
+  try {
+    const response = await fetch('/filter_options', {
+      method: 'GET',
+      headers: {
+        'X-Requested-By': 'MTGO-Tracker'
+      }
+    });
+    
+    if (response.ok) {
+      filterOptions = await response.json();
+      populateFilterDropdowns();
+    } else {
+      console.error('Failed to load filter options');
+    }
+  } catch (error) {
+    console.error('Error loading filter options:', error);
+  }
+}
+
+function setupFilterEventListeners() {
+  // Add change event listeners to all filter dropdowns
+  const filterElements = [
+    'cardFilter',
+    'opponentFilter', 
+    'formatFilter',
+    'limitedFormatFilter',
+    'deckFilter',
+    'oppDeckFilter'
+  ];
+  
+  filterElements.forEach(elementId => {
+    const element = document.getElementById(elementId);
+    if (element) {
+      element.addEventListener('change', function() {
+        if (!isUpdatingFilters) {
+          updateCascadingFilters();
+        }
+      });
+    }
+  });
+  
+  // Add listeners for date inputs as well
+  const dateElements = ['startDate', 'endDate'];
+  dateElements.forEach(elementId => {
+    const element = document.getElementById(elementId);
+    if (element) {
+      element.addEventListener('change', function() {
+        if (!isUpdatingFilters) {
+          updateCascadingFilters();
+        }
+      });
+    }
+  });
+}
+
+function populateFilterDropdowns(options = null) {
+  const optionsToUse = options || filterOptions;
+  
+  // Store current values before updating
+  const currentValues = {
+    card: document.getElementById('cardFilter').value,
+    opponent: document.getElementById('opponentFilter').value,
+    format: document.getElementById('formatFilter').value,
+    limitedFormat: document.getElementById('limitedFormatFilter').value,
+    deck: document.getElementById('deckFilter').value,
+    oppDeck: document.getElementById('oppDeckFilter').value
+  };
+  
+  // Populate Card dropdown
+  populateDropdown('cardFilter', optionsToUse.Card, 'All Cards', currentValues.card);
+  
+  // Populate Opponent dropdown
+  populateDropdown('opponentFilter', optionsToUse.Opponent, 'All Opponents', currentValues.opponent);
+  
+  // Populate Format dropdown
+  populateDropdown('formatFilter', optionsToUse.Format, 'All Formats', currentValues.format);
+  
+  // Populate Limited Format dropdown
+  populateDropdown('limitedFormatFilter', optionsToUse['Limited Format'], 'All Limited Formats', currentValues.limitedFormat);
+  
+  // Populate Deck dropdown
+  populateDropdown('deckFilter', optionsToUse.Deck, 'All Decks', currentValues.deck);
+  
+  // Populate Opp. Deck dropdown
+  populateDropdown('oppDeckFilter', optionsToUse['Opp. Deck'], 'All Opp. Decks', currentValues.oppDeck);
+  
+  // Set date defaults (only if not already set)
+  if (optionsToUse.Date1 && !document.getElementById('startDate').value) {
+    document.getElementById('startDate').value = optionsToUse.Date1;
+  }
+  if (optionsToUse.Date2 && !document.getElementById('endDate').value) {
+    document.getElementById('endDate').value = optionsToUse.Date2;
+  }
+}
+
+function populateDropdown(elementId, optionsList, defaultText, currentValue = '') {
+  const selectElement = document.getElementById(elementId);
+  if (!selectElement) return;
+  
+  // Clear existing options except the first (default) option
+  while (selectElement.children.length > 1) {
+    selectElement.removeChild(selectElement.lastChild);
+  }
+  
+  // Update the default text
+  if (selectElement.firstElementChild) {
+    selectElement.firstElementChild.textContent = defaultText;
+  }
+  
+  // Add new options
+  if (optionsList && optionsList.length > 0) {
+    optionsList.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item;
+      option.textContent = item;
+      if (item === currentValue) {
+        option.selected = true;
+      }
+      selectElement.appendChild(option);
+    });
+  }
+  
+  // If the current value is not in the new options, reset to default
+  if (currentValue && optionsList && !optionsList.includes(currentValue)) {
+    selectElement.value = '';
+  }
+}
+
+async function updateCascadingFilters() {
+  if (isUpdatingFilters) return; // Prevent recursive calls
+  
+  try {
+    isUpdatingFilters = true;
+    
+    // Get current filter values
+    const currentFilters = getCurrentFilterValues();
+    
+    // Call API to get filtered options
+    const response = await fetch('/api/dashboard/filtered-options', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-By': 'MTGO-Tracker'
+      },
+      body: JSON.stringify({
+        filters: currentFilters
+      })
+    });
+    
+    if (response.ok) {
+      const filteredOptions = await response.json();
+      populateFilterDropdowns(filteredOptions);
+    } else {
+      console.error('Failed to load filtered options');
+    }
+    
+  } catch (error) {
+    console.error('Error updating cascading filters:', error);
+  } finally {
+    isUpdatingFilters = false;
+  }
+}
+
+function getCurrentFilterValues() {
+  return {
+    card: document.getElementById('cardFilter').value,
+    opponent: document.getElementById('opponentFilter').value,
+    format: document.getElementById('formatFilter').value,
+    limitedFormat: document.getElementById('limitedFormatFilter').value,
+    deck: document.getElementById('deckFilter').value,
+    oppDeck: document.getElementById('oppDeckFilter').value,
+    startDate: document.getElementById('startDate').value,
+    endDate: document.getElementById('endDate').value
+  };
+}
+
+function clearFilters() {
+  isUpdatingFilters = true; // Prevent cascading updates during reset
+  
+  document.getElementById('dashboardFilters').reset();
+  
+  // Reset dates to defaults
+  if (filterOptions.Date1) {
+    document.getElementById('startDate').value = filterOptions.Date1;
+  }
+  if (filterOptions.Date2) {
+    document.getElementById('endDate').value = filterOptions.Date2;
+  }
+  
+  // Restore original filter options
+  populateFilterDropdowns(filterOptions);
+  
+  isUpdatingFilters = false;
+  
+  // Automatically regenerate the dashboard with cleared filters
+  generateDashboard();
+}
+
+function applyFilters() {
+  // This function will be used to refresh the current dashboard with new filters
+  const dashboardType = document.getElementById('dashboardType').value;
+  if (dashboardType) {
+    generateDashboard();
+  }
+}
+
+async function generateDashboard() {
+  const dashboardType = document.getElementById('dashboardType').value;
+  
+  if (!dashboardType) {
+    alert('Please select a dashboard type first.');
+    return;
+  }
+  
+  // Show loading state
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('dashboardResults').style.display = 'none';
+  document.getElementById('loadingState').style.display = 'flex';
+  
+  // Collect filter values using the centralized function
+  const filters = getCurrentFilterValues();
+  
+  try {
+    // Call the dashboard API
+    const response = await fetch('/api/dashboard/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-By': 'MTGO-Tracker'
+      },
+      body: JSON.stringify({
+        dashboard_type: dashboardType,
+        filters: filters
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to generate dashboard');
+    }
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      renderDashboardContent(result.data, dashboardType);
+    } else {
+      throw new Error(result.error || 'Unknown error occurred');
+    }
+    
+  } catch (error) {
+    console.error('Error generating dashboard:', error);
+    
+    // Hide loading state and show error
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('dashboardResults').innerHTML = `
+      <div style="text-align: center; padding: var(--spacing-md); color: var(--fg-muted);">
+        <i class="fas fa-exclamation-triangle" style="font-size: 1.5rem; margin-bottom: var(--spacing-sm); color: #ef4444;"></i>
+        <h3 style="margin: 0 0 var(--spacing-xs) 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Error Generating Dashboard</h3>
+        <p style="margin: 0 0 var(--spacing-sm) 0; font-size: 0.75rem;">Failed to load dashboard data: ${error.message}</p>
+        <button type="button" class="button secondary" onclick="generateDashboard()" style="margin-top: var(--spacing-sm); padding: var(--spacing-xs) var(--spacing-sm); font-size: 0.75rem;">
+          <i class="fas fa-redo"></i>
+          Try Again
+        </button>
+      </div>
+    `;
+    document.getElementById('dashboardResults').style.display = 'block';
+  }
+}
+
+function renderDashboardContent(dashboardData, dashboardType) {
+  const resultsDiv = document.getElementById('dashboardResults');
+  
+  // Hide loading state
+  document.getElementById('loadingState').style.display = 'none';
+  
+  // Generate dashboard title
+  const titles = {
+    'match-performance': 'Match Performance Dashboard',
+    'card-analysis': 'Card Analysis Dashboard',
+    'opponent-analysis': 'Opponent Analysis Dashboard',
+    'format-breakdown': 'Format Breakdown Dashboard',
+    'deck-performance': 'Deck Performance Dashboard',
+    'time-trends': 'Time Trends Dashboard'
+  };
+  
+  let content = `<h3 style="margin: 0 0 var(--spacing-md) 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">${titles[dashboardType] || 'Dashboard'}</h3>`;
+  
+  // Render metrics
+  if (dashboardData.metrics && dashboardData.metrics.length > 0) {
+    content += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--spacing-sm); margin-bottom: var(--spacing-md);">';
+    
+    dashboardData.metrics.forEach(metric => {
+      const color = metric.type === 'percentage' ? 'var(--sky-blue)' : 'var(--fg-default)';
+      content += `
+        <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--spacing-sm); transition: all var(--transition-fast);">
+          <div style="font-size: 0.75rem; font-weight: 600; color: var(--fg-body); margin-bottom: var(--spacing-xs); text-transform: uppercase; letter-spacing: 0.05em;">${metric.title}</div>
+          <div style="font-size: 1.5rem; font-weight: 700; color: ${color}; line-height: 1.2;">${metric.value}</div>
+          <div style="color: var(--fg-muted); font-size: 0.7rem; margin-top: var(--spacing-xs); line-height: 1.3;">${metric.subtitle}</div>
+        </div>
+      `;
+    });
+    
+    content += '</div>';
+  }
+  
+  // Render charts
+  if (dashboardData.charts && dashboardData.charts.length > 0) {
+    dashboardData.charts.forEach(chart => {
+      content += `
+        <div style="margin-bottom: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+          <h4 style="margin: 0 0 var(--spacing-sm) 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">${chart.title}</h4>
+          <div style="height: 250px; display: flex; align-items: center; justify-content: center; background: var(--bg-default); border-radius: var(--radius-md); color: var(--fg-muted); border: 1px solid var(--border);">
+            <div style="text-align: center;">
+              <i class="fas fa-chart-${chart.type === 'line' ? 'line' : chart.type === 'bar' ? 'bar' : 'pie-chart'}" style="font-size: 1.5rem; margin-bottom: var(--spacing-sm);"></i>
+              <div style="font-size: 0.875rem; font-weight: 600;"><strong>${chart.title}</strong></div>
+              <div style="font-size: 0.75rem; margin-top: var(--spacing-xs);">
+                ${chart.data.labels ? `Labels: ${chart.data.labels.length}` : 'No data available'}
+              </div>
+              <div style="margin-top: var(--spacing-xs); font-size: 0.7rem; color: var(--fg-muted);">
+                Chart visualization will be implemented here
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+  }
+  
+  // Render tables
+  if (dashboardData.tables && dashboardData.tables.length > 0) {
+    dashboardData.tables.forEach(table => {
+      content += `
+        <div style="margin-bottom: var(--spacing-md); background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm);">
+          <div style="padding: var(--spacing-sm) var(--spacing-md); border-bottom: 1px solid var(--border); background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);">
+            <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">${table.title}</h4>
+          </div>
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.75rem;">
+              <thead>
+                <tr style="background: var(--bg-default);">
+                  ${table.headers.map(header => `<th style="padding: var(--spacing-xs) var(--spacing-sm); text-align: left; font-weight: 600; color: var(--fg-default); border-bottom: 1px solid var(--border); font-size: 0.75rem;">${header}</th>`).join('')}
+                </tr>
+              </thead>
+              <tbody>
+                ${table.rows.map((row, index) => `
+                  <tr style="border-bottom: 1px solid var(--border); background: ${index % 2 === 0 ? 'var(--bg-default)' : 'var(--bg-subtle)'};">
+                    ${row.map(cell => `<td style="padding: var(--spacing-xs) var(--spacing-sm); color: var(--fg-body); font-size: 0.75rem;">${cell}</td>`).join('')}
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    });
+  }
+  
+  // If no data sections, show message
+  if (!dashboardData.metrics?.length && !dashboardData.charts?.length && !dashboardData.tables?.length) {
+    content += `
+      <div style="text-align: center; padding: var(--spacing-md); color: var(--fg-muted);">
+        <i class="fas fa-info-circle" style="font-size: 1.5rem; margin-bottom: var(--spacing-sm);"></i>
+        <h3 style="margin: 0 0 var(--spacing-xs) 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">No Data Available</h3>
+        <p style="margin: 0; font-size: 0.75rem;">No data matches your current filters. Try adjusting your filter criteria.</p>
+      </div>
+    `;
+  }
+  
+  resultsDiv.innerHTML = content;
+  resultsDiv.style.display = 'block';
+}
+</script>
+
+{% endblock %} 

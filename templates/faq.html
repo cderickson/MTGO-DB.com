@@ -4,244 +4,281 @@
 
 {% block content %}
 
-<div class="accordion-container full-width">
-	
-	<!-- MTGO-Tracker Import FAQ -->
-	<div class="accordion-item" data-target="tracker-import">
-		<div class="accordion-header">
-			<h3 class="accordion-title">
-			I already use MTGO-Tracker Desktop. Do I have to re-do all my manual revisions?
-			</h3>
-			<i class="fas fa-chevron-down accordion-arrow"></i>
-		</div>
-		<div class="accordion-content" id="tracker-import">
-			<div class="accordion-body">
-				<div class="info-box" style="background: rgba(220, 255, 30, 0.1); border-left-color: var(--yellow);">
-					<p><strong>No!</strong> You can import your saved data from MTGO-Tracker.</p>
-				</div>
-				
-				<p>The preferred method to accomplish this is to:</p>
-				<div class="steps-container">
-					<div class="step-card">
-					<div class="step-number">1</div>
-					<div class="step-content">
-						<h4>Upload files normally</h4>
-						<p>Use <strong>Import GameLogs</strong> to upload your MTGO files first</p>
-					</div>
-					</div>
-					<div class="step-card">
-					<div class="step-number">2</div>
-					<div class="step-content">
-						<h4>Import your revisions</h4>
-						<p>Use <strong>Import from MTGO-Tracker</strong> to apply your manual revisions</p>
-					</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+<div class="content-wrapper">
+  <div class="faq-container">
+    <div class="accordion-container">
+  
+  <!-- MTGO-Tracker Import FAQ -->
+  <div class="accordion-item" data-target="tracker-import">
+    <div class="accordion-header">
+      <h3 class="accordion-title">
+      I already use MTGO-Tracker Desktop. Do I have to re-do all my manual revisions?
+      </h3>
+      <i class="fas fa-chevron-down accordion-arrow"></i>
+    </div>
+    <div class="accordion-content" id="tracker-import">
+      <div class="accordion-body">
+        <div class="info-box" style="background: rgba(220, 255, 30, 0.1); border-left-color: var(--yellow);">
+          <p><strong>No!</strong> You can import your saved data from MTGO-Tracker.</p>
+        </div>
+        
+        <p>The preferred method to accomplish this is to:</p>
+        <div class="steps-container">
+          <div class="step-card">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h4>Upload files normally</h4>
+              <p>Use <strong>Import GameLogs</strong> to upload your MTGO files first</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h4>Import your revisions</h4>
+              <p>Use <strong>Import from MTGO-Tracker</strong> to apply your manual revisions</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-	<!-- Zip File FAQ -->
-	<div class="accordion-item" data-target="zip-files">
-		<div class="accordion-header">
-			<h3 class="accordion-title">
-			Why do I need to upload logs as a .zip file? Can I upload individual files?
-			</h3>
-			<i class="fas fa-chevron-down accordion-arrow"></i>
-		</div>
-		<div class="accordion-content" id="zip-files">
-			<div class="accordion-body">
-			<div class="info-box">
-				<p><strong>File timestamps are crucial:</strong> GameLog files don't include timestamp data in their contents.</p>
-			</div>
-			
-			<p>The parsing process relies on file modification date to record when a match was played. This metadata is:</p>
-			<ul>
-				<li><strong>Not preserved</strong> when individual files are uploaded</li>
-				<li><strong>Preserved</strong> when zipped files are uploaded</li>
-			</ul>
-			
-			<p>This is why we require the .zip format to maintain accurate match timing data.</p>
-			</div>
-		</div>
-	</div>
+  <!-- Zip File FAQ -->
+  <div class="accordion-item" data-target="zip-files">
+    <div class="accordion-header">
+      <h3 class="accordion-title">
+      Why do I need to upload logs as a .zip file? Can I upload individual files?
+      </h3>
+      <i class="fas fa-chevron-down accordion-arrow"></i>
+    </div>
+    <div class="accordion-content" id="zip-files">
+      <div class="accordion-body">
+        <div class="info-box">
+          <p><strong>File timestamps are crucial:</strong> GameLog files don't include timestamp data in their contents.</p>
+        </div>
+        
+        <p>The parsing process relies on file modification date to record when a match was played. This metadata is:</p>
+        <ul>
+          <li><strong>Not preserved</strong> when individual files are uploaded</li>
+          <li><strong>Preserved</strong> when zipped files are uploaded</li>
+        </ul>
+        
+        <p>This is why we require the .zip format to maintain accurate match timing data.</p>
+      </div>
+    </div>
+  </div>
 
-	<!-- Zip Script FAQ -->
-	<div class="accordion-item" data-target="zip-script">
-		<div class="accordion-header">
-			<h3 class="accordion-title">
-			What is the Zip-MTGO-Files script doing?
-			</h3>
-			<i class="fas fa-chevron-down accordion-arrow"></i>
-		</div>
-		<div class="accordion-content" id="zip-script">
-			<div class="accordion-body">
-				<p>The script performs these actions:</p>
-				
-				<div class="steps-container">
-					<div class="step-card">
-						<div class="step-number">1</div>
-						<div class="step-content">
-							<h4>Scan your PC</h4>
-							<p>Looks for files matching MTGO Game/DraftLog naming conventions and file types</p>
-						</div>
-					</div>
-					<div class="step-card">
-						<div class="step-number">2</div>
-						<div class="step-content">
-							<h4>Copy files</h4>
-							<p>Creates copies of found Game/DraftLog files</p>
-						</div>
-					</div>
-					<div class="step-card">
-						<div class="step-number">3</div>
-						<div class="step-content">
-							<h4>Create zip archive</h4>
-							<p>Adds all files to a .zip that can be uploaded to MTGO-DB</p>
-						</div>
-					</div>
-				</div>
-				
-				<div class="link-card" style="margin-top: var(--spacing-md);">
-					<div class="link-icon">
-					<i class="fab fa-github"></i>
-					</div>
-					<div class="link-content">
-					<h4><a href="https://github.com/cderickson/Scripts/blob/main/zip-mtgo-logs.py" target="_blank">View Script Source Code</a></h4>
-					<p>The script code is open source and available on GitHub</p>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+  <!-- Zip Script FAQ -->
+  <div class="accordion-item" data-target="zip-script">
+    <div class="accordion-header">
+      <h3 class="accordion-title">
+      What is the Zip-MTGO-Files script doing?
+      </h3>
+      <i class="fas fa-chevron-down accordion-arrow"></i>
+    </div>
+    <div class="accordion-content" id="zip-script">
+      <div class="accordion-body">
+        <p>The script performs these actions:</p>
+        
+        <div class="steps-container">
+          <div class="step-card">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h4>Scan your PC</h4>
+              <p>Looks for files matching MTGO Game/DraftLog naming conventions and file types</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h4>Copy files</h4>
+              <p>Creates copies of found Game/DraftLog files</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h4>Create zip archive</h4>
+              <p>Adds all files to a .zip that can be uploaded to MTGO-DB</p>
+            </div>
+          </div>
+          <div class="link-card">
+            <div class="link-icon">
+              <i class="fab fa-github"></i>
+            </div>
+            <div class="link-content">
+              <h4><a href="https://github.com/cderickson/Scripts/blob/main/zip-mtgo-logs.py" target="_blank">View Script Source Code</a></h4>
+              <p>The script code is open source and available on GitHub</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-	<!-- Data Processing FAQ -->
-	<div class="accordion-item" data-target="data-processing">
-	<div class="accordion-header">
-		<h3 class="accordion-title">
-		How long does data processing take?
-		</h3>
-		<i class="fas fa-chevron-down accordion-arrow"></i>
-	</div>
-	<div class="accordion-content" id="data-processing">
-		<div class="accordion-body">
-			<p>Processing time depends on several factors:</p>
-			
-			<div class="feature-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
-				<div class="feature-item">
-				<i class="fas fa-file" style="color: var(--fg-brand);"></i>
-				<h5>File Count</h5>
-				<p>More files = longer processing</p>
-				</div>
-				<div class="feature-item">
-				<i class="fas fa-gamepad" style="color: var(--fg-brand);"></i>
-				<h5>Game Complexity</h5>
-				<p>Longer games take more time</p>
-				</div>
-				<div class="feature-item">
-				<i class="fas fa-server" style="color: var(--fg-brand);"></i>
-				<h5>Server Load</h5>
-				<p>Peak times may be slower</p>
-				</div>
-			</div>
-			
-			<div class="info-box">
-				<p><strong>Email notification:</strong> You'll receive a Load Report via email when processing is complete, so you don't need to wait around!</p>
-			</div>
-		</div>
-	</div>
-	</div>
+  <!-- Data Processing FAQ -->
+  <div class="accordion-item" data-target="data-processing">
+    <div class="accordion-header">
+      <h3 class="accordion-title">
+      How long does data processing take?
+      </h3>
+      <i class="fas fa-chevron-down accordion-arrow"></i>
+    </div>
+    <div class="accordion-content" id="data-processing">
+      <div class="accordion-body">
+        <p>Processing time depends on several factors:</p>
+        
+        <div class="feature-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-sm);">
+          <div class="feature-item">
+            <i class="fas fa-file" style="color: var(--fg-brand);"></i>
+            <h5>File Count</h5>
+            <p>More files = longer processing</p>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-gamepad" style="color: var(--fg-brand);"></i>
+            <h5>Game Complexity</h5>
+            <p>Longer games take more time</p>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-server" style="color: var(--fg-brand);"></i>
+            <h5>Server Load</h5>
+            <p>Peak times may be slower</p>
+          </div>
+        </div>
+        
+        <div class="info-box">
+          <p><strong>Email notification:</strong> You'll receive a Load Report via email when processing is complete, so you don't need to wait around!</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
-	<!-- Data Privacy FAQ -->
-	<div class="accordion-item" data-target="privacy">
-		<div class="accordion-header">
-			<h3 class="accordion-title">
-			Is my MTGO data secure and private?
-			</h3>
-			<i class="fas fa-chevron-down accordion-arrow"></i>
-		</div>
-		<div class="accordion-content" id="privacy">
-			<div class="accordion-body">
-				<div class="info-box" style="background: rgba(199, 149, 227, 0.1); border-left-color: var(--violet-90);">
-					<p><strong>Your data is private:</strong> Only you can access your uploaded MTGO data.</p>
-				</div>
-				
-				<p>MTGO-DB takes data privacy seriously:</p>
-				<ul>
-					<li><strong>Account-based access:</strong> Data is tied to your registered account</li>
-					<li><strong>No data sharing:</strong> Your game data is never shared with other users</li>
-					<li><strong>Secure storage:</strong> Data is stored securely and encrypted</li>
-					<li><strong>Data control:</strong> You can export or delete your data at any time</li>
-				</ul>
-			</div>
-		</div>
-	</div>
+  <!-- Data Privacy FAQ -->
+  <div class="accordion-item" data-target="privacy">
+    <div class="accordion-header">
+      <h3 class="accordion-title">
+      Is my MTGO data secure and private?
+      </h3>
+      <i class="fas fa-chevron-down accordion-arrow"></i>
+    </div>
+    <div class="accordion-content" id="privacy">
+      <div class="accordion-body">
+        <div class="info-box" style="background: rgba(199, 149, 227, 0.1); border-left-color: var(--violet-90);">
+          <p><strong>Your data is private:</strong> Only you can access your uploaded MTGO data.</p>
+        </div>
+        
+        <p>MTGO-DB takes data privacy seriously:</p>
+        <ul>
+          <li><strong>Account-based access:</strong> Data is tied to your registered account</li>
+          <li><strong>No data sharing:</strong> Your game data is never shared with other users</li>
+          <li><strong>Secure storage:</strong> Data is stored securely and encrypted</li>
+          <li><strong>Data control:</strong> You can export or delete your data at any time</li>
+        </ul>
+      </div>
+    </div>
+  </div>
 
-	<!-- Troubleshooting FAQ -->
-	<div class="accordion-item" data-target="troubleshooting">
-		<div class="accordion-header">
-			<h3 class="accordion-title">
-			What should I do if I encounter errors?
-			</h3>
-			<i class="fas fa-chevron-down accordion-arrow"></i>
-		</div>
-		<div class="accordion-content" id="troubleshooting">
-			<div class="accordion-body">
-				<p>If you run into issues, try these steps:</p>
-				
-				<div class="steps-container">
-					<div class="step-card">
-						<div class="step-number">1</div>
-						<div class="step-content">
-							<h4>Check the FAQ</h4>
-							<p>Many common issues are addressed in this FAQ section</p>
-						</div>
-					</div>
-					<div class="step-card">
-						<div class="step-number">2</div>
-						<div class="step-content">
-							<h4>Review error messages</h4>
-							<p>Take note of any specific error messages or codes</p>
-						</div>
-					</div>
-					<div class="step-card">
-						<div class="step-number">3</div>
-						<div class="step-content">
-							<h4>Contact support</h4>
-							<p>Report bugs or get help via the contact page</p>
-						</div>
-					</div>
-				</div>
-				
-				<div class="link-card" style="margin-top: var(--spacing-md);">
-					<div class="link-icon">
-					<i class="fas fa-bug"></i>
-					</div>
-					<div class="link-content">
-					<h4><a href="/contact">Report Issues</a></h4>
-					<p>Get help or report bugs through our contact page</p>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+  <!-- Troubleshooting FAQ -->
+  <div class="accordion-item" data-target="troubleshooting">
+    <div class="accordion-header">
+      <h3 class="accordion-title">
+      What should I do if I encounter errors?
+      </h3>
+      <i class="fas fa-chevron-down accordion-arrow"></i>
+    </div>
+    <div class="accordion-content" id="troubleshooting">
+      <div class="accordion-body">
+        <p>If you run into issues, try these steps:</p>
+        
+        <div class="steps-container">
+          <div class="step-card">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h4>Check the FAQ</h4>
+              <p>Many common issues are addressed in this FAQ section</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h4>Review error messages</h4>
+              <p>Take note of any specific error messages or codes</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h4>Contact support</h4>
+              <p>Report bugs or get help via the contact page</p>
+            </div>
+          </div>
+          <div class="link-card">
+            <div class="link-icon">
+              <i class="fas fa-bug"></i>
+            </div>
+            <div class="link-content">
+              <h4><a href="/contact">Report Issues</a></h4>
+              <p>Get help or report bugs through our contact page</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
+    </div>
+  </div>
 </div>
 
 <style>
-/* Redis.io Inspired Accordion Styles */
+/* Override global layout min-heights to prevent unwanted scrolling */
+.app-layout {
+  min-height: auto !important;
+}
+
+.main-content {
+  min-height: auto !important;
+}
+
+.content-wrapper {
+  flex: none !important;
+  padding: var(--spacing-md) !important;
+}
+
+/* FAQ Container - Fixed Width like Profile/Dashboard */
+.faq-container {
+  width: 1000px !important;
+  max-width: 1000px !important;
+  min-width: 1000px !important;
+  margin: 0 auto;
+  padding: 0;
+  position: relative;
+  flex: none !important;
+}
+
+/* Responsive Design */
+@media (max-width: 1100px) {
+  .faq-container {
+    width: 95% !important;
+    max-width: 95% !important;
+    min-width: 95% !important;
+  }
+}
+
+/* Compact Accordion Styles */
 .accordion-container {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
 }
 
 .accordion-item {
-  background: var(--bg-subtle);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
   transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
 }
 
 .accordion-item:hover {
@@ -252,10 +289,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md);
   cursor: pointer;
   transition: all var(--transition-fast);
   user-select: none;
+  background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+  border-bottom: 1px solid var(--border);
 }
 
 .accordion-header:hover {
@@ -266,18 +305,18 @@
   display: flex;
   align-items: center;
   margin: 0;
-  font-size: 1.125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--fg-default);
-  line-height: 1.4;
+  line-height: 1.3;
 }
 
 .accordion-arrow {
   color: var(--fg-muted);
   transition: transform var(--transition-fast);
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   flex-shrink: 0;
-  margin-left: var(--spacing-md);
+  margin-left: var(--spacing-sm);
 }
 
 .accordion-item.active .accordion-arrow {
@@ -295,22 +334,33 @@
 }
 
 .accordion-body {
-  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-lg);
+  padding: var(--spacing-md);
   color: var(--fg-body);
-  line-height: 1.6;
+  line-height: 1.5;
+  font-size: 0.75rem;
 }
 
 .accordion-body p {
-  margin-bottom: var(--spacing-md);
+  margin: var(--spacing-md) 0 var(--spacing-md) 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
 }
 
 .accordion-body ul {
-  margin: var(--spacing-md) 0;
-  padding-left: var(--spacing-lg);
+  margin: var(--spacing-md) 0 var(--spacing-md) 0;
+  padding-left: var(--spacing-md);
+}
+
+.accordion-body h4 {
+  margin: var(--spacing-md) 0 var(--spacing-md) 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--fg-default);
 }
 
 .accordion-body li {
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+  font-size: 0.75rem;
 }
 
 .accordion-body a {
@@ -329,14 +379,14 @@
 .steps-container {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
 }
 
 .step-card {
   display: flex;
   align-items: flex-start;
-  gap: var(--spacing-md);
-  padding: var(--spacing-lg);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
   background: var(--bg-default);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -352,19 +402,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   background: var(--fg-brand);
   color: var(--base-white);
   border-radius: 50%;
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   flex-shrink: 0;
 }
 
 .step-content h4 {
   margin: 0 0 var(--spacing-xs) 0;
-  font-size: 1.125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--fg-default);
 }
@@ -372,18 +422,19 @@
 .step-content p {
   margin: 0;
   color: var(--fg-body);
+  font-size: 0.75rem;
+  line-height: 1.4;
 }
 
-/* Link Cards */
+/* Link Cards - Styled to match Step Cards */
 .link-card {
   display: flex;
   align-items: flex-start;
-  gap: var(--spacing-md);
-  padding: var(--spacing-lg);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
   background: var(--bg-default);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  margin: var(--spacing-md) 0;
   transition: all var(--transition-fast);
 }
 
@@ -396,18 +447,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 28px;
+  height: 28px;
   background: var(--fg-brand);
   color: var(--base-white);
-  border-radius: var(--radius-md);
-  font-size: 1.25rem;
+  border-radius: 50%;
+  font-size: 0.75rem;
   flex-shrink: 0;
+  font-weight: 700;
 }
 
 .link-content h4 {
   margin: 0 0 var(--spacing-xs) 0;
-  font-size: 1.125rem;
+  font-size: 0.875rem;
   font-weight: 600;
 }
 
@@ -422,8 +474,9 @@
 
 .link-content p {
   margin: 0;
-  color: var(--fg-muted);
-  font-size: 0.9rem;
+  color: var(--fg-body);
+  font-size: 0.75rem;
+  line-height: 1.4;
 }
 
 /* Info Boxes */
@@ -431,47 +484,71 @@
   background: rgba(128, 219, 255, 0.1);
   border-left: 4px solid var(--sky-blue);
   border-radius: var(--radius-sm);
-  padding: var(--spacing-lg);
-  margin: var(--spacing-lg) 0;
+  padding: var(--spacing-md);
+  margin: 0 0 var(--spacing-sm) 0 !important;
+}
+
+.info-box:last-child {
+  margin-bottom: 0 !important;
+}
+
+.info-box h4 {
+  margin: 0 0 var(--spacing-sm) 0 !important;
+  color: var(--fg-default);
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 
 .info-box p {
   margin: 0;
   color: var(--fg-body);
+  font-size: 0.75rem;
+  line-height: 1.5;
 }
 
-/* Feature Grid */
+/* Feature Grid - Compact Styling */
 .feature-item {
   text-align: center;
-  padding: var(--spacing-lg);
+  padding: var(--spacing-sm);
   background: var(--bg-default);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   transition: all var(--transition-fast);
-}
-
-.feature-item:hover {
-  transform: translateY(-2px);
   box-shadow: var(--shadow-sm);
 }
 
+.feature-item:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
 .feature-item i {
-  font-size: 2rem;
-  margin-bottom: var(--spacing-md);
+  font-size: 1rem;
+  margin-bottom: var(--spacing-xs);
   display: block;
 }
 
 .feature-item h5 {
-  margin: 0 0 var(--spacing-sm) 0;
-  font-size: 1rem;
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--fg-default);
 }
 
 .feature-item p {
   margin: 0;
-  font-size: 0.875rem;
-  color: var(--fg-muted);
+  font-size: 0.7rem;
+  color: var(--fg-body);
+  line-height: 1.3;
+}
+
+/* Feature Grid Spacing */
+.feature-grid {
+  margin: var(--spacing-sm) 0 var(--spacing-sm) 0 !important;
+}
+
+.feature-grid:last-child {
+  margin-bottom: 0 !important;
 }
 
 /* Responsive Design */

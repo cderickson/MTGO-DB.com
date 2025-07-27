@@ -1621,12 +1621,6 @@ def reprocess_logs(self, data):
 
 	return 'DONE'
 
-@views.route('/test', methods=['GET'])
-def test():
-	#return json.dumps(multifaced)
-	new_dict = {'1':db.session}
-	return json.dumps(new_dict)
-
 @views.route('/tasks', methods=['GET'])
 @login_required
 def task_monitor():
@@ -3073,6 +3067,720 @@ def reprocess():
 @views.route('/data_dictionary', methods=['GET'])
 def data_dict():
 	return render_template('data-dict.html', user=current_user)
+
+@views.route('/dashboards', methods=['GET'])
+@login_required
+def dashboards():
+	return render_template('dashboards.html', user=current_user)
+
+@views.route('/api/dashboard/filtered-options', methods=['POST'])
+@login_required
+def api_dashboard_filtered_options():
+	"""Get filtered dropdown options based on current filter selections"""
+	if request.headers.get('X-Requested-By') != 'MTGO-Tracker':
+		return jsonify({'error': 'Forbidden'}), 403
+	
+	try:
+		# Get current filter values
+		data = request.get_json()
+		current_filters = data.get('filters', {})
+		
+		# Start with base query for user's matches
+		base_query = Match.query.filter_by(uid=current_user.uid, p1=current_user.username)
+		
+		# Apply current filters EXCEPT card filter (to avoid complex joins for cascading)
+		filters_without_card = current_filters.copy()
+		card_filter = filters_without_card.pop('card', None)
+		
+		# Apply non-card filters first
+		filtered_matches_query = apply_dashboard_filters(base_query, filters_without_card)
+		filtered_matches = filtered_matches_query.all()
+		match_ids = [m.match_id for m in filtered_matches]
+		
+		# If card filter is specified, further filter the matches
+		if card_filter and match_ids:
+			# Get matches that contain the specified card
+			card_match_ids = Play.query.filter(
+				Play.uid == current_user.uid,
+				Play.casting_player == current_user.username,
+				Play.primary_card == card_filter,
+				Play.match_id.in_(match_ids)
+			).with_entities(Play.match_id).distinct().all()
+			
+			card_match_ids = [m.match_id for m in card_match_ids]
+			filtered_matches = [m for m in filtered_matches if m.match_id in card_match_ids]
+			match_ids = card_match_ids
+		
+		# Get plays data for card filtering options
+		plays_query = Play.query.filter(
+			Play.uid == current_user.uid,
+			Play.casting_player == current_user.username,
+			Play.primary_card != 'NA'
+		)
+		if match_ids:
+			plays_query = plays_query.filter(Play.match_id.in_(match_ids))
+		plays = plays_query.all()
+		
+		# Build filtered options
+		filtered_options = {}
+		
+		# Cards (from plays in filtered matches)
+		card_options = list(set([play.primary_card for play in plays]))
+		card_options.sort()
+		filtered_options['Card'] = card_options
+		
+		# Opponents
+		opponent_options = list(set([m.p2 for m in filtered_matches if m.p2]))
+		opponent_options.sort(key=str.lower)
+		filtered_options['Opponent'] = opponent_options
+		
+		# Formats
+		format_options = list(set([m.format for m in filtered_matches if m.format]))
+		format_options.sort()
+		filtered_options['Format'] = format_options
+		
+		# Limited Formats
+		limited_format_options = list(set([m.limited_format for m in filtered_matches if m.limited_format]))
+		limited_format_options.sort()
+		filtered_options['Limited Format'] = limited_format_options
+		
+		# Decks (p1_subarch)
+		deck_options = list(set([m.p1_subarch for m in filtered_matches if m.p1_subarch]))
+		deck_options.sort()
+		filtered_options['Deck'] = deck_options
+		
+		# Opponent Decks (p2_subarch)
+		opp_deck_options = list(set([m.p2_subarch for m in filtered_matches if m.p2_subarch]))
+		opp_deck_options.sort()
+		filtered_options['Opp. Deck'] = opp_deck_options
+		
+		# Date range (from filtered matches)
+		if filtered_matches:
+			dates = [m.date for m in filtered_matches if m.date]
+			if dates:
+				dates.sort()
+				filtered_options['Date1'] = dates[0][:10]
+				filtered_options['Date2'] = dates[-1][:10]
+			else:
+				filtered_options['Date1'] = '2000-01-01'
+				filtered_options['Date2'] = '2999-12-31'
+		else:
+			filtered_options['Date1'] = '2000-01-01'
+			filtered_options['Date2'] = '2999-12-31'
+		
+		return jsonify(filtered_options)
+		
+	except Exception as e:
+		debug_log(f"Error in api_dashboard_filtered_options: {str(e)}")
+		return jsonify({'error': 'Internal server error'}), 500
+
+@views.route('/api/dashboard/generate', methods=['POST'])
+@login_required
+def api_dashboard_generate():
+	"""Generate dashboard data based on type and filters"""
+	if request.headers.get('X-Requested-By') != 'MTGO-Tracker':
+		return jsonify({'error': 'Forbidden'}), 403
+	
+	try:
+		# Get request data
+		data = request.get_json()
+		dashboard_type = data.get('dashboard_type')
+		filters = data.get('filters', {})
+		
+		if not dashboard_type:
+			return jsonify({'error': 'Dashboard type is required'}), 400
+		
+		# Apply base filters to get user's matches
+		base_query = Match.query.filter_by(uid=current_user.uid, p1=current_user.username)
+		
+		# Apply filters
+		filtered_query = apply_dashboard_filters(base_query, filters)
+		
+		# Generate dashboard data based on type
+		dashboard_data = {}
+		
+		if dashboard_type == 'match-performance':
+			dashboard_data = generate_match_performance_dashboard(filtered_query, filters)
+		elif dashboard_type == 'card-analysis':
+			dashboard_data = generate_card_analysis_dashboard(filtered_query, filters)
+		elif dashboard_type == 'opponent-analysis':
+			dashboard_data = generate_opponent_analysis_dashboard(filtered_query, filters)
+		elif dashboard_type == 'format-breakdown':
+			dashboard_data = generate_format_breakdown_dashboard(filtered_query, filters)
+		elif dashboard_type == 'deck-performance':
+			dashboard_data = generate_deck_performance_dashboard(filtered_query, filters)
+		elif dashboard_type == 'time-trends':
+			dashboard_data = generate_time_trends_dashboard(filtered_query, filters)
+		else:
+			return jsonify({'error': 'Invalid dashboard type'}), 400
+		
+		return jsonify({
+			'success': True,
+			'dashboard_type': dashboard_type,
+			'filters_applied': filters,
+			'data': dashboard_data
+		})
+		
+	except Exception as e:
+		debug_log(f"Error in api_dashboard_generate: {str(e)}")
+		return jsonify({'error': 'Internal server error'}), 500
+
+def apply_dashboard_filters(query, filters):
+	"""Apply filters to the match query"""
+	try:
+		# Filter by opponent
+		if filters.get('opponent'):
+			query = query.filter(Match.p2 == filters['opponent'])
+		
+		# Filter by format
+		if filters.get('format'):
+			query = query.filter(Match.format == filters['format'])
+		
+		# Filter by limited format
+		if filters.get('limitedFormat'):
+			query = query.filter(Match.limited_format == filters['limitedFormat'])
+		
+		# Filter by deck (p1_subarch)
+		if filters.get('deck'):
+			query = query.filter(Match.p1_subarch == filters['deck'])
+		
+		# Filter by opponent deck (p2_subarch)
+		if filters.get('oppDeck'):
+			query = query.filter(Match.p2_subarch == filters['oppDeck'])
+		
+		# Filter by date range
+		if filters.get('startDate'):
+			query = query.filter(Match.date >= filters['startDate'])
+		if filters.get('endDate'):
+			query = query.filter(Match.date <= filters['endDate'] + ' 23:59:59')
+		
+		# Filter by card (requires joining with Play table)
+		if filters.get('card'):
+			query = query.join(Game, (Match.match_id == Game.match_id) & (Match.uid == Game.uid))\
+						 .join(Play, (Game.match_id == Play.match_id) & (Game.game_num == Play.game_num) & (Game.uid == Play.uid))\
+						 .filter(Play.primary_card == filters['card'])\
+						 .filter(Play.casting_player == current_user.username)
+		
+		return query
+		
+	except Exception as e:
+		debug_log(f"Error applying dashboard filters: {str(e)}")
+		raise e
+
+def generate_match_performance_dashboard(filtered_query, filters):
+	"""Generate match performance dashboard data"""
+	try:
+		matches = filtered_query.all()
+		
+		# Calculate metrics
+		total_matches = len(matches)
+		wins = len([m for m in matches if m.match_winner == 'P1'])
+		losses = total_matches - wins
+		win_rate = (wins / total_matches * 100) if total_matches > 0 else 0
+		
+		# Calculate games statistics
+		total_games = sum([m.p1_wins + m.p2_wins for m in matches])
+		avg_games_per_match = (total_games / total_matches) if total_matches > 0 else 0
+		
+		# TODO: Add your custom calculations here
+		# Example calculations you might want to add:
+		# - Win rate by format
+		# - Performance over time
+		# - Win rate by deck type
+		# - Performance against specific opponents
+		
+		return {
+			'metrics': [
+				{
+					'title': 'Win Rate',
+					'value': f'{win_rate:.1f}%',
+					'subtitle': f'{wins} wins, {losses} losses',
+					'type': 'percentage'
+				},
+				{
+					'title': 'Total Matches',
+					'value': str(total_matches),
+					'subtitle': 'In selected period',
+					'type': 'count'
+				},
+				{
+					'title': 'Avg. Games per Match',
+					'value': f'{avg_games_per_match:.1f}',
+					'subtitle': 'Games played on average',
+					'type': 'average'
+				}
+			],
+			'charts': [
+				{
+					'title': 'Win Rate Over Time',
+					'type': 'line',
+					'data': {
+						'labels': [],  # TODO: Generate time-based labels
+						'datasets': [{
+							'label': 'Win Rate',
+							'data': []  # TODO: Calculate win rate over time
+						}]
+					}
+				}
+			],
+			'tables': [
+				{
+					'title': 'Recent Matches',
+					'headers': ['Date', 'Opponent', 'Format', 'Result', 'Games'],
+					'rows': [[
+						m.date[:10], 
+						m.p2, 
+						m.format, 
+						'Win' if m.match_winner == 'P1' else 'Loss',
+						f'{m.p1_wins}-{m.p2_wins}'
+					] for m in matches[:10]]  # Show recent 10 matches
+				}
+			]
+		}
+		
+	except Exception as e:
+		debug_log(f"Error generating match performance dashboard: {str(e)}")
+		raise e
+
+def generate_card_analysis_dashboard(filtered_query, filters):
+	"""Generate card analysis dashboard data"""
+	try:
+		matches = filtered_query.all()
+		match_ids = [m.match_id for m in matches]
+		
+		# Get plays data for these matches
+		plays = Play.query.filter(
+			Play.uid == current_user.uid,
+			Play.match_id.in_(match_ids),
+			Play.casting_player == current_user.username,
+			Play.primary_card != 'NA'
+		).all()
+		
+		# TODO: Add your custom card analysis here
+		# Example calculations you might want to add:
+		# - Most played cards
+		# - Win rate when playing specific cards
+		# - Card performance by format
+		# - Mana curve analysis
+		# - Card synergies
+		
+		# Basic card frequency analysis
+		card_frequency = {}
+		for play in plays:
+			card = play.primary_card
+			card_frequency[card] = card_frequency.get(card, 0) + 1
+		
+		# Sort by frequency
+		top_cards = sorted(card_frequency.items(), key=lambda x: x[1], reverse=True)[:10]
+		
+		return {
+			'metrics': [
+				{
+					'title': 'Unique Cards Played',
+					'value': str(len(card_frequency)),
+					'subtitle': 'Different cards used',
+					'type': 'count'
+				},
+				{
+					'title': 'Total Plays',
+					'value': str(len(plays)),
+					'subtitle': 'Cards cast/played',
+					'type': 'count'
+				},
+				{
+					'title': 'Most Played Card',
+					'value': top_cards[0][0] if top_cards else 'None',
+					'subtitle': f'{top_cards[0][1]} times' if top_cards else 'No data',
+					'type': 'text'
+				}
+			],
+			'charts': [
+				{
+					'title': 'Most Played Cards',
+					'type': 'bar',
+					'data': {
+						'labels': [card[0] for card in top_cards],
+						'datasets': [{
+							'label': 'Times Played',
+							'data': [card[1] for card in top_cards]
+						}]
+					}
+				}
+			],
+			'tables': [
+				{
+					'title': 'Card Frequency',
+					'headers': ['Card Name', 'Times Played', 'Percentage'],
+					'rows': [[
+						card[0], 
+						str(card[1]), 
+						f'{(card[1]/len(plays)*100):.1f}%'
+					] for card in top_cards]
+				}
+			]
+		}
+		
+	except Exception as e:
+		debug_log(f"Error generating card analysis dashboard: {str(e)}")
+		raise e
+
+def generate_opponent_analysis_dashboard(filtered_query, filters):
+	"""Generate opponent analysis dashboard data"""
+	try:
+		matches = filtered_query.all()
+		
+		# TODO: Add your custom opponent analysis here
+		# Example calculations you might want to add:
+		# - Win rate vs each opponent
+		# - Most common opponents
+		# - Performance against different deck archetypes
+		# - Head-to-head records
+		
+		# Basic opponent analysis
+		opponent_stats = {}
+		for match in matches:
+			opp = match.p2
+			if opp not in opponent_stats:
+				opponent_stats[opp] = {'wins': 0, 'losses': 0, 'total': 0}
+			
+			opponent_stats[opp]['total'] += 1
+			if match.match_winner == 'P1':
+				opponent_stats[opp]['wins'] += 1
+			else:
+				opponent_stats[opp]['losses'] += 1
+		
+		# Calculate win rates
+		for opp in opponent_stats:
+			total = opponent_stats[opp]['total']
+			wins = opponent_stats[opp]['wins']
+			opponent_stats[opp]['win_rate'] = (wins / total * 100) if total > 0 else 0
+		
+		# Sort by total matches
+		top_opponents = sorted(opponent_stats.items(), key=lambda x: x[1]['total'], reverse=True)
+		
+		return {
+			'metrics': [
+				{
+					'title': 'Unique Opponents',
+					'value': str(len(opponent_stats)),
+					'subtitle': 'Different players faced',
+					'type': 'count'
+				},
+				{
+					'title': 'Most Faced Opponent',
+					'value': top_opponents[0][0] if top_opponents else 'None',
+					'subtitle': f'{top_opponents[0][1]["total"]} matches' if top_opponents else 'No data',
+					'type': 'text'
+				},
+				{
+					'title': 'Best Matchup',
+					'value': max(opponent_stats.keys(), key=lambda x: opponent_stats[x]['win_rate']) if opponent_stats else 'None',
+					'subtitle': f'{opponent_stats[max(opponent_stats.keys(), key=lambda x: opponent_stats[x]["win_rate"])]["win_rate"]:.1f}% win rate' if opponent_stats else 'No data',
+					'type': 'text'
+				}
+			],
+			'charts': [
+				{
+					'title': 'Win Rate vs Top Opponents',
+					'type': 'bar',
+					'data': {
+						'labels': [opp[0] for opp in top_opponents[:10]],
+						'datasets': [{
+							'label': 'Win Rate %',
+							'data': [opp[1]['win_rate'] for opp in top_opponents[:10]]
+						}]
+					}
+				}
+			],
+			'tables': [
+				{
+					'title': 'Opponent Records',
+					'headers': ['Opponent', 'Wins', 'Losses', 'Total', 'Win Rate'],
+					'rows': [[
+						opp[0], 
+						str(opp[1]['wins']), 
+						str(opp[1]['losses']),
+						str(opp[1]['total']),
+						f'{opp[1]["win_rate"]:.1f}%'
+					] for opp in top_opponents]
+				}
+			]
+		}
+		
+	except Exception as e:
+		debug_log(f"Error generating opponent analysis dashboard: {str(e)}")
+		raise e
+
+def generate_format_breakdown_dashboard(filtered_query, filters):
+	"""Generate format breakdown dashboard data"""
+	try:
+		matches = filtered_query.all()
+		
+		# TODO: Add your custom format analysis here
+		# Example calculations you might want to add:
+		# - Win rate by format
+		# - Most played formats
+		# - Performance in limited vs constructed
+		# - Format-specific trends over time
+		
+		# Basic format analysis
+		format_stats = {}
+		for match in matches:
+			fmt = match.format
+			if fmt not in format_stats:
+				format_stats[fmt] = {'wins': 0, 'losses': 0, 'total': 0}
+			
+			format_stats[fmt]['total'] += 1
+			if match.match_winner == 'P1':
+				format_stats[fmt]['wins'] += 1
+			else:
+				format_stats[fmt]['losses'] += 1
+		
+		# Calculate win rates
+		for fmt in format_stats:
+			total = format_stats[fmt]['total']
+			wins = format_stats[fmt]['wins']
+			format_stats[fmt]['win_rate'] = (wins / total * 100) if total > 0 else 0
+		
+		return {
+			'metrics': [
+				{
+					'title': 'Formats Played',
+					'value': str(len(format_stats)),
+					'subtitle': 'Different formats',
+					'type': 'count'
+				},
+				{
+					'title': 'Most Played Format',
+					'value': max(format_stats.keys(), key=lambda x: format_stats[x]['total']) if format_stats else 'None',
+					'subtitle': f'{format_stats[max(format_stats.keys(), key=lambda x: format_stats[x]["total"])]["total"]} matches' if format_stats else 'No data',
+					'type': 'text'
+				},
+				{
+					'title': 'Best Format',
+					'value': max(format_stats.keys(), key=lambda x: format_stats[x]['win_rate']) if format_stats else 'None',
+					'subtitle': f'{format_stats[max(format_stats.keys(), key=lambda x: format_stats[x]["win_rate"])]["win_rate"]:.1f}% win rate' if format_stats else 'No data',
+					'type': 'text'
+				}
+			],
+			'charts': [
+				{
+					'title': 'Matches by Format',
+					'type': 'pie',
+					'data': {
+						'labels': list(format_stats.keys()),
+						'datasets': [{
+							'data': [stats['total'] for stats in format_stats.values()]
+						}]
+					}
+				}
+			],
+			'tables': [
+				{
+					'title': 'Format Performance',
+					'headers': ['Format', 'Wins', 'Losses', 'Total', 'Win Rate'],
+					'rows': [[
+						fmt, 
+						str(stats['wins']), 
+						str(stats['losses']),
+						str(stats['total']),
+						f'{stats["win_rate"]:.1f}%'
+					] for fmt, stats in format_stats.items()]
+				}
+			]
+		}
+		
+	except Exception as e:
+		debug_log(f"Error generating format breakdown dashboard: {str(e)}")
+		raise e
+
+def generate_deck_performance_dashboard(filtered_query, filters):
+	"""Generate deck performance dashboard data"""
+	try:
+		matches = filtered_query.all()
+		
+		# TODO: Add your custom deck analysis here
+		# Example calculations you might want to add:
+		# - Win rate by deck archetype
+		# - Deck performance over time
+		# - Matchup analysis (your deck vs opponent deck)
+		# - Meta game analysis
+		
+		# Basic deck analysis
+		deck_stats = {}
+		for match in matches:
+			deck = match.p1_subarch or 'Unknown'
+			if deck not in deck_stats:
+				deck_stats[deck] = {'wins': 0, 'losses': 0, 'total': 0}
+			
+			deck_stats[deck]['total'] += 1
+			if match.match_winner == 'P1':
+				deck_stats[deck]['wins'] += 1
+			else:
+				deck_stats[deck]['losses'] += 1
+		
+		# Calculate win rates
+		for deck in deck_stats:
+			total = deck_stats[deck]['total']
+			wins = deck_stats[deck]['wins']
+			deck_stats[deck]['win_rate'] = (wins / total * 100) if total > 0 else 0
+		
+		return {
+			'metrics': [
+				{
+					'title': 'Decks Played',
+					'value': str(len(deck_stats)),
+					'subtitle': 'Different deck types',
+					'type': 'count'
+				},
+				{
+					'title': 'Most Played Deck',
+					'value': max(deck_stats.keys(), key=lambda x: deck_stats[x]['total']) if deck_stats else 'None',
+					'subtitle': f'{deck_stats[max(deck_stats.keys(), key=lambda x: deck_stats[x]["total"])]["total"]} matches' if deck_stats else 'No data',
+					'type': 'text'
+				},
+				{
+					'title': 'Best Performing Deck',
+					'value': max(deck_stats.keys(), key=lambda x: deck_stats[x]['win_rate']) if deck_stats else 'None',
+					'subtitle': f'{deck_stats[max(deck_stats.keys(), key=lambda x: deck_stats[x]["win_rate"])]["win_rate"]:.1f}% win rate' if deck_stats else 'No data',
+					'type': 'text'
+				}
+			],
+			'charts': [
+				{
+					'title': 'Win Rate by Deck',
+					'type': 'bar',
+					'data': {
+						'labels': list(deck_stats.keys()),
+						'datasets': [{
+							'label': 'Win Rate %',
+							'data': [stats['win_rate'] for stats in deck_stats.values()]
+						}]
+					}
+				}
+			],
+			'tables': [
+				{
+					'title': 'Deck Performance',
+					'headers': ['Deck', 'Wins', 'Losses', 'Total', 'Win Rate'],
+					'rows': [[
+						deck, 
+						str(stats['wins']), 
+						str(stats['losses']),
+						str(stats['total']),
+						f'{stats["win_rate"]:.1f}%'
+					] for deck, stats in deck_stats.items()]
+				}
+			]
+		}
+		
+	except Exception as e:
+		debug_log(f"Error generating deck performance dashboard: {str(e)}")
+		raise e
+
+def generate_time_trends_dashboard(filtered_query, filters):
+	"""Generate time trends dashboard data"""
+	try:
+		matches = filtered_query.order_by(Match.date).all()
+		
+		# TODO: Add your custom time trend analysis here
+		# Example calculations you might want to add:
+		# - Win rate over time (daily/weekly/monthly)
+		# - Performance trends by season
+		# - Activity patterns (matches per day/week)
+		# - Format popularity over time
+		# - Improvement metrics
+		
+		# Basic time analysis - group by month
+		from collections import defaultdict
+		import datetime
+		
+		monthly_stats = defaultdict(lambda: {'wins': 0, 'losses': 0, 'total': 0})
+		
+		for match in matches:
+			try:
+				# Extract year-month from date
+				month_key = match.date[:7]  # YYYY-MM format
+				monthly_stats[month_key]['total'] += 1
+				if match.match_winner == 'P1':
+					monthly_stats[month_key]['wins'] += 1
+				else:
+					monthly_stats[month_key]['losses'] += 1
+			except:
+				continue
+		
+		# Calculate win rates
+		for month in monthly_stats:
+			total = monthly_stats[month]['total']
+			wins = monthly_stats[month]['wins']
+			monthly_stats[month]['win_rate'] = (wins / total * 100) if total > 0 else 0
+		
+		# Sort by month
+		sorted_months = sorted(monthly_stats.items())
+		
+		return {
+			'metrics': [
+				{
+					'title': 'Time Period',
+					'value': f'{len(sorted_months)} months' if sorted_months else '0 months',
+					'subtitle': 'Data available',
+					'type': 'text'
+				},
+				{
+					'title': 'Peak Activity Month',
+					'value': max(monthly_stats.keys(), key=lambda x: monthly_stats[x]['total']) if monthly_stats else 'None',
+					'subtitle': f'{monthly_stats[max(monthly_stats.keys(), key=lambda x: monthly_stats[x]["total"])]["total"]} matches' if monthly_stats else 'No data',
+					'type': 'text'
+				},
+				{
+					'title': 'Recent Trend',
+					'value': 'Improving' if len(sorted_months) >= 2 and sorted_months[-1][1]['win_rate'] > sorted_months[-2][1]['win_rate'] else 'Stable',
+					'subtitle': 'Based on last 2 months',
+					'type': 'text'
+				}
+			],
+			'charts': [
+				{
+					'title': 'Win Rate Over Time',
+					'type': 'line',
+					'data': {
+						'labels': [month[0] for month in sorted_months],
+						'datasets': [{
+							'label': 'Win Rate %',
+							'data': [month[1]['win_rate'] for month in sorted_months]
+						}]
+					}
+				},
+				{
+					'title': 'Match Activity Over Time',
+					'type': 'bar',
+					'data': {
+						'labels': [month[0] for month in sorted_months],
+						'datasets': [{
+							'label': 'Matches Played',
+							'data': [month[1]['total'] for month in sorted_months]
+						}]
+					}
+				}
+			],
+			'tables': [
+				{
+					'title': 'Monthly Performance',
+					'headers': ['Month', 'Wins', 'Losses', 'Total', 'Win Rate'],
+					'rows': [[
+						month[0], 
+						str(month[1]['wins']), 
+						str(month[1]['losses']),
+						str(month[1]['total']),
+						f'{month[1]["win_rate"]:.1f}%'
+					] for month in sorted_months]
+				}
+			]
+		}
+		
+	except Exception as e:
+		debug_log(f"Error generating time trends dashboard: {str(e)}")
+		raise e
 
 # Initialize these variables as None - they'll be loaded on demand
 options = None

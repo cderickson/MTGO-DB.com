@@ -243,6 +243,12 @@
           <div class="nav-section">
             <h3 class="nav-section-title">Dashboards</h3>
             <ul class="nav-list">
+              <li class="nav-item">
+                <a href="{{ url_for('views.dashboards') }}" class="nav-link">
+                  <i class="fas fa-chart-line nav-icon"></i>
+                  <span class="nav-text">Analytics Dashboard</span>
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -1074,8 +1080,8 @@
     .header-right .user-info {
       display: flex;
       align-items: center;
-      gap: var(--spacing-sm);
-      padding: var(--spacing-sm) var(--spacing-md);
+      gap: var(--spacing-xs);
+      padding: var(--spacing-xs) var(--spacing-sm);
       border-radius: var(--radius-md);
       cursor: pointer;
       transition: all var(--transition-fast);
@@ -1092,18 +1098,18 @@
     }
     
     .header-right .user-avatar {
-      font-size: 1.5rem;
+      font-size: 1.125rem;
       color: var(--fg-muted);
     }
     
     .header-right .user-details {
       display: flex;
       align-items: center;
-      gap: var(--spacing-sm);
+      gap: var(--spacing-xs);
     }
     
     .header-right .user-email {
-      font-size: 0.875rem;
+      font-size: 0.75rem;
       color: var(--fg-default);
       font-weight: 500;
       white-space: nowrap;
@@ -1113,7 +1119,7 @@
     }
     
     .header-right .user-chevron {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: var(--fg-muted);
       transition: transform var(--transition-fast);
     }
@@ -1121,17 +1127,17 @@
     .header-right .auth-buttons {
       display: flex;
       align-items: center;
-      gap: var(--spacing-sm);
+      gap: var(--spacing-xs);
     }
     
     .header-right .auth-btn {
       display: flex;
       align-items: center;
-      gap: var(--spacing-sm);
-      padding: var(--spacing-sm) var(--spacing-md);
+      gap: var(--spacing-xs);
+      padding: var(--spacing-xs) var(--spacing-sm);
       border-radius: var(--radius-md);
       text-decoration: none;
-      font-size: 0.875rem;
+      font-size: 0.75rem;
       font-weight: 500;
       transition: all var(--transition-fast);
       border: 1px solid transparent;
@@ -1184,7 +1190,7 @@
       }
       
       .header-right .auth-btn {
-        padding: var(--spacing-sm);
+        padding: var(--spacing-xs);
       }
     }
     </style>

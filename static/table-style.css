@@ -1,5 +1,25 @@
 /* Modern Table Styles */
 
+/* Tables Container - Fixed Width like Profile/Dashboard */
+.tables-container {
+  width: 1200px !important;
+  max-width: 1200px !important;
+  min-width: 1200px !important;
+  margin: 0 auto;
+  padding: 0;
+  position: relative;
+  flex: none !important;
+}
+
+/* Responsive Design */
+@media (max-width: 1300px) {
+  .tables-container {
+    width: 95% !important;
+    max-width: 95% !important;
+    min-width: 95% !important;
+  }
+}
+
 /* Override global layout min-heights for table pages to prevent unwanted scrollbars */
 .app-layout {
   min-height: auto !important;
@@ -12,36 +32,46 @@
 .control-buttons {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
-  max-width: 1200px;
-  margin: 0 auto;
+  gap: var(--spacing-sm);
 }
 
 /* Table Container */
 .table-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  background: var(--bg-default);
-  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   border: 1px solid var(--border);
+  border-bottom: none;
   overflow: hidden;
-  margin-top: var(--spacing-lg);
+  margin-top: var(--spacing-md);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Table container when there's no pagination */
+.table-container:last-child {
+  border-radius: var(--radius-lg);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Fallback for browsers that don't support :has() */
+.tables-container:not(:has(.pagination-container)) .table-container {
+  border-radius: var(--radius-lg);
+  border-bottom: 1px solid var(--border);
 }
 
 .table-header {
-  padding: var(--spacing-lg);
-  background: var(--bg-subtle);
+  padding: var(--spacing-md);
+  background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
   border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-md);
 }
 
 .table-header-left {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
   flex: 1;
 }
 
@@ -51,39 +81,61 @@
 }
 
 .table-title {
-  margin: 0 0 var(--spacing-sm) 0;
+  margin: 0 0 var(--spacing-xs) 0;
   color: var(--fg-default);
-  font-size: 1.5rem;
+  font-size: 1rem;
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
 }
 
 .table-title i {
   color: var(--fg-muted);
-  font-size: 1.25rem;
+  font-size: 1rem;
 }
 
 .table-hint {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
   color: var(--fg-muted);
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   margin: 0;
 }
 
 .table-hint i {
   color: var(--sky-blue);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
 }
 
 /* Table Wrapper */
 .table-wrapper {
   overflow-x: auto;
-  max-height: 70vh;
+  max-height: 65vh;
   overflow-y: auto;
+  /* Add padding to prevent horizontal scrollbar from covering content */
+  padding-bottom: 18px;
+  box-sizing: content-box;
+}
+
+/* Ensure the table extends properly within the wrapper */
+.table-wrapper::-webkit-scrollbar {
+  height: 12px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  background: var(--bg-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: var(--fg-muted);
 }
 
 /* Modern Table */
@@ -91,29 +143,29 @@
   width: 100%;
   border-collapse: collapse;
   background: var(--bg-default);
-  font-size: 0.875rem;
+  font-size: 0.75rem;
 }
 
 .modern-table thead {
-  background: var(--bg-muted);
+  background: var(--bg-default);
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
 .modern-table th {
-  padding: 0;
+  padding: var(--spacing-xs) var(--spacing-sm);
   text-align: center;
   font-weight: 600;
   color: var(--fg-default);
-  border-bottom: 2px solid var(--border);
-  border-right: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
   font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.025em;
+  letter-spacing: 0.05em;
   white-space: nowrap;
   vertical-align: middle;
-  height: 40px;
+  height: 32px;
 }
 
 .modern-table th:last-child {
@@ -121,19 +173,25 @@
 }
 
 .modern-table td {
-  padding: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
   color: var(--fg-body);
-  border-bottom: 1px solid var(--border-subtle);
-  border-right: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
   text-align: center;
   white-space: nowrap;
   max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 0.75rem;
 }
 
 .modern-table td:last-child {
   border-right: none;
+}
+
+/* Alternating row colors */
+.modern-table tbody tr:nth-child(even) {
+  background: var(--bg-subtle);
 }
 
 /* Special cell types */
@@ -141,11 +199,12 @@
   font-family: var(--font-mono);
   font-weight: 600;
   color: var(--fg-default);
+  font-size: 0.7rem;
 }
 
 .cell-date {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--fg-muted);
   white-space: nowrap;
 }
@@ -154,7 +213,8 @@
   font-weight: 500;
   color: var(--fg-default);
   text-align: left;
-  max-width: 180px;
+  max-width: 150px;
+  font-size: 0.75rem;
 }
 
 /* Row States */
@@ -179,7 +239,7 @@
 /* No Data State */
 .no-data {
   text-align: center;
-  padding: var(--spacing-xl);
+  padding: var(--spacing-md);
   background: var(--bg-subtle);
 }
 
@@ -187,25 +247,25 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
   color: var(--fg-muted);
 }
 
 .no-data-message i {
-  font-size: 2rem;
+  font-size: 1.5rem;
   color: var(--fg-muted);
   opacity: 0.5;
 }
 
 .no-data-message p {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 500;
 }
 
 /* Pagination */
 .pagination-container {
-  padding: var(--spacing-lg);
+  padding: 0;
   background: var(--bg-default);
 }
 
@@ -213,18 +273,23 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 1200px;
-  margin: 0 auto;
+  /* Match the table container width and alignment */
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-sm);
 }
 
 .pagination-btn {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
 }
 
 .page-info {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: var(--fg-muted);
   font-weight: 500;
 }
@@ -233,46 +298,46 @@
 .revision-players {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-md);
 }
 
 .player-section {
   background: var(--bg-subtle);
   border-radius: var(--radius-md);
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md);
   border: 1px solid var(--border);
 }
 
 .player-name {
-  font-weight: 700;
+  font-weight: 600;
   color: var(--fg-default);
-  font-size: 1.125rem;
-  margin-bottom: var(--spacing-md);
+  font-size: 1rem;
+  margin-bottom: var(--spacing-sm);
   text-align: center;
 }
 
 .card-lists {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
 }
 
 .card-list h5 {
-  margin: 0 0 var(--spacing-sm) 0;
-  font-size: 0.875rem;
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--fg-default);
   text-transform: uppercase;
-  letter-spacing: 0.025em;
+  letter-spacing: 0.05em;
 }
 
 .card-content {
-  font-size: 0.75rem;
-  line-height: 1.5;
+  font-size: 0.7rem;
+  line-height: 1.4;
   color: var(--fg-body);
   font-family: var(--font-mono);
-  min-height: 60px;
-  max-height: 300px;
+  min-height: 50px;
+  max-height: 250px;
   overflow-y: auto;
   padding: var(--spacing-xs);
   background: transparent;
@@ -339,6 +404,15 @@
   border-color: #b91c1c;
 }
 
+/* Button Sizing */
+.control-buttons .button {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+  min-height: 28px;
+  gap: var(--spacing-xs);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) { 
   .control-buttons {
@@ -347,33 +421,40 @@
   }
   
   .table-container {
-    margin-top: var(--spacing-md);
+    margin-top: var(--spacing-sm);
     border-radius: 0;
     border-left: none;
     border-right: none;
   }
   
+  .pagination-controls {
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+  }
+  
   .table-header {
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
   }
   
   .table-title {
-    font-size: 1.25rem;
+    font-size: 0.875rem;
   }
   
   .modern-table th,
   .modern-table td {
-    padding: var(--spacing-xs) var(--spacing-sm);
-    font-size: 0.75rem;
+    padding: var(--spacing-xs);
+    font-size: 0.7rem;
   }
   
   .modern-table td {
-    max-width: 80px;
+    max-width: 70px;
   }
   
   .pagination-controls {
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
   }
   
   .revision-players {
@@ -395,7 +476,7 @@
 
 @media (max-width: 480px) {
   .modern-table {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
   }
   
   .modern-table th,
@@ -404,18 +485,18 @@
   }
   
   .table-title {
-    font-size: 1.125rem;
+    font-size: 0.8rem;
   }
   
   .table-hint {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
   
   /* Stack header elements on mobile */
   .table-header {
     flex-direction: column;
     align-items: stretch;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
   }
   
   .table-header-right {
@@ -424,7 +505,7 @@
   
   .control-buttons {
     display: flex;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-xs);
   }
   
   .control-buttons .button {
@@ -460,34 +541,42 @@
 #ReviseMultiModal .modal-footer .button,
 #RemoveModal .modal-footer .button,
 #ReviseIgnoredModal .modal-footer .button {
-  width: 200px !important;
-  min-width: 200px !important;
-  max-width: 200px !important;
+  width: 180px !important;
+  min-width: 180px !important;
+  max-width: 180px !important;
   flex: none !important;
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+  font-size: 0.75rem !important;
+  padding: var(--spacing-xs) var(--spacing-sm) !important;
 }
 
 #reviseForm .form-group .form-input {
   width: 100% !important;
   min-width: 0 !important;
   box-sizing: border-box;
+  font-size: 0.75rem !important;
+  padding: var(--spacing-xs) var(--spacing-sm) !important;
 }
 
 /* Reduce spacing in revision form */
 #reviseForm .form-group {
-  margin-bottom: var(--spacing-md) !important;
+  margin-bottom: var(--spacing-sm) !important;
 }
 
 #reviseForm .form-label {
-  margin-bottom: var(--spacing-sm) !important;
+  margin-bottom: var(--spacing-xs) !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
   }
 
 /* Center all form labels in both modals */
 #ReviseModal .form-label,
 #ReviseMultiModal .form-label {
   text-align: center !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
 }
 
 /* Style the field selector section for better visual hierarchy */
@@ -495,31 +584,31 @@
   background: rgba(59, 130, 246, 0.05) !important;
   border: 1px solid rgba(59, 130, 246, 0.2) !important;
   border-radius: var(--radius-md) !important;
-  padding: var(--spacing-md) !important;
-  margin-bottom: var(--spacing-md) !important;
+  padding: var(--spacing-sm) !important;
+  margin-bottom: var(--spacing-sm) !important;
   position: relative !important;
 }
 
 #ReviseMultiModal .field-selector-section .form-label {
   color: var(--sky-blue) !important;
   font-weight: 600 !important;
-  font-size: 1rem !important;
+  font-size: 0.875rem !important;
 }
 
 #ReviseMultiModal .field-selector-section::before {
   content: "1";
   position: absolute;
-  top: -10px;
-  left: 20px;
+  top: -8px;
+  left: 16px;
   background: var(--sky-blue);
   color: white;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
 }
 
@@ -527,7 +616,7 @@
 #ReviseMultiModal .revision-fields-section {
   background: var(--bg-subtle) !important;
   border-radius: var(--radius-md) !important;
-  padding: var(--spacing-md) !important;
+  padding: var(--spacing-sm) !important;
   border: 1px solid var(--border) !important;
   position: relative !important;
 }
@@ -535,17 +624,17 @@
 #ReviseMultiModal .revision-fields-section::before {
   content: "2";
   position: absolute;
-  top: -10px;
-  left: 20px;
+  top: -8px;
+  left: 16px;
   background: var(--gray-500);
   color: white;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
 }
 
@@ -562,7 +651,7 @@
 
 /* Ensure MatchType container has proper bottom spacing */
 #ReviseMultiModal #MatchTypeFieldsContainer .form-group {
-  margin-bottom: var(--spacing-lg) !important;
+  margin-bottom: var(--spacing-sm) !important;
 }
 
 /* Modal height constraints for varying card list lengths */
@@ -603,10 +692,15 @@
 .modal .dropdown-menu {
   position: fixed !important;
   z-index: 20000 !important;
-  min-width: 180px !important;
-  max-height: 200px !important;
+  min-width: 160px !important;
+  max-height: 180px !important;
   overflow-y: auto !important;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3) !important;
+  font-size: 0.75rem !important;
+}
+
+.modal .dropdown-menu li {
+  padding: var(--spacing-xs) var(--spacing-sm) !important;
 }
 
 /* Dark Mode Support */

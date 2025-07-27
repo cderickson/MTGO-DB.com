@@ -87,7 +87,7 @@
   --transition-slow: 350ms ease;
   
   /* Layout */
-  --sidebar-width: 280px;
+  --sidebar-width: 240px;
   --header-height: 64px;
 }
 
@@ -276,17 +276,17 @@ body {
 }
 
 .nav-section {
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-md);
 }
 
 .nav-section-title {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--sidebar-section-title);
-  padding: 0 var(--spacing-lg);
-  margin-bottom: var(--spacing-md);
+  padding: 0 var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
 }
 
 .nav-list {
@@ -294,17 +294,17 @@ body {
 }
 
 .nav-item {
-  margin-bottom: 2px;
+  margin-bottom: 1px;
 }
 
 .nav-link {
   display: flex;
   align-items: center;
-  padding: var(--spacing-sm) var(--spacing-lg);
+  padding: var(--spacing-xs) var(--spacing-md);
   text-decoration: none;
   color: var(--fg-body);
   font-weight: 500;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   transition: all var(--transition-fast);
   border-radius: 0;
 }
@@ -321,10 +321,10 @@ body {
 }
 
 .nav-icon {
-  width: 20px;
-  margin-right: var(--spacing-sm);
+  width: 16px;
+  margin-right: var(--spacing-xs);
   text-align: center;
-  font-size: 1rem;
+  font-size: 0.875rem;
 }
 
 .nav-text {
@@ -415,11 +415,11 @@ body {
 .user-dropdown-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
+  gap: 6px;
+  padding: 6px 12px;
   text-decoration: none;
   color: #374151;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   border-radius: 4px;
   transition: all 0.15s;
   white-space: nowrap;
