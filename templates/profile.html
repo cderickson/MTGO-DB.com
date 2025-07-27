@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block page_title %}Profile{% endblock %}
+{% block page_title %}{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
@@ -17,54 +17,49 @@
         <div class="profile-card-header">
           <h2 class="profile-card-title">
             <i class="fas fa-user-circle profile-icon"></i>
-            User Profile
+            {{ user.username }}
           </h2>
+          
+          <!-- Profile Edit Controls in Header -->
+          <div class="profile-edit-controls-header">
+            <button type="button" class="button primary" id="EditProfileButton" onclick="editProfile()">
+              <i class="fas fa-edit"></i>
+              Edit Profile
+            </button>
+            <button type="button" class="button secondary" id="CancelProfileButton" onclick="cancelEditProfile()" style="display:none;">
+              <i class="fas fa-times"></i>
+              Cancel
+            </button>
+            <button type="button" class="button primary" id="SaveProfileButton" onclick="editUserDB()" style="display:none;">
+              <i class="fas fa-save"></i>
+              Save Changes
+            </button>
+          </div>
         </div>
         
         <div class="profile-card-body">
-          <form action="/ignored" method="POST">
-            <div class="profile-info-grid">
-              
-              <!-- Email -->
-              <div class="profile-info-item">
-                <label class="profile-label">Email</label>
-                <div class="profile-value" id="ProfileEmailDisplay">
-                  {{ user.email }}
-                </div>
+          <div class="profile-info-grid">
+            
+            <!-- Email -->
+            <div class="profile-info-item">
+              <label class="profile-label">Email</label>
+              <div class="profile-value" id="ProfileEmailDisplay">
+                {{ user.email }}
               </div>
-              
-              <!-- MTGO Username -->
-              <div class="profile-info-item">
-                <label class="profile-label">MTGO Username</label>
-                <div class="profile-value" id="ProfileUsernameDisplay">
-                  {{ user.username }}
-                </div>
-                <div class="profile-input" id="ProfileUsernameInput" style="display:none;">
-                  <input type="text" class="form-input" name="ProfileUsernameInputText" placeholder="Username" value="{{ user.username }}">
-                </div>
-              </div>
-              
             </div>
             
-
-            
-            <!-- Profile Edit Controls -->
-            <div class="profile-edit-controls">
-              <button type="button" class="btn btn-primary" id="EditProfileButton" onclick="editProfile()">
-                <i class="fas fa-edit"></i>
-                Edit Profile
-              </button>
-              <button type="button" class="btn btn-primary" id="SaveProfileButton" onclick="editUserDB()" style="display:none;">
-                <i class="fas fa-save"></i>
-                Save Changes
-              </button>
-              <button type="button" class="btn btn-secondary" id="CancelProfileButton" onclick="cancelEditProfile()" style="display:none;">
-                <i class="fas fa-times"></i>
-                Cancel
-              </button>
+            <!-- MTGO Username -->
+            <div class="profile-info-item">
+              <label class="profile-label">MTGO Username</label>
+              <div class="profile-value" id="ProfileUsernameDisplay">
+                {{ user.username }}
+              </div>
+              <div class="profile-input" id="ProfileUsernameInput" style="display:none;">
+                <input type="text" class="form-input" name="ProfileUsernameInputText" placeholder="Username" value="{{ user.username }}">
+              </div>
             </div>
             
-          </form>
+          </div> 
         </div>
       </div>
     </div>
@@ -73,10 +68,10 @@
     <div class="profile-section">
       <div class="profile-card">
         <div class="profile-card-header">
-          <h2 class="profile-card-title">
+          <h4 class="profile-card-title">
             <i class="fas fa-chart-line profile-icon"></i>
             Lifetime Statistics
-          </h2>
+          </h4>
         </div>
         
         <div class="profile-card-body">
@@ -101,7 +96,8 @@
             <div class="stat-item">
               <div class="stat-label">Favorite Deck</div>
               <div class="stat-value">
-                {{ stats['fave_deck'].0 }} - {{ stats['fave_deck'].1 }}
+                {{ stats['fave_deck'].0 }}<br>
+                {{ stats['fave_deck'].1 }}
                 <div class="stat-subtext">({{ stats['fave_deck'].2 }} Matches)</div>
               </div>
             </div>
@@ -149,9 +145,11 @@
             <div class="stat-item">
               <div class="stat-label">Longest Game</div>
               <div class="stat-value">
-                {{ stats['longest_game'].0 }} Turns ({{ stats['longest_game'].1 }})
+                {{ stats['longest_game'].0 }} Turns
                 <div class="stat-subtext">
-                  {{ stats['longest_game'].2 }} vs. {{ stats['longest_game'].3 }}
+                  {{ stats['longest_game'].1 }}<br>
+                  {{ stats['longest_game'].2 }} vs.<br>
+                  {{ stats['longest_game'].3 }}
                 </div>
               </div>
             </div>
@@ -160,6 +158,61 @@
         </div>
       </div>
     </div>
+    
+    <!-- Match History Section -->
+    {% if match_history %}
+    <div class="profile-section">
+      <div class="profile-card match-history-card">
+        <div class="profile-card-header">
+          <h4 class="profile-card-title">
+            <i class="fas fa-history profile-icon"></i>
+            Recent Match History
+          </h4>
+        </div>
+        
+        <div class="profile-card-body">
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered match-history-table">
+                             <thead class="table-dark">
+                 <tr>
+                   <th class="text-center">Date</th>
+                   <th class="text-center">Players</th>
+                   <th class="text-center">Decks</th>
+                   <th class="text-center">Match Result</th>
+                   <th class="text-center">Match Format</th>
+                 </tr>
+               </thead>
+                             <tbody>
+                 {% for match in match_history %}
+                 <tr class="{% if 'Win' in match.Match_Result %}match-win{% elif 'Loss' in match.Match_Result %}match-loss{% else %}match-na{% endif %}">
+                   <td class="text-center"><nobr>{{ match.Date }}</nobr></td>
+                   <td class="text-center">
+                     <div class="stacked-players">
+                       <div class="player-top">{{ user.username }}</div>
+                       <div class="player-bottom">{{ match.Opponent }}</div>
+                     </div>
+                   </td>
+                   <td class="text-center">
+                     <div class="stacked-decks">
+                       <div class="deck-top"><span class="deck-name">{{ match.Deck }}</span></div>
+                       <div class="deck-bottom"><span class="deck-name">{{ match.Opp_Deck }}</span></div>
+                     </div>
+                   </td>
+                   <td class="text-center">
+                     <span class="match-result {% if 'Win' in match.Match_Result %}win{% elif 'Loss' in match.Match_Result %}loss{% else %}na{% endif %}">
+                       {{ match.Match_Result }}
+                     </span>
+                   </td>
+                   <td class="text-center">{{ match.Match_Format }}</td>
+                 </tr>
+                 {% endfor %}
+               </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
     
   </div>
 </div>
