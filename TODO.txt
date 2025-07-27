@@ -1,30 +1,30 @@
 Apply Associated Draft ID Modal: 
-	Fix Draft ID dropdown (should be wider)
-	Center Draft Pool sections
-	Remove Processing Modal showing up after skipping through everything or applying a change
+	xFix Draft ID dropdown (should be wider)
+	xCenter Draft Pool sections
+	xRemove Processing Modal showing up after skipping through everything or applying a change
 
 Missing Game Winners Modal:
-	Window should stay open and load the next game after applying a new game winner
+	xWindow should stay open and load the next game after applying a new game winner
 
 Revise Record:
-	Spread out buttons so they don't overlap
-	Remove Processing Modal
-	After applying a revision, we should close the modal
+	xSpread out buttons so they don't overlap
+	xRemove Processing Modal
+	xAfter applying a revision, we should close the modal
 
 Revise Record Multi:
-	Remove Processing Modal
-	After applying a revision, we should close the modal
-	Isn't applying changes to database
+	xRemove Processing Modal
+	xAfter applying a revision, we should close the modal
+	xIsn't applying changes to database
 
 Remove, Remove & Ignore:
-	Should close modal after choosing an option
+	xShould close modal after choosing an option
 
 Best Guess Deck Names:
-	Make window slightly wider
+	xMake window slightly wider
 	Test
 
 Data Dictionary:
-	Add Secondary tags
+	xAdd Secondary tags
 
 Re-Process:
 	Decide how we want this function to handle new data (delete and re-parse)
@@ -40,10 +40,14 @@ Buttons:
 	Standardize button icons
 
 Profile:
-	Fix profile formatting
-	Make sure name change, etc. functionality works
+	xFix profile formatting
+	xMake sure name change, etc. functionality works
+	xMove Ignored Matches and Debug functions to sidebar menu
 
-General
+General:
 	Add a footer
 	Play with styling, floating menu, etc.
 	Rename .js files
+
+Ignored Matches Table:
+	xAdd back functionality

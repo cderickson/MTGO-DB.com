@@ -9,22 +9,6 @@
 
 <input type="hidden" name="tname" id="tname" value="{{ table_name }}">
 
-{% if table_name.lower() == 'ignored' %}
-<!-- Table Controls for Ignored -->
-<div class="table-controls">
-  <div class="control-buttons">
-    <button type="button" class="button primary" data-bs-toggle="modal" data-bs-target="#ReviseIgnoredModal">
-      <i class="fas fa-undo"></i>
-      Remove from Ignored
-    </button>
-    <a href="{{ url_for('views.profile') }}" class="button secondary">
-      <i class="fas fa-arrow-left"></i>
-      Back to Profile
-    </a>
-  </div>
-</div>
-{% endif %}
-
 <!-- Main Table Container -->
 <div class="table-container">
   <div class="table-header">
@@ -49,6 +33,11 @@
         <i class="fas fa-info-circle"></i>
         Click Back to return to the previous view
       </div>
+      {% elif table_name.lower() in ['ignored'] %}
+      <div class="table-hint">
+        <i class="fas fa-info-circle"></i>
+        Remove matches from your Ignored list and they will be scanned during your next import
+      </div>
       {% endif %}
     </div>
     
@@ -71,6 +60,15 @@
         <button id="BackButton" type="button" class="button secondary" onclick="navigateBack()">
           <i class="fas fa-arrow-left"></i>
           Back
+        </button>
+      </div>
+    </div>
+    {% elif table_name.lower() in ['ignored'] %}
+    <div class="table-header-right">
+      <div class="control-buttons">
+        <button id="RemoveIgnoredButton" type="button" class="button primary" data-bs-toggle="modal" data-bs-target="#ReviseIgnoredModal">
+          <i class="fas fa-undo"></i>
+          Unignore Match
         </button>
       </div>
     </div>
@@ -252,7 +250,7 @@
               <td>{{ row.avail13 }}</td>
               <td>{{ row.avail14 }}</td>
             {% elif table_name.lower() == 'ignored' %}
-              <td class="cell-id">{{ row.match_id }}</td>
+              <td>{{ row.match_id }}</td>
               <td>{{ row.reason }}</td>
             {% endif %}
           </tr>
@@ -390,7 +388,7 @@
         </div>
         
         <!-- Row 2: Match Fields (Centered) -->
-        <div style="display: grid; grid-template-columns: 1fr repeat(3, minmax(0, 1fr)) 1fr; gap: var(--spacing-md); align-items: start; margin-bottom: 0;">
+        <div style="display: grid; grid-template-columns: 1fr repeat(3, minmax(200px, 1fr)) 1fr; gap: var(--spacing-md); align-items: start; margin-bottom: 0;">
           <div></div> <!-- Empty spacer -->
           <div class="form-group">
             <label class="form-label">Format</label>
@@ -443,7 +441,7 @@
 
 <!-- Multi-Revision Modal -->
 <div id="ReviseMultiModal" class="modal" style="display: none;">
-  <div class="modal-content" style="max-width: 600px; width: 90%;">
+  <div class="modal-content">
     <div class="modal-header">
       <div style="display: flex; align-items: center; gap: var(--spacing-md);">
         <div>
@@ -480,85 +478,85 @@
           <label class="form-label" style="color: var(--fg-muted); font-size: 0.875rem;">Step 2: Set New Values</label>
         </div>
         <form>
-        <!-- P1 Deck Fields (Side by Side) -->
-        <div id="P1FieldsContainer" style="display: block;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
-            <div class="form-group" style="text-align: center;">
-              <label class="form-label">P1 Archetype</label>
-              <div class="dropdown">
-                <button class="button secondary dropdown-toggle" type="button" id="P1ArchButtonMulti" onclick="toggleDropdown(event, 'P1ArchMenuMulti')">
-                  NA
-                </button>
-                <ul class="dropdown-menu" id="P1ArchMenuMulti"></ul>
+          <!-- P1 Deck Fields (Side by Side) -->
+          <div id="P1FieldsContainer" style="display: block;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+              <div class="form-group" style="text-align: center;">
+                <label class="form-label">P1 Archetype</label>
+                <div class="dropdown">
+                  <button class="button secondary dropdown-toggle" type="button" id="P1ArchButtonMulti" onclick="toggleDropdown(event, 'P1ArchMenuMulti')">
+                    NA
+                  </button>
+                  <ul class="dropdown-menu" id="P1ArchMenuMulti"></ul>
+                </div>
               </div>
-            </div>
 
-            <div class="form-group" style="text-align: center;">
-              <label class="form-label">P1 Subarchetype</label>
-              <input type="text" class="form-input" id="P1_Subarch_Multi" placeholder="P1_Subarch" value="NA">
-            </div>
-          </div>
-        </div>
-
-        <!-- P2 Deck Fields (Side by Side) -->
-        <div id="P2FieldsContainer" style="display: none;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
-            <div class="form-group" style="text-align: center;">
-              <label class="form-label">P2 Archetype</label>
-              <div class="dropdown">
-                <button class="button secondary dropdown-toggle" type="button" id="P2ArchButtonMulti" onclick="toggleDropdown(event, 'P2ArchMenuMulti')">
-                  NA
-                </button>
-                <ul class="dropdown-menu" id="P2ArchMenuMulti"></ul>
-              </div>
-            </div>
-
-            <div class="form-group" style="text-align: center;">
-              <label class="form-label">P2 Subarchetype</label>
-              <input type="text" class="form-input" id="P2_Subarch_Multi" placeholder="P2_Subarch" value="NA">
-            </div>
-          </div>
-        </div>
-
-        <!-- Format Fields (Side by Side) -->
-        <div id="FormatFieldsContainer" style="display: none;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
-            <div class="form-group" style="text-align: center;">
-              <label class="form-label">Format</label>
-              <div class="dropdown">
-                <button class="button secondary dropdown-toggle" type="button" id="FormatButtonMulti" onclick="toggleDropdown(event, 'FormatMenuMulti')">
-                  NA
-                </button>
-                <ul class="dropdown-menu" id="FormatMenuMulti"></ul>
-              </div>
-            </div>
-
-            <div class="form-group" style="text-align: center;">
-              <label class="form-label">Limited Format</label>
-              <div class="dropdown">
-                <button class="button secondary dropdown-toggle" type="button" id="LimitedFormatButtonMulti" onclick="toggleDropdown(event, 'LimitedFormatMenuMulti')" disabled>
-                  NA
-                </button>
-                <ul class="dropdown-menu" id="LimitedFormatMenuMulti"></ul>
+              <div class="form-group" style="text-align: center;">
+                <label class="form-label">P1 Subarchetype</label>
+                <input type="text" class="form-input" id="P1_Subarch_Multi" placeholder="P1_Subarch" value="NA">
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Match Type Field (Centered across full width) -->
-        <div id="MatchTypeFieldsContainer" style="display: none;">
-          <div style="display: flex; justify-content: center;">
-            <div class="form-group" style="width: 300px; text-align: center;">
-              <label class="form-label">Match Type</label>
-              <div class="dropdown">
-                <button class="button secondary dropdown-toggle" type="button" id="MatchTypeButtonMulti" onclick="toggleDropdown(event, 'MatchTypeMenuMulti')">
-                  NA
-                </button>
-                <ul class="dropdown-menu" id="MatchTypeMenuMulti"></ul>
+          <!-- P2 Deck Fields (Side by Side) -->
+          <div id="P2FieldsContainer" style="display: none;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+              <div class="form-group" style="text-align: center;">
+                <label class="form-label">P2 Archetype</label>
+                <div class="dropdown">
+                  <button class="button secondary dropdown-toggle" type="button" id="P2ArchButtonMulti" onclick="toggleDropdown(event, 'P2ArchMenuMulti')">
+                    NA
+                  </button>
+                  <ul class="dropdown-menu" id="P2ArchMenuMulti"></ul>
+                </div>
+              </div>
+
+              <div class="form-group" style="text-align: center;">
+                <label class="form-label">P2 Subarchetype</label>
+                <input type="text" class="form-input" id="P2_Subarch_Multi" placeholder="P2_Subarch" value="NA">
               </div>
             </div>
           </div>
-        </div>
+
+          <!-- Format Fields (Side by Side) -->
+          <div id="FormatFieldsContainer" style="display: none;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+              <div class="form-group" style="text-align: center;">
+                <label class="form-label">Format</label>
+                <div class="dropdown">
+                  <button class="button secondary dropdown-toggle" type="button" id="FormatButtonMulti" onclick="toggleDropdown(event, 'FormatMenuMulti')">
+                    NA
+                  </button>
+                  <ul class="dropdown-menu" id="FormatMenuMulti"></ul>
+                </div>
+              </div>
+
+              <div class="form-group" style="text-align: center;">
+                <label class="form-label">Limited Format</label>
+                <div class="dropdown">
+                  <button class="button secondary dropdown-toggle" type="button" id="LimitedFormatButtonMulti" onclick="toggleDropdown(event, 'LimitedFormatMenuMulti')" disabled>
+                    NA
+                  </button>
+                  <ul class="dropdown-menu" id="LimitedFormatMenuMulti"></ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Match Type Field (Centered across full width) -->
+          <div id="MatchTypeFieldsContainer" style="display: none;">
+            <div style="display: flex; justify-content: center;">
+              <div class="form-group" style="width: 300px; text-align: center;">
+                <label class="form-label">Match Type</label>
+                <div class="dropdown">
+                  <button class="button secondary dropdown-toggle" type="button" id="MatchTypeButtonMulti" onclick="toggleDropdown(event, 'MatchTypeMenuMulti')">
+                    NA
+                  </button>
+                  <ul class="dropdown-menu" id="MatchTypeMenuMulti"></ul>
+                </div>
+              </div>
+            </div>
+          </div>
         </form>
       </div>
     </div>
@@ -626,6 +624,61 @@
   </div>
 </div>
 
+<!-- Revise Ignored Modal -->
+<div id="ReviseIgnoredModal" class="modal" style="display: none;">
+  <div class="modal-content" style="max-width: 500px; width: 90%;">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+        <div>
+          <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Unignore Match</h3>
+          <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Remove from ignored list</p>
+        </div>
+      </div>
+      <button type="button" class="modal-close" onclick="hideReviseIgnoredModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
+          <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
+          <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Confirmation</h4>
+        </div>
+        <p style="margin: 0; color: var(--fg-body); line-height: 1.6;">
+          This will remove the selected match from your ignored list. The match will be included in future data imports.
+        </p>
+      </div>
+      <div style="text-align: center; padding: var(--spacing-md);">
+        <div style="font-family: var(--font-mono); font-weight: 600; font-size: 1.125rem; color: var(--fg-default);">
+          Match ID: <span id="selectedMatchId">None selected</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="d-flex gap-3 justify-content-end">
+        <button type="button" class="button secondary" onclick="hideReviseIgnoredModal()">
+          <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
+          Cancel
+        </button>
+        <button type="button" class="button danger" onclick="unignoreMatch()">
+          <i class="fas fa-undo" style="margin-right: var(--spacing-xs);"></i>
+          Unignore Match
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+    #ReviseModal .modal-content {
+      max-width: 1000px !important;
+    }
+    
+    #ReviseMultiModal .modal-content {
+      max-width: 550px !important;
+    }
+</style>
+
 <!-- Modal helper functions -->
 <script>
 // Store original form values for reset functionality
@@ -686,6 +739,135 @@ function hideReviseMultiModal() {
 function hideRemoveModal() {
   document.getElementById('RemoveModal').style.display = 'none';
   document.body.style.overflow = 'auto';
+}
+
+function hideReviseIgnoredModal() {
+  document.getElementById('ReviseIgnoredModal').style.display = 'none';
+  document.body.style.overflow = 'auto';
+}
+
+// Ignored matches functionality
+let selectedIgnoredRows = [];
+
+// Initialize ignored matches functionality when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  const tableName = document.getElementById('tname').value;
+  
+  if (tableName === 'ignored') {
+    initializeIgnoredTable();
+  }
+});
+
+function initializeIgnoredTable() {
+  const tableRows = document.querySelectorAll('.jsTableRow');
+  const unignoreButton = document.getElementById('RemoveIgnoredButton');
+  
+  // Initially disable the unignore button
+  if (unignoreButton) {
+    unignoreButton.disabled = true;
+    unignoreButton.style.opacity = '0.5';
+  }
+  
+  // Add click handlers to rows
+  tableRows.forEach((row, index) => {
+    row.addEventListener('click', function(e) {
+      e.preventDefault();
+      toggleRowSelection(row, index);
+    });
+  });
+}
+
+function toggleRowSelection(row, index) {
+  const isSelected = row.classList.contains('active');
+  
+  if (isSelected) {
+    // Deselect row
+    row.classList.remove('active');
+    selectedIgnoredRows = selectedIgnoredRows.filter(i => i !== index);
+  } else {
+    // Select row (only allow single selection for ignored table)
+    document.querySelectorAll('.jsTableRow').forEach(r => r.classList.remove('active'));
+    selectedIgnoredRows = [];
+    
+    row.classList.add('active');
+    selectedIgnoredRows.push(index);
+  }
+  
+  updateUnignoreButton();
+}
+
+function updateUnignoreButton() {
+  const unignoreButton = document.getElementById('RemoveIgnoredButton');
+  
+  if (selectedIgnoredRows.length > 0) {
+    unignoreButton.disabled = false;
+    unignoreButton.style.opacity = '1';
+  } else {
+    unignoreButton.disabled = true;
+    unignoreButton.style.opacity = '0.5';
+  }
+}
+
+// Update the button click to show modal with selected match ID
+document.addEventListener('DOMContentLoaded', function() {
+  const unignoreButton = document.getElementById('RemoveIgnoredButton');
+  if (unignoreButton) {
+    unignoreButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      if (selectedIgnoredRows.length === 0) {
+        return;
+      }
+      
+      const selectedRow = document.querySelectorAll('.jsTableRow')[selectedIgnoredRows[0]];
+      const matchId = selectedRow.cells[0].textContent; // First cell is Match ID
+      
+      document.getElementById('selectedMatchId').textContent = matchId;
+      document.getElementById('ReviseIgnoredModal').style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    });
+  }
+});
+
+async function unignoreMatch() {
+  if (selectedIgnoredRows.length === 0) {
+    return;
+  }
+  
+  const selectedRow = document.querySelectorAll('.jsTableRow')[selectedIgnoredRows[0]];
+  const matchId = selectedRow.cells[0].textContent;
+  
+  try {
+    showProcessingModal('Removing from ignored list...');
+    
+    const response = await fetch('/api/ignored/remove', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        match_ids: [matchId]
+      })
+    });
+    
+    const result = await response.json();
+    hideProcessingModal();
+    hideReviseIgnoredModal();
+    
+    if (result.success) {
+      showFlashMessage(result.message, 'success');
+      // Reload the page to refresh the table
+      window.location.reload();
+    } else {
+      showFlashMessage(result.error || 'Failed to remove from ignored list', 'error');
+    }
+    
+  } catch (error) {
+    hideProcessingModal();
+    hideReviseIgnoredModal();
+    console.error('Error removing from ignored list:', error);
+    showFlashMessage('Failed to remove from ignored list', 'error');
+  }
 }
 </script>
 

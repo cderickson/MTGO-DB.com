@@ -642,8 +642,6 @@ class TableManager {
 
   async submitRevision(formData) {
     try {
-      showProcessingModal('Updating record...');
-
       const response = await fetch('/api/match/revise', {
         method: 'POST',
         headers: {
@@ -654,9 +652,9 @@ class TableManager {
       });
 
       const result = await response.json();
-      hideProcessingModal();
 
       if (result.success) {
+        hideReviseModal();
         showFlashMessage(result.message, 'success');
         await this.loadTableData(this.currentPage);
       } else {
@@ -664,7 +662,6 @@ class TableManager {
       }
 
     } catch (error) {
-      hideProcessingModal();
       console.error('Error submitting revision:', error);
       showFlashMessage('Failed to update record', 'error');
     }
@@ -672,8 +669,6 @@ class TableManager {
 
   async submitMultiRevision(formData) {
     try {
-      showProcessingModal('Updating records...');
-
       const response = await fetch('/api/match/revise-multi', {
         method: 'POST',
         headers: {
@@ -684,9 +679,9 @@ class TableManager {
       });
 
       const result = await response.json();
-      hideProcessingModal();
 
       if (result.success) {
+        hideReviseMultiModal();
         showFlashMessage(result.message, 'success');
         await this.loadTableData(this.currentPage);
       } else {
@@ -694,7 +689,6 @@ class TableManager {
       }
 
     } catch (error) {
-      hideProcessingModal();
       console.error('Error submitting multi revision:', error);
       showFlashMessage('Failed to update records', 'error');
     }
@@ -704,8 +698,6 @@ class TableManager {
     try {
       const selectedData = this.getSelectedRowData();
       const matchIds = selectedData.map(row => row.match_id);
-
-      showProcessingModal('Removing records...');
 
       const response = await fetch('/api/match/remove', {
         method: 'POST',
@@ -720,9 +712,9 @@ class TableManager {
       });
 
       const result = await response.json();
-      hideProcessingModal();
 
       if (result.success) {
+        hideRemoveModal();
         showFlashMessage(result.message, 'success');
         await this.loadTableData(this.currentPage);
       } else {
@@ -730,7 +722,6 @@ class TableManager {
       }
 
     } catch (error) {
-      hideProcessingModal();
       console.error('Error removing records:', error);
       showFlashMessage('Failed to remove records', 'error');
     }
@@ -878,17 +869,28 @@ function changeHiddenInputsMulti() {
   const selectedData = tableManager.getSelectedRowData();
   const matchIds = selectedData.map(row => row.match_id);
 
+  // Helper function to get clean text content from buttons
+  function getButtonText(buttonId) {
+    const button = document.getElementById(buttonId);
+    if (!button) return null;
+    // Get text content and trim whitespace
+    return button.textContent?.trim() || button.innerText?.trim() || null;
+  }
+
   const formData = {
     match_ids: matchIds,
-    field_to_change: document.getElementById('FieldToChangeButton')?.textContent,
-    p1_arch: document.getElementById('P1ArchButtonMulti')?.textContent,
-    p1_subarch: document.getElementById('P1_Subarch_Multi')?.value,
-    p2_arch: document.getElementById('P2ArchButtonMulti')?.textContent,
-    p2_subarch: document.getElementById('P2_Subarch_Multi')?.value,
-    format: document.getElementById('FormatButtonMulti')?.textContent,
-    limited_format: document.getElementById('LimitedFormatButtonMulti')?.textContent,
-    match_type: document.getElementById('MatchTypeButtonMulti')?.textContent
+    field_to_change: getButtonText('FieldToChangeButton'),
+    p1_arch: getButtonText('P1ArchButtonMulti'),
+    p1_subarch: document.getElementById('P1_Subarch_Multi')?.value?.trim(),
+    p2_arch: getButtonText('P2ArchButtonMulti'),
+    p2_subarch: document.getElementById('P2_Subarch_Multi')?.value?.trim(),
+    format: getButtonText('FormatButtonMulti'),
+    limited_format: getButtonText('LimitedFormatButtonMulti'),
+    match_type: getButtonText('MatchTypeButtonMulti')
   };
+
+  // Debug logging to see what data is being sent
+  console.log('Multi-revision form data:', formData);
 
   tableManager.submitMultiRevision(formData);
 }

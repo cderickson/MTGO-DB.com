@@ -19,15 +19,6 @@ function cancelEditProfile() {
   window.location.replace('/profile');
 };
 
-function loadIgnored() {
-  fetch('/ignored', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  })
-};
-
 function editUserDB() {
   const data = { 
     //ProfileEmailInputText: document.getElementsByName("ProfileEmailInputText")[0].value, 

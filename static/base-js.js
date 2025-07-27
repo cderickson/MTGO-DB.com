@@ -361,41 +361,13 @@ class GameWinnerManager {
   }
 
   async initialize() {
-    try {
-      const response = await fetch('/api/game-winner/next', {
-        method: 'GET',
-        headers: {
-          'X-Requested-By': 'MTGO-Tracker',
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch game data');
-      }
-
-      const data = await response.json();
-      
-      if (!data.hasGames) {
-        this.showNoGamesMessage();
-        this.disableMenuButton();
-        return;
-      }
-
-      this.currentGame = data;
-      this.updateModalContent(data);
-      this.enableMenuButton();
-      
-    } catch (error) {
-      console.error('Error initializing game winner modal:', error);
-      this.showErrorMessage('Failed to load game data');
-    }
+    await this.loadNextGame();
   }
 
   updateModalContent(gameData) {
     // Update game info section
     const dateElement = document.getElementById('GameWinnerModalDate');
-    dateElement.textContent = `${gameData.date} vs. ${gameData.p2} - Game ${gameData.game_num}`;
+    dateElement.innerHTML = `<strong>Match</strong>: ${gameData.match_id}-${gameData.game_num} vs. ${gameData.p2}<br/><strong>Date</strong>: ${gameData.date}`;
 
     // Update game actions
     const actionsElement = document.getElementById('EndGameActions');
@@ -457,22 +429,74 @@ class GameWinnerManager {
       }
 
       const result = await response.json();
-
-      if (!result.hasNextGame) {
-        // No more games to process
-        hideGameWinnerModal();
-        this.showCompletionMessage();
-        this.disableMenuButton();
-        return;
+      
+      // Show success message
+      const winnerText = winner === 'skip' ? 'Skipped' : (winner === 'P1' ? this.currentGame.p1 : this.currentGame.p2);
+      if (typeof showFlashMessage === 'function') {
+        showFlashMessage(`Game winner set to: ${winnerText}`, 'success');
       }
 
-      // Load next game
-      this.currentGame = result.nextGame;
-      this.updateModalContent(result.nextGame);
+      if (winner === 'skip') {
+        // For skip operations, use the backend's sequential logic
+        if (result.hasNextGame) {
+          this.currentGame = result.nextGame;
+          this.updateModalContent(result.nextGame);
+          this.enableMenuButton();
+        } else {
+          // Truly no more games
+          hideGameWinnerModal();
+          this.showCompletionMessage();
+          this.disableMenuButton();
+        }
+      } else {
+        // For apply operations, use the reliable /api/game-winner/next
+        await this.loadNextGame();
+      }
 
     } catch (error) {
       console.error('Error updating game winner:', error);
       this.showErrorMessage('Failed to update game winner');
+    }
+  }
+
+  async loadNextGame() {
+    try {
+      const response = await fetch('/api/game-winner/next', {
+        method: 'GET',
+        headers: {
+          'X-Requested-By': 'MTGO-Tracker',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch next game data');
+      }
+
+      const data = await response.json();
+      
+      if (!data.hasGames) {
+        // Check if we're in the modal or just initializing
+        if (this.modal && this.modal.style.display === 'flex') {
+          // Modal is open, so we're done processing
+          hideGameWinnerModal();
+          this.showCompletionMessage();
+        } else {
+          // Initial load with no games
+          this.showNoGamesMessage();
+        }
+        this.disableMenuButton();
+        return;
+      }
+
+      // Load the next game
+      this.currentGame = data;
+      this.updateModalContent(data);
+      this.enableMenuButton();
+      
+    } catch (error) {
+      console.error('Error loading next game:', error);
+      this.showErrorMessage('Failed to load next game data');
     }
   }
 
@@ -529,45 +553,17 @@ class DraftIdManager {
     this.currentMatch = null;
     this.modal = document.getElementById('DraftIdModal');
     this.selectedDraftId = null;
+    this.processedMatches = new Set(); // Track processed matches in memory
   }
 
   async initialize() {
-    try {
-      const response = await fetch('/api/draft-id/next', {
-        method: 'GET',
-        headers: {
-          'X-Requested-By': 'MTGO-Tracker',
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch draft data');
-      }
-
-      const data = await response.json();
-      
-      if (!data.hasMatches) {
-        this.showNoMatchesMessage();
-        this.disableMenuButton();
-        return;
-      }
-
-      this.currentMatch = data;
-      this.selectedDraftId = data.possible_draft_ids?.[0] || null;
-      this.updateModalContent(data);
-      this.enableMenuButton();
-      
-    } catch (error) {
-      console.error('Error initializing draft ID modal:', error);
-      this.showErrorMessage('Failed to load match data');
-    }
+    await this.loadNextMatch();
   }
 
   updateModalContent(matchData) {
     // Update match info section
     const dateElement = document.getElementById('DraftIdModalDate');
-    dateElement.textContent = `${matchData.match_id} - Date: ${matchData.date}`;
+    dateElement.innerHTML = `<strong>Match</strong>: ${matchData.match_id}<br/><strong>Date</strong>: ${matchData.date}`;
 
     // Update card lists
     this.updateCardList('DraftIdLands', matchData.lands);
@@ -625,9 +621,11 @@ class DraftIdManager {
       return;
     }
 
-    try {
-      showProcessingModal('Updating draft association...');
+    // Mark this match as processed (for both skip and apply)
+    this.processedMatches.add(this.currentMatch.match_id);
 
+    // Call backend API for both skip and apply
+    try {
       const payload = {
         match_id: this.currentMatch.match_id,
         draft_id: skip ? null : this.selectedDraftId,
@@ -648,25 +646,85 @@ class DraftIdManager {
       }
 
       const result = await response.json();
-      hideProcessingModal();
 
-      if (!result.hasNextMatch) {
-        // No more matches to process
+      // Show success message
+      const actionText = skip ? 'Skipped' : `Applied Draft ID: ${this.selectedDraftId}`;
+      if (typeof showFlashMessage === 'function') {
+        showFlashMessage(actionText, 'success');
+      }
+
+      if (skip) {
+        // For skip operations, use the backend's sequential logic
+        if (result.hasNextMatch) {
+          this.currentMatch = result.nextMatch;
+          this.selectedDraftId = result.nextMatch.possible_draft_ids?.[0] || null;
+          this.updateModalContent(result.nextMatch);
+          this.enableMenuButton();
+        } else {
+          // Truly no more matches
+          hideDraftIdModal();
+          this.showCompletionMessage();
+          this.disableMenuButton();
+        }
+      } else {
+        // For apply operations, use the reliable /api/draft-id/next
+        await this.loadNextMatch();
+      }
+
+    } catch (error) {
+      console.error('Error updating draft association:', error);
+      this.showErrorMessage('Failed to update draft association');
+    }
+  }
+
+  async loadNextMatch() {
+    try {
+      const response = await fetch('/api/draft-id/next', {
+        method: 'GET',
+        headers: {
+          'X-Requested-By': 'MTGO-Tracker',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch next match data');
+      }
+
+      const data = await response.json();
+      
+      if (!data.hasMatches) {
+        // Check if we're in the modal or just initializing
+        if (this.modal && this.modal.style.display === 'flex') {
+          // Modal is open, so we're done processing
+          hideDraftIdModal();
+          this.showCompletionMessage();
+        } else {
+          // Initial load with no matches
+          this.showNoMatchesMessage();
+        }
+        this.disableMenuButton();
+        return;
+      }
+
+      // Check if this match was already processed in this session
+      if (this.processedMatches.has(data.match_id)) {
+        // We've seen this match before in this session, so we're really done
         hideDraftIdModal();
         this.showCompletionMessage();
         this.disableMenuButton();
         return;
       }
 
-      // Load next match
-      this.currentMatch = result.nextMatch;
-      this.selectedDraftId = result.nextMatch.possible_draft_ids?.[0] || null;
-      this.updateModalContent(result.nextMatch);
-
+      // Load the match
+      this.currentMatch = data;
+      this.selectedDraftId = data.possible_draft_ids?.[0] || null;
+      this.updateModalContent(data);
+      this.enableMenuButton();
+      
     } catch (error) {
-      hideProcessingModal();
-      console.error('Error updating draft association:', error);
-      this.showErrorMessage('Failed to update draft association');
+      console.error('Error loading next match:', error);
+      this.showErrorMessage('Failed to load next match data');
     }
   }
 
@@ -718,6 +776,10 @@ class DraftIdManager {
       menuButton.disabled = true;
       menuButton.classList.add('disabled');
     }
+  }
+
+  clearProcessedMatches() {
+    this.processedMatches.clear();
   }
 }
 
@@ -785,6 +847,7 @@ document.addEventListener('DOMContentLoaded', function() {
   gameWinnerManager = new GameWinnerManager();
   if (!draftIdManager) {
     draftIdManager = new DraftIdManager();
+    window.draftIdManager = draftIdManager; // Make it accessible from window
   }
 });
 
@@ -816,6 +879,7 @@ async function applyGetWinner(winner) {
 async function initGetDraftId() {
   if (!draftIdManager) {
     draftIdManager = new DraftIdManager();
+    window.draftIdManager = draftIdManager; // Make it accessible from window
   }
   
   await draftIdManager.initialize();

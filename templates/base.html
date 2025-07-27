@@ -8,6 +8,7 @@
     <link rel="icon" href="{{ url_for('static', filename='icon_1.png') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='base-style.css') }}">
+    {% block extra_css %}{% endblock %}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
     <script src="{{ url_for('static', filename='base-js.js') }}" defer></script>
     <script>var directLink = false</script>
@@ -171,12 +172,6 @@
                 </a>
               </li>
               <li class="nav-item">
-                <a href="/db" class="nav-link">
-                  <i class="fas fa-database nav-icon"></i>
-                  <span class="nav-text">Database Inspector</span>
-                </a>
-              </li>
-              <li class="nav-item">
                 <a href="{{ url_for('views.data_dict') }}" class="nav-link">
                   <i class="fas fa-book nav-icon"></i>
                   <span class="nav-text">Data Dictionary</span>
@@ -231,6 +226,12 @@
                 </a>
               </li>
               <li class="nav-item">
+                <a href="/ignored" class="nav-link">
+                  <i class="fas fa-eye-slash nav-icon"></i>
+                  <span class="nav-text">Ignored Matches</span>
+                </a>
+              </li>
+              <li class="nav-item">
                 <a href="{{ url_for('views.export') }}" class="nav-link" onclick="handleExportClick(this); return false;">
                   <i class="fas fa-file-excel nav-icon"></i>
                   <span class="nav-text">Export to Excel</span>
@@ -274,6 +275,30 @@
               </li>
             </ul>
           </div>
+
+          <div class="nav-section">
+            <h3 class="nav-section-title">Debug</h3>
+            <ul class="nav-list">
+              <li class="nav-item">
+                <a href="/test_email" class="nav-link">
+                  <i class="fas fa-envelope nav-icon"></i>
+                  <span class="nav-text">Send Test Email</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="/view_debug_log" class="nav-link" target="_blank">
+                  <i class="fas fa-bug nav-icon"></i>
+                  <span class="nav-text">View Debug Log</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="/db" class="nav-link">
+                  <i class="fas fa-database nav-icon"></i>
+                  <span class="nav-text">Database Inspector</span>
+                </a>
+              </li>
+            </ul>
+          </div>
           {% endif %}
         </div>
 
@@ -294,7 +319,7 @@
 
       <!-- Game Winner Modal -->
       <div id="GameWinnerModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 1000px; width: 90%;">
+        <div class="modal-content">
           <div class="modal-header">
             <div style="display: flex; align-items: center; gap: var(--spacing-md);">
               <div>
@@ -361,7 +386,7 @@
 
       <!-- Draft ID Modal -->
       <div id="DraftIdModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 900px; width: 90%;">
+        <div class="modal-content">
           <div class="modal-header">
             <div style="display: flex; align-items: center; gap: var(--spacing-md);">
               <div>
@@ -384,7 +409,7 @@
                 <i class="fas fa-cards" style="color: var(--fg-muted); font-size: 0.875rem;"></i>
                 Draft Pool
               </h4>
-              <div style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: var(--spacing-lg); border: 1px solid var(--border);">
+              <div class="draft-pool-container" style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: var(--spacing-lg); border: 1px solid var(--border);">
                 <div class="d-grid grid-3 gap-4">
                   <div>
                     <h5 style="margin: 0 0 var(--spacing-sm) 0; color: var(--fg-default); font-size: 0.875rem; font-weight: 600; display: flex; align-items: center; gap: var(--spacing-xs);">
@@ -410,23 +435,25 @@
                 </div>
               </div>
             </div>
-            <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg);">
-              <div style="display: flex; align-items: center; gap: var(--spacing-md);">
-                <i class="fas fa-link" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
-                <p style="margin: 0; color: var(--fg-body); line-height: 1.6;"><strong>Choose the Draft ID</strong> that should be associated with this match based on the card pool.</p>
-              </div>
-            </div>
-          </div>
 
-          <div class="modal-footer">
-            <div class="d-flex gap-3 justify-content-center">
-              <div class="dropdown">
-                <button class="button secondary dropdown-toggle" type="button" id="DraftIdButton" onclick="toggleDropdown(event, 'DraftIdMenu')">
+            <div class="form-group" style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: 0;">
+              <h4 style="color: var(--fg-default); font-size: 1rem; font-weight: 600; margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm); justify-content: center;">
+                <i class="fas fa-link" style="color: var(--fg-muted); font-size: 0.875rem;"></i>
+                Choose the Draft ID that should be associated with this match based on the card pool.
+              </h4>
+              <div class="dropdown" style="display: flex; justify-content: center;">
+                <button class="button secondary dropdown-toggle" type="button" id="DraftIdButton" onclick="toggleDropdown(event, 'DraftIdMenu')" style="width: 450px;">
                   <i class="fas fa-chevron-down" style="margin-right: var(--spacing-xs);"></i>
                   Draft ID
                 </button>
                 <ul class="dropdown-menu" id="DraftIdMenu"></ul>
               </div>
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <div class="d-flex gap-3 justify-content-end">
               <button type="button" class="button secondary" onclick="applyGetDraftId(true)">
                 <i class="fas fa-forward" style="margin-right: var(--spacing-xs);"></i>
                 Skip
@@ -442,7 +469,7 @@
 
       <!-- Best Guess Modal -->
       <div id="BestGuessModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 600px; width: 90%;">
+        <div class="modal-content">
           <div class="modal-header">
             <div style="display: flex; align-items: center; gap: var(--spacing-md);">
               <div>
@@ -728,6 +755,20 @@
         </div>
       </div>
 
+      <!-- Image Modal - Global -->
+      <div id="imageModal" class="image-modal" onclick="closeImageModal()">
+        <div class="image-modal-content" onclick="event.stopPropagation()">
+          <span class="image-modal-close" onclick="closeImageModal()">&times;</span>
+          <div class="image-modal-image-container">
+            <img id="modalImage" src="" alt="" class="modal-image">
+          </div>
+          <div class="image-modal-caption">
+            <h3 id="modalTitle"></h3>
+            <p id="modalDescription"></p>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <style>
@@ -789,7 +830,7 @@
     }
     
     #BestGuessModal .modal-content {
-      max-width: 600px !important;
+      max-width: 800px !important;
     }
     
     #ImportModal .modal-content {
@@ -808,11 +849,7 @@
       max-width: 400px !important;
       width: 90% !important;
     }
-    
-    #ReviseModal .modal-content {
-      max-width: 1000px !important;
-    }
-    
+        
     /* Mobile responsiveness for modals */
     @media (max-width: 768px) {
       .modal-content {
@@ -986,6 +1023,26 @@
     .d-grid { display: grid !important; }
     .grid-3 { grid-template-columns: repeat(3, 1fr) !important; }
     .gap-4 { gap: var(--spacing-lg) !important; }
+    
+    /* Centered grid columns for Draft ID modal */
+    #DraftIdModal .d-grid.grid-3 { 
+      grid-template-columns: repeat(3, 200px) !important;
+      justify-content: center !important;
+      gap: var(--spacing-lg) !important;
+      width: 100% !important;
+    }
+    
+    /* Center column headers in Draft ID modal */
+    #DraftIdModal .d-grid.grid-3 h5 {
+      justify-content: center !important;
+    }
+    
+    /* Draft pool container height and scroll */
+    #DraftIdModal .draft-pool-container {
+      min-height: 300px !important;
+      max-height: 400px !important;
+      overflow-y: auto !important;
+    }
     
     /* Form Styles for Modals */
     .form-group {
@@ -1282,6 +1339,11 @@
       const modal = document.getElementById('DraftIdModal');
       modal.style.display = 'none';
       document.body.style.overflow = 'auto';
+      
+      // Clear processed matches so skipped matches can appear again next time
+      if (window.draftIdManager) {
+        window.draftIdManager.clearProcessedMatches();
+      }
     }
     
     function showBestGuessModal() {
@@ -1610,28 +1672,7 @@
         });
       }
     });
-    
-    // Initialize existing functions (placeholders for compatibility)
-    function initGetWinner() {
-      showGameWinnerModal();
-    }
-    
-    function initGetDraftId() {
-      showDraftIdModal();
-    }
-    
-    function applyGetWinner(winner) {
-      // TODO: Implement winner application
-      console.log('Applying winner:', winner);
-      hideGameWinnerModal();
-    }
-    
-    function applyGetDraftId(skip) {
-      // TODO: Implement draft ID application
-      console.log('Applying draft ID, skip:', skip);
-      hideDraftIdModal();
-    }
-    
+       
     // File validation for ImportApp modal
     function validateImportAppFiles() {
       const fileInput = document.getElementById('importAppFileInput');
@@ -1707,20 +1748,6 @@
       }
     }
     </script>
-
-    <!-- Image Modal - Global -->
-    <div id="imageModal" class="image-modal" onclick="closeImageModal()">
-      <div class="image-modal-content" onclick="event.stopPropagation()">
-        <span class="image-modal-close" onclick="closeImageModal()">&times;</span>
-        <div class="image-modal-image-container">
-          <img id="modalImage" src="" alt="" class="modal-image">
-        </div>
-        <div class="image-modal-caption">
-          <h3 id="modalTitle"></h3>
-          <p id="modalDescription"></p>
-        </div>
-      </div>
-    </div>
 
   </body>
 </html>

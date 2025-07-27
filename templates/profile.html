@@ -2,197 +2,168 @@
 
 {% block page_title %}Profile{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
+{% endblock %}
+
 {% block content %}
 
-<form action="/ignored" method="POST">
-  <div class="container">
-    <div class="main-body">
-
-        <div class="row justify-content-md-center">
-          <div class="col-lg-6 mb-3">
-            <div class="card mb-3">
-              <h3 class="card-header text-center"><b>User Profile</b></h3>
-              <div class="card-body">
-
-<!--                 <div class="row">
-                  <div class="col-sm-3 mb-3">
-                    <h6><b>Name</b></h6>
-                  </div>
-                  <div class="col-sm-9" id="ProfileNameDisplay">
-                    None
-                  </div>
-                  <div class="col-sm-9" id="ProfileNameInput" style="display:none;">
-                    <div class="input-group input-group">
-                      <input type="text" class="form-control" name="ProfileNameInputText" placeholder="Name" value="{{ user.uid }}">
-                    </div>
-                  </div>
+<div class="content-wrapper">
+  <div class="profile-container">
+    
+    <!-- User Information Section -->
+    <div class="profile-section">
+      <div class="profile-card">
+        <div class="profile-card-header">
+          <h2 class="profile-card-title">
+            <i class="fas fa-user-circle profile-icon"></i>
+            User Profile
+          </h2>
+        </div>
+        
+        <div class="profile-card-body">
+          <form action="/ignored" method="POST">
+            <div class="profile-info-grid">
+              
+              <!-- Email -->
+              <div class="profile-info-item">
+                <label class="profile-label">Email</label>
+                <div class="profile-value" id="ProfileEmailDisplay">
+                  {{ user.email }}
                 </div>
-                <hr> -->
-
-                <div class="row">
-                  <div class="col-sm-3 mb-3">
-                    <h6><b>Email</b></h6>
-                  </div>
-                  <div class="col-sm-9" id="ProfileEmailDisplay">
-                    {{ user.email }}
-                  </div>
-<!--                   <div class="col-sm-9" id="ProfileEmailInput" style="display:none;">
-                    <div class="input-group input-group">
-                      <input type="text" class="form-control" name="ProfileEmailInputText" placeholder="Email" value="{{ user.email }}">
-                    </div>
-                  </div> -->
+              </div>
+              
+              <!-- MTGO Username -->
+              <div class="profile-info-item">
+                <label class="profile-label">MTGO Username</label>
+                <div class="profile-value" id="ProfileUsernameDisplay">
+                  {{ user.username }}
                 </div>
-                <hr>
-
-                <div class="row">
-                  <div class="col-sm-3 mb-3">
-                    <h6><b>MTGO Username</b></h6>
-                    <!-- <button id="AddNewUsernameButton" type="button" class="btn btn-primary" onclick="addNewUsername()" style="display:none;">Add New</button> -->
-                  </div>
-                  <div class="col-sm-9" id="ProfileUsernameDisplay">
-                    {{ user.username }}
-                  </div>
-                  <div class="col" id="ProfileUsernameInput" style="display:none;">
-                    <div class="col mb-1">
-                      <div class="input-group input-group">
-                        <input type="text" class="form-control" name="ProfileUsernameInputText" placeholder="Username" value="{{ user.username }}">
-                      </div>
-                    </div>
-                  </div>
+                <div class="profile-input" id="ProfileUsernameInput" style="display:none;">
+                  <input type="text" class="form-input" name="ProfileUsernameInputText" placeholder="Username" value="{{ user.username }}">
                 </div>
-                <hr>
+              </div>
+              
+            </div>
+            
 
-                <div class="row">
-                  <div class="col-sm-3 mb-3">
-                    <h6><b>Ignored GameLogs</b></h6>
-                  </div>
-                  <div class="col-sm-9">
-                    <button id="EditIgnoreButton" type="submit" class="btn btn-primary modal-button" onclick="">Edit Ignore List</button>
-                  </div>
-                  <div class="col" id="ProfileUsernameInput" style="display:none;">
-                    <div class="col mb-1">
-                      <div class="input-group input-group">
-                        <input type="text" class="form-control" name="ProfileUsernameInputText" placeholder="Username" value="{{ user.username }}">
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <hr>
-
-                <div class="row">
-                  <div class="col-sm-3 mb-3">
-                    <h6><b>Test Email</b></h6>
-                  </div>
-                  <div class="col-sm-9">
-                    <a href="/test_email" class="btn btn-info">Send Test Email</a>
-                    <a href="/view_debug_log" class="btn btn-secondary ml-2" target="_blank">View Debug Log</a>
-                    <small class="form-text text-muted">Test email configuration and logging</small>
-                  </div>
-                </div>
-                <hr>
-
-                <div class="row">
-                  <div class="col-auto d-flex">
-                    <div>
-                      <button id="EditProfileButton" type="button" class="btn btn-primary modal-button" onclick="editProfile()">Edit</button>
-                      <button id="SaveProfileButton" type="button" class="btn btn-primary modal-button" onclick="editUserDB()" style="display:none;">Save</button>
-                    </div>
-                    <div style="margin-left: 10px;">
-                      <button id="CancelProfileButton" type="button" class="btn btn-dark modal-button" onclick="cancelEditProfile()" style="display:none;">Cancel</button>
-                    </div>
-                  </div>
-                </div>
-                
+            
+            <!-- Profile Edit Controls -->
+            <div class="profile-edit-controls">
+              <button type="button" class="btn btn-primary" id="EditProfileButton" onclick="editProfile()">
+                <i class="fas fa-edit"></i>
+                Edit Profile
+              </button>
+              <button type="button" class="btn btn-primary" id="SaveProfileButton" onclick="editUserDB()" style="display:none;">
+                <i class="fas fa-save"></i>
+                Save Changes
+              </button>
+              <button type="button" class="btn btn-secondary" id="CancelProfileButton" onclick="cancelEditProfile()" style="display:none;">
+                <i class="fas fa-times"></i>
+                Cancel
+              </button>
+            </div>
+            
+          </form>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Lifetime Stats Section -->
+    <div class="profile-section">
+      <div class="profile-card">
+        <div class="profile-card-header">
+          <h2 class="profile-card-title">
+            <i class="fas fa-chart-line profile-icon"></i>
+            Lifetime Statistics
+          </h2>
+        </div>
+        
+        <div class="profile-card-body">
+          <div class="stats-grid">
+            
+            <!-- Matches Played -->
+            <div class="stat-item">
+              <div class="stat-label">Matches Played</div>
+              <div class="stat-value">{{ stats['matches_played'] }}</div>
+            </div>
+            
+            <!-- Favorite Format -->
+            <div class="stat-item">
+              <div class="stat-label">Favorite Format</div>
+              <div class="stat-value">
+                {{ stats['fave_format'].0 }}
+                <div class="stat-subtext">({{ stats['fave_format'].1 }} Matches)</div>
               </div>
             </div>
-          </div>
-
-          <div class="col-lg-5 mb-3">
-            <div class="card mb-3">
-              <h3 class="card-header text-center"><b>Lifetime Stats</b></h3>
-              <div class="card-body">
-                <div class="row">
-                  <div class="col-sm-5">
-                    <h6><b>Matches Played</b></h6>
-                  </div>
-                  <div class="col-sm-7">
-                    <center>{{ stats['matches_played'] }}</center>
-                  </div>
-                </div>
-                <hr>
-                <div class="row">
-                  <div class="col-sm-5">
-                    <h6><b>Favorite Format</b></h6>
-                  </div>
-                  <div class="col-sm-7">
-                    <center>{{ stats['fave_format'].0 }}<br>({{ stats['fave_format'].1 }} Matches)</center>
-                  </div>
-                </div>
-                <hr>
-                <div class="row">
-                  <div class="col-sm-5">
-                    <h6><b>Favorite Deck</b></h6>
-                  </div>
-                  <div class="col-sm-7">
-                    <center>{{ stats['fave_deck'].0 }} - {{ stats['fave_deck'].1 }}<br>({{ stats['fave_deck'].2 }} Matches)</center>
-                  </div>
-                </div>
-                <hr>
-                <div class="row">
-                  <div class="col-sm-5">
-                    <h6><b>Best Format<br>(Min. 25 Matches)</b></h6>
-                  </div>
-                  <div class="col-sm-7">
-                    <center>{{ stats['best_format'].0 }}<br>({{ stats['best_format'].1 }} Win Rate)</center>
-                  </div>
-                </div>
-                <hr>
-                <div class="row">
-                  <div class="col-sm-5">
-                    <h6><b>Best Win Streak</b></h6>
-                  </div>
-                  <div class="col-sm-7">
-                    {% if (stats['max_win_streak'].1 == '/') %}
-                    <center>{{ stats['max_win_streak'].0 }} Matches<br>{{ stats['max_win_streak'].2 }}</center>
-                    {% else %}
-                    <center>{{ stats['max_win_streak'].0 }} Matches<br>{{ stats['max_win_streak'].1 }} - {{ stats['max_win_streak'].2 }}</center>
-                    {% endif %}
-                  </div>
-                </div>
-                <hr>
-                <div class="row">
-                  <div class="col-sm-5">
-                    <h6><b>Worst Loss Streak</b></h6>
-                  </div>
-                  <div class="col-sm-7">
-                    {% if (stats['max_win_streak'].1 == '/') %}
-                    <center>{{ stats['max_lose_streak'].0 }} Matches<br>{{ stats['max_lose_streak'].2 }}</center>
-                    {% else %}
-                    <center>{{ stats['max_lose_streak'].0 }} Matches<br>{{ stats['max_lose_streak'].1 }} - {{ stats['max_lose_streak'].2 }}</center>
-                    {% endif %}
-                  </div>
-                </div>
-                <hr>
-                <div class="row">
-                  <div class="col-sm-5">
-                    <h6><b>Longest Game</b></h6>
-                  </div>
-                  <div class="col-sm-7">
-                    <center>
-                      {{ stats['longest_game'].0 }} Turns ({{ stats['longest_game'].1 }})<br>
-                      {{ stats['longest_game'].2 }} vs. {{ stats['longest_game'].3 }}
-                    </center>
-                  </div>
+            
+            <!-- Favorite Deck -->
+            <div class="stat-item">
+              <div class="stat-label">Favorite Deck</div>
+              <div class="stat-value">
+                {{ stats['fave_deck'].0 }} - {{ stats['fave_deck'].1 }}
+                <div class="stat-subtext">({{ stats['fave_deck'].2 }} Matches)</div>
+              </div>
+            </div>
+            
+            <!-- Best Format -->
+            <div class="stat-item">
+              <div class="stat-label">Best Format<br><small>(Min. 25 Matches)</small></div>
+              <div class="stat-value">
+                {{ stats['best_format'].0 }}
+                <div class="stat-subtext">({{ stats['best_format'].1 }} Win Rate)</div>
+              </div>
+            </div>
+            
+            <!-- Best Win Streak -->
+            <div class="stat-item">
+              <div class="stat-label">Best Win Streak</div>
+              <div class="stat-value">
+                {{ stats['max_win_streak'].0 }} Matches
+                <div class="stat-subtext">
+                  {% if (stats['max_win_streak'].1 == '/') %}
+                    {{ stats['max_win_streak'].2 }}
+                  {% else %}
+                    {{ stats['max_win_streak'].1 }} - {{ stats['max_win_streak'].2 }}
+                  {% endif %}
                 </div>
               </div>
             </div>
+            
+            <!-- Worst Loss Streak -->
+            <div class="stat-item">
+              <div class="stat-label">Worst Loss Streak</div>
+              <div class="stat-value">
+                {{ stats['max_lose_streak'].0 }} Matches
+                <div class="stat-subtext">
+                  {% if (stats['max_lose_streak'].1 == '/') %}
+                    {{ stats['max_lose_streak'].2 }}
+                  {% else %}
+                    {{ stats['max_lose_streak'].1 }} - {{ stats['max_lose_streak'].2 }}
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            
+            <!-- Longest Game -->
+            <div class="stat-item">
+              <div class="stat-label">Longest Game</div>
+              <div class="stat-value">
+                {{ stats['longest_game'].0 }} Turns ({{ stats['longest_game'].1 }})
+                <div class="stat-subtext">
+                  {{ stats['longest_game'].2 }} vs. {{ stats['longest_game'].3 }}
+                </div>
+              </div>
+            </div>
+            
           </div>
         </div>
-
+      </div>
     </div>
+    
   </div>
-</form>
 </div>
+
 <script src="{{ url_for('static', filename='profile-js.js') }}"></script>
 
 {% endblock %}

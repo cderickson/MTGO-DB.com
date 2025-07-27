@@ -2038,7 +2038,7 @@ def table(table_name, page_num):
 
 	return render_template('tables.html', user=current_user, table_name=table_name, table=table, page_num=page_num, pages=pages)
 
-@views.route('/ignored', methods=['POST'])
+@views.route('/ignored', methods=['GET'])
 @login_required
 def ignored():
 	table = Removed.query.filter_by(uid=current_user.uid).order_by(Removed.match_id).all()
@@ -2470,24 +2470,39 @@ def api_draft_id_update():
 				debug_log(f"Error committing draft ID update: {str(e)}")
 				return jsonify({'error': 'Failed to update database'}), 500
 		
-		# Find next match
+		# Find next match using sequential approach (same as GameWinner)
 		current_match_date = Match.query.filter_by(
 			match_id=match_id, 
 			uid=current_user.uid
 		).first().date
 		
-		# Query for remaining limited matches
-		limited_matches = Match.query.filter_by(
+		# Query for remaining limited matches (include current date for sequential search)
+		remaining_matches = Match.query.filter_by(
 			uid=current_user.uid, 
 			draft_id='NA', 
 			p1=current_user.username
 		).filter(
 			Match.format.in_(['Cube', 'Booster Draft'])
 		).filter(
-			Match.date > current_match_date
+			Match.date >= current_match_date  # Include current date
 		).order_by(Match.date)
 		
-		next_match = limited_matches.first()
+		# Look for next match after current one using sequential logic
+		current_found = False
+		next_match = None
+		for match in remaining_matches.all():
+			# Find current match first, then return the next one
+			if match.match_id == match_id:
+				current_found = True
+				continue
+			
+			# If we haven't found the current match yet, skip this one
+			if not current_found:
+				continue
+			
+			# This is the next match after current
+			next_match = match
+			break
 		
 		# Find next match with valid card data and possible associations
 		while next_match:
@@ -2557,9 +2572,17 @@ def api_draft_id_update():
 					'nextMatch': next_match_data
 				})
 
-			# Try next match
-			limited_matches = limited_matches.filter(Match.date > next_match.date).order_by(Match.date)
-			next_match = limited_matches.first()
+			# Try next match in sequence - continue from where we left off
+			current_match_found = False
+			temp_next_match = None
+			for match in remaining_matches.all():
+				if match.match_id == next_match.match_id:
+					current_match_found = True
+					continue
+				if current_match_found:
+					temp_next_match = match
+					break
+			next_match = temp_next_match
 		
 		# No more matches found
 		return jsonify({'hasNextMatch': False})
@@ -3575,10 +3598,14 @@ def api_match_revise_multi():
 		if not data:
 			return jsonify({'error': 'No data provided'}), 400
 		
+		# Debug logging
+		debug_log(f"Multi-revision data received: {data}")
+		
 		match_ids = data.get('match_ids', [])
 		field_to_change = data.get('field_to_change')
 		
 		if not match_ids or not field_to_change:
+			debug_log(f"Missing required fields - match_ids: {match_ids}, field_to_change: {field_to_change}")
 			return jsonify({'error': 'Missing required fields'}), 400
 		
 		# Get the matches
@@ -3707,4 +3734,42 @@ def api_match_remove():
 		
 	except Exception as e:
 		debug_log(f"Error in api_match_remove: {str(e)}")
+		return jsonify({'error': 'Internal server error'}), 500
+
+
+@views.route('/api/ignored/remove', methods=['POST'])
+@login_required
+def api_ignored_remove():
+	"""Remove matches from ignored list (unignore them)"""
+	try:
+		data = request.get_json()
+		if not data:
+			return jsonify({'error': 'No data provided'}), 400
+		
+		match_ids = data.get('match_ids', [])
+		
+		if not match_ids:
+			return jsonify({'error': 'No match IDs provided'}), 400
+		
+		removed_count = 0
+		
+		for match_id in match_ids:
+			# Remove from ignored list
+			removed_records = Removed.query.filter_by(uid=current_user.uid, match_id=match_id).delete()
+			removed_count += removed_records
+		
+		try:
+			db.session.commit()
+			return jsonify({
+				'success': True,
+				'message': f'{removed_count} match(es) removed from ignored list.',
+				'removed_count': removed_count
+			})
+		except Exception as e:
+			db.session.rollback()
+			debug_log(f"Error committing ignored removal: {str(e)}")
+			return jsonify({'error': 'Failed to remove from ignored list'}), 500
+		
+	except Exception as e:
+		debug_log(f"Error in api_ignored_remove: {str(e)}")
 		return jsonify({'error': 'Internal server error'}), 500

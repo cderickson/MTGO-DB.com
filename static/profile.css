@@ -1,0 +1,223 @@
+/* Profile Page Styles */
+.profile-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.profile-section {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.profile-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: all var(--transition-fast);
+}
+
+.profile-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.profile-card-header {
+  background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+  border-bottom: 1px solid var(--border);
+  padding: var(--spacing-lg) var(--spacing-xl);
+}
+
+.profile-card-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--fg-default);
+}
+
+.profile-icon {
+  color: var(--sky-blue);
+  font-size: 1.75rem;
+}
+
+.profile-card-body {
+  padding: var(--spacing-xl);
+}
+
+/* Profile Info Grid */
+.profile-info-grid {
+  display: grid;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.profile-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.profile-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--fg-body);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.profile-value {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--fg-default);
+  padding: var(--spacing-md);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+.profile-input {
+  display: none;
+}
+
+.profile-input .form-input {
+  font-size: 1.125rem;
+  font-weight: 500;
+  min-height: 48px;
+}
+
+
+
+/* Profile Edit Controls */
+.profile-edit-controls {
+  display: flex;
+  gap: var(--spacing-md);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.stat-item {
+  padding: var(--spacing-lg);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.stat-item:hover {
+  background: var(--bg-default-hover);
+  border-color: var(--sky-blue);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-highlight {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0.1) 100%);
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.stat-highlight:hover {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.15) 100%);
+  border-color: var(--sky-blue);
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--fg-body);
+  margin-bottom: var(--spacing-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-label small {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--fg-muted);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--fg-default);
+  line-height: 1.2;
+}
+
+.stat-subtext {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--fg-muted);
+  margin-top: var(--spacing-xs);
+  line-height: 1.3;
+}
+
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .profile-container {
+    margin: 0;
+    padding: 0 var(--spacing-sm);
+  }
+  
+  .profile-card-header {
+    padding: var(--spacing-lg);
+  }
+  
+  .profile-card-body {
+    padding: var(--spacing-lg);
+  }
+  
+  .profile-card-title {
+    font-size: 1.25rem;
+  }
+  
+  .profile-icon {
+    font-size: 1.5rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .profile-edit-controls {
+    flex-direction: column;
+  }
+  
+  .profile-edit-controls .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .profile-container {
+    max-width: 700px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Centralized Button Width Control for Profile Page */
+.profile-card .btn {
+  min-width: 200px;
+  width: auto;
+  max-width: 200px;
+} 

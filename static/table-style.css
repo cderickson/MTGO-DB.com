@@ -9,13 +9,6 @@
   min-height: auto !important;
 }
 
-/* Table Controls */
-.table-controls {
-  padding: var(--spacing-lg);
-  background: var(--bg-default);
-  border-bottom: 1px solid var(--border);
-}
-
 .control-buttons {
   display: flex;
   align-items: center;
@@ -109,7 +102,7 @@
 }
 
 .modern-table th {
-  padding: var(--spacing-md) var(--spacing-sm);
+  padding: 0;
   text-align: center;
   font-weight: 600;
   color: var(--fg-default);
@@ -119,6 +112,8 @@
   text-transform: uppercase;
   letter-spacing: 0.025em;
   white-space: nowrap;
+  vertical-align: middle;
+  height: 40px;
 }
 
 .modern-table th:last-child {
@@ -146,7 +141,6 @@
   font-family: var(--font-mono);
   font-weight: 600;
   color: var(--fg-default);
-  background: var(--bg-subtle);
 }
 
 .cell-date {
@@ -213,7 +207,6 @@
 .pagination-container {
   padding: var(--spacing-lg);
   background: var(--bg-default);
-  border-top: 1px solid var(--border);
 }
 
 .pagination-controls {
@@ -347,11 +340,7 @@
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
-  .table-controls {
-    padding: var(--spacing-md);
-  }
-  
+@media (max-width: 768px) { 
   .control-buttons {
     flex-direction: column;
     align-items: stretch;
@@ -465,7 +454,12 @@
 #RemoveButton,
 #BackButton,
 #NextButton,
-#PrevButton {
+#PrevButton,
+#RemoveIgnoredButton,
+#ReviseModal .modal-footer .button,
+#ReviseMultiModal .modal-footer .button,
+#RemoveModal .modal-footer .button,
+#ReviseIgnoredModal .modal-footer .button {
   width: 200px !important;
   min-width: 200px !important;
   max-width: 200px !important;
@@ -490,16 +484,6 @@
   margin-bottom: var(--spacing-sm) !important;
   }
 
-  /* Make modal footer buttons equal width */
-#ReviseModal .modal-footer .button,
-#ReviseMultiModal .modal-footer .button,
-#RemoveModal .modal-footer .button {
-  width: 200px !important;
-  min-width: 200px !important;
-  max-width: 200px !important;
-  flex: none !important;
-}
-
 /* Center all form labels in both modals */
 #ReviseModal .form-label,
 #ReviseMultiModal .form-label {
@@ -511,8 +495,8 @@
   background: rgba(59, 130, 246, 0.05) !important;
   border: 1px solid rgba(59, 130, 246, 0.2) !important;
   border-radius: var(--radius-md) !important;
-  padding: var(--spacing-lg) !important;
-  margin-bottom: var(--spacing-lg) !important;
+  padding: var(--spacing-md) !important;
+  margin-bottom: var(--spacing-md) !important;
   position: relative !important;
 }
 
@@ -543,7 +527,7 @@
 #ReviseMultiModal .revision-fields-section {
   background: var(--bg-subtle) !important;
   border-radius: var(--radius-md) !important;
-  padding: var(--spacing-lg) !important;
+  padding: var(--spacing-md) !important;
   border: 1px solid var(--border) !important;
   position: relative !important;
 }
@@ -576,8 +560,9 @@
   margin-bottom: 0 !important;
 }
 
-#ReviseMultiModal .form-group:last-child {
-  margin-bottom: 0 !important;
+/* Ensure MatchType container has proper bottom spacing */
+#ReviseMultiModal #MatchTypeFieldsContainer .form-group {
+  margin-bottom: var(--spacing-lg) !important;
 }
 
 /* Modal height constraints for varying card list lengths */

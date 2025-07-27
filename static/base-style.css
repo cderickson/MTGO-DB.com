@@ -567,7 +567,7 @@ body {
   /* Width control - customize these values as needed */
   width: 100%;
   max-width: 1400px; /* Maximum width of accordion container */
-  margin: 0 auto;    /* Center the container */
+  margin-top: var(--spacing-lg);
 }
 
 .accordion-item {
@@ -893,6 +893,9 @@ body {
   min-width: 200px !important;
   max-width: 200px !important;
   flex: none !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 /* Form Styles */
