@@ -77,7 +77,7 @@ views = Blueprint('views', __name__)
 
 def get_input_options():
 	"""Load input options from local file"""
-	input_options_file = os.path.join('static', 'INPUT_OPTIONS.txt')
+	input_options_file = os.path.join('auxiliary', 'INPUT_OPTIONS.txt')
 	
 	if not os.path.exists(input_options_file):
 		debug_log(f"Input options file not found: {input_options_file}")
@@ -115,7 +115,7 @@ def get_input_options():
 		return {}
 def get_multifaced_cards():
 	"""Load multifaced cards from local file"""
-	multifaced_file = os.path.join('static', 'MULTIFACED_CARDS.txt')
+	multifaced_file = os.path.join('auxiliary', 'MULTIFACED_CARDS.txt')
 	
 	if not os.path.exists(multifaced_file):
 		debug_log(f"Multifaced cards file not found: {multifaced_file}")
@@ -141,7 +141,7 @@ def get_multifaced_cards():
 		return {}
 def get_all_decks():
 	"""Load all decks from local pickle file"""
-	decks_file = os.path.join('static', 'ALL_DECKS')
+	decks_file = os.path.join('auxiliary', 'ALL_DECKS')
 	
 	if not os.path.exists(decks_file):
 		debug_log(f"All decks file not found: {decks_file}")

@@ -67,7 +67,7 @@ def main():
     print("4. Open http://localhost:8000 in your browser")
     
     print("\nFor AWS deployment preparation:")
-    print("1. Update static/config.cfg for production settings")
+    print("1. Update auxiliary/config.cfg for production settings")
     print("2. Set environment variables for production")
     print("3. Use requirements.txt for production dependencies")
     

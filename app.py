@@ -51,7 +51,7 @@ def create_app():
 		app.config.from_pyfile('local-dev/local_config.cfg')
 		print("Running in LOCAL/DEVELOPMENT mode")
 	else:
-		app.config.from_pyfile('static/config.cfg')
+		app.config.from_pyfile('auxiliary/config.cfg')
 		print("Running in PRODUCTION mode")
 	
 	# Override with environment variables if they exist (for production)

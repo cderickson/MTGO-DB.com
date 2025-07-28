@@ -117,7 +117,7 @@ The app uses Celery for background tasks. For local development:
 
 The app automatically detects the environment:
 - **Local/Development**: Uses `static/local_config.cfg`
-- **Production**: Uses `static/config.cfg` and environment variables
+- **Production**: Uses `auxiliary/config.cfg` and environment variables
 
 ### Debug Mode
 
@@ -207,7 +207,7 @@ Address already in use
 When you're ready to deploy to AWS:
 
 1. **Update production configuration:**
-   - Edit `static/config.cfg` for production settings
+   - Edit `auxiliary/config.cfg` for production settings
    - Set environment variables for sensitive data
 
 2. **Use production requirements:**

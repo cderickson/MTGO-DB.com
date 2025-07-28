@@ -415,8 +415,8 @@ body {
 .user-dropdown-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
   text-decoration: none;
   color: #374151;
   font-size: 0.75rem;

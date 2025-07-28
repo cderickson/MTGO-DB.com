@@ -52,4 +52,5 @@ query_script.py
 
 # Configuration (uncomment if you want to exclude config files)
 local-dev/local_config.cfg
+auxiliary/config.cfg
 .github/

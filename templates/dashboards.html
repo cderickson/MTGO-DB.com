@@ -357,124 +357,125 @@
 <div class="content-wrapper">
   <div class="dashboard-container">
     <div class="dashboard-layout">
-  <!-- Filters Sidebar -->
-  <div class="filters-sidebar">
-    <div class="filters-header">
-      <i class="fas fa-filter" style="color: var(--fg-muted);"></i>
-      <h3>Filters</h3>
-    </div>
-    
-    <form id="dashboardFilters">
-      <div class="filter-group">
-        <label class="filter-label" for="cardFilter">Card</label>
-        <select class="filter-select" id="cardFilter" name="card">
-          <option value="">All Cards</option>
-        </select>
-      </div>
-      
-      <div class="filter-group">
-        <label class="filter-label" for="opponentFilter">Opponent</label>
-        <select class="filter-select" id="opponentFilter" name="opponent">
-          <option value="">All Opponents</option>
-        </select>
-      </div>
-      
-      <div class="filter-group">
-        <label class="filter-label" for="formatFilter">Format</label>
-        <select class="filter-select" id="formatFilter" name="format">
-          <option value="">All Formats</option>
-        </select>
-      </div>
-      
-      <div class="filter-group">
-        <label class="filter-label" for="limitedFormatFilter">Limited Format</label>
-        <select class="filter-select" id="limitedFormatFilter" name="limitedFormat">
-          <option value="">All Limited Formats</option>
-        </select>
-      </div>
-      
-      <div class="filter-group">
-        <label class="filter-label" for="deckFilter">Deck</label>
-        <select class="filter-select" id="deckFilter" name="deck">
-          <option value="">All Decks</option>
-        </select>
-      </div>
-      
-      <div class="filter-group">
-        <label class="filter-label" for="oppDeckFilter">Opp. Deck</label>
-        <select class="filter-select" id="oppDeckFilter" name="oppDeck">
-          <option value="">All Opp. Decks</option>
-        </select>
-      </div>
-      
-      <div class="filter-group">
-        <label class="filter-label">Date Range</label>
-        <div class="date-inputs">
-          <input type="date" class="filter-select" id="startDate" name="startDate" placeholder="Start Date">
-          <input type="date" class="filter-select" id="endDate" name="endDate" placeholder="End Date">
-        </div>
-      </div>
-      
-      <div class="filters-actions">
-        <button type="button" class="button secondary" onclick="clearFilters()">
-          <i class="fas fa-times"></i>
-          Clear Filters
-        </button>
-        <button type="button" class="button primary" onclick="applyFilters()">
-          <i class="fas fa-check"></i>
-          Apply Filters
-        </button>
-      </div>
-    </form>
-  </div>
-  
-  <!-- Main Dashboard Content -->
-  <div class="dashboard-main">
-    <!-- Dashboard Header with Controls -->
-    <div class="dashboard-header">
-      <div class="dashboard-controls">
-        <div class="dashboard-selector">
-          <label for="dashboardType" style="font-weight: 500; color: var(--fg-default); font-size: 0.875rem;">Dashboard Type:</label>
-          <select class="dashboard-type-select" id="dashboardType" name="dashboardType">
-            <option value="match-performance" selected>Match Performance</option>
-            <option value="card-analysis">Card Analysis</option>
-            <option value="opponent-analysis">Opponent Analysis</option>
-            <option value="format-breakdown">Format Breakdown</option>
-            <option value="deck-performance">Deck Performance</option>
-            <option value="time-trends">Time Trends</option>
-          </select>
+      <!-- Filters Sidebar -->
+      <div class="filters-sidebar">
+        <div class="filters-header">
+          <i class="fas fa-filter" style="color: var(--fg-muted);"></i>
+          <h3>Filters</h3>
         </div>
         
-        <button type="button" class="generate-btn" onclick="generateDashboard()">
-          <i class="fas fa-chart-bar"></i>
-          Generate Dashboard
-        </button>
+        <form id="dashboardFilters">
+          <div class="filter-group">
+            <label class="filter-label" for="cardFilter">Card</label>
+            <select class="filter-select" id="cardFilter" name="card">
+              <option value="">All Cards</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label class="filter-label" for="opponentFilter">Opponent</label>
+            <select class="filter-select" id="opponentFilter" name="opponent">
+              <option value="">All Opponents</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label class="filter-label" for="formatFilter">Format</label>
+            <select class="filter-select" id="formatFilter" name="format">
+              <option value="">All Formats</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label class="filter-label" for="limitedFormatFilter">Limited Format</label>
+            <select class="filter-select" id="limitedFormatFilter" name="limitedFormat">
+              <option value="">All Limited Formats</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label class="filter-label" for="deckFilter">Deck</label>
+            <select class="filter-select" id="deckFilter" name="deck">
+              <option value="">All Decks</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label class="filter-label" for="oppDeckFilter">Opp. Deck</label>
+            <select class="filter-select" id="oppDeckFilter" name="oppDeck">
+              <option value="">All Opp. Decks</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label class="filter-label">Date Range</label>
+            <div class="date-inputs">
+              <input type="date" class="filter-select" id="startDate" name="startDate" placeholder="Start Date">
+              <input type="date" class="filter-select" id="endDate" name="endDate" placeholder="End Date">
+            </div>
+          </div>
+          
+          <div class="filters-actions">
+            <button type="button" class="button secondary" onclick="clearFilters()">
+              <i class="fas fa-times"></i>
+              Clear Filters
+            </button>
+            <button type="button" class="button primary" onclick="applyFilters()">
+              <i class="fas fa-check"></i>
+              Apply Filters
+            </button>
+          </div>
+        </form>
       </div>
-    </div>
-    
-    <!-- Dashboard Content Area -->
-    <div class="dashboard-content" id="dashboardContent">
-      <!-- Empty State -->
-      <div class="empty-state" id="emptyState">
-        <i class="fas fa-chart-line"></i>
-        <h3>No Dashboard Selected</h3>
-        <p>Choose a dashboard type from the dropdown above and click "Generate Dashboard" to view your data visualizations.</p>
-      </div>
-      
-      <!-- Loading State -->
-      <div class="loading-state" id="loadingState">
-        <div class="spinner"></div>
-        <h3 style="margin: 0; color: var(--fg-default);">Generating Dashboard...</h3>
-        <p style="margin: var(--spacing-sm) 0 0 0; color: var(--fg-muted);">Please wait while we process your data.</p>
-      </div>
-      
-      <!-- Dashboard Results -->
-      <div id="dashboardResults" style="display: none;">
-        <!-- Dashboard content will be loaded here -->
+  
+      <!-- Main Dashboard Content -->
+      <div class="dashboard-main">
+        <!-- Dashboard Header with Controls -->
+        <div class="dashboard-header">
+          <div class="dashboard-controls">
+            <div class="dashboard-selector">
+              <label for="dashboardType" style="font-weight: 500; color: var(--fg-default); font-size: 0.875rem;"><strong>Dashboard Type:</strong></label>
+              <select class="dashboard-type-select" id="dashboardType" name="dashboardType">
+                <option value="match-performance" selected>Match Performance</option>
+                <option value="card-analysis">Card Analysis</option>
+                <option value="opponent-analysis">Opponent Analysis</option>
+                <option value="format-breakdown">Format Breakdown</option>
+                <option value="deck-performance">Deck Performance</option>
+                <option value="time-trends">Time Trends</option>
+              </select>
+            </div>
+            
+            <button type="button" class="generate-btn" onclick="generateDashboard()">
+              <i class="fas fa-chart-bar"></i>
+              Generate Dashboard
+            </button>
+          </div>
+        </div>
+        
+        <!-- Dashboard Content Area -->
+        <div class="dashboard-content" id="dashboardContent">
+          <!-- Empty State -->
+          <div class="empty-state" id="emptyState">
+            <i class="fas fa-chart-line"></i>
+            <h3>No Dashboard Selected</h3>
+            <p>Choose a dashboard type from the dropdown above and click "Generate Dashboard" to view your data visualizations.</p>
+          </div>
+          
+          <!-- Loading State -->
+          <div class="loading-state" id="loadingState">
+            <div class="spinner"></div>
+            <h3 style="margin: 0; color: var(--fg-default);">Generating Dashboard...</h3>
+            <p style="margin: var(--spacing-sm) 0 0 0; color: var(--fg-muted);">Please wait while we process your data.</p>
+          </div>
+          
+          <!-- Dashboard Results -->
+          <div id="dashboardResults" style="display: none;">
+            <!-- Dashboard content will be loaded here -->
+          </div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 </div>
 
 <script>
