@@ -2855,8 +2855,6 @@ def best_guess():
 	flash(return_str, category='success')
 	return redirect(url_for('views.table', table_name='matches', page_num=1))
 
-
-
 @views.route('/profile')
 @login_required
 def profile():
@@ -3252,7 +3250,7 @@ def apply_dashboard_filters(query, filters):
 		if filters.get('startDate'):
 			query = query.filter(Match.date >= filters['startDate'])
 		if filters.get('endDate'):
-			query = query.filter(Match.date <= filters['endDate'] + ' 23:59:59')
+			query = query.filter(Match.date <= filters['endDate'] + '-23:59')
 		
 		# Filter by card (requires joining with Play table)
 		if filters.get('card'):
@@ -3271,23 +3269,186 @@ def generate_match_performance_dashboard(filtered_query, filters):
 	"""Generate match performance dashboard data"""
 	try:
 		matches = filtered_query.all()
-		
+			
 		# Calculate metrics
 		total_matches = len(matches)
 		wins = len([m for m in matches if m.match_winner == 'P1'])
+		die_roll_wins = len([m for m in matches if m.roll_winner == 'P1'])
 		losses = total_matches - wins
 		win_rate = (wins / total_matches * 100) if total_matches > 0 else 0
+		die_roll_wr = (die_roll_wins / total_matches * 100) if total_matches > 0 else 0
 		
 		# Calculate games statistics
 		total_games = sum([m.p1_wins + m.p2_wins for m in matches])
 		avg_games_per_match = (total_games / total_matches) if total_matches > 0 else 0
 		
-		# TODO: Add your custom calculations here
-		# Example calculations you might want to add:
-		# - Win rate by format
-		# - Performance over time
-		# - Win rate by deck type
-		# - Performance against specific opponents
+		# Performance by Format
+		if matches:
+			df = pd.DataFrame([{
+				'format': m.format,
+				'match_winner': m.match_winner
+			} for m in matches])
+			
+			# Group by format and calculate stats
+			format_stats = df.groupby('format').agg({
+				'match_winner': ['count', lambda x: sum(x == 'P1')]
+			}).round(1)
+			
+			# Flatten column names
+			format_stats.columns = ['total_matches', 'wins']
+			format_stats['losses'] = format_stats['total_matches'] - format_stats['wins']
+			format_stats['win_pct'] = (format_stats['wins'] / format_stats['total_matches'] * 100).round(1)
+			format_stats = format_stats.sort_values(by='total_matches', ascending=False)
+			
+			# Reset index to get format as a column
+			format_stats = format_stats.reset_index()
+			
+			# Create table data for the return JSON
+			format_performance_table = {
+				'title': 'Performance by Format',
+				'headers': ['<center>Format</center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Match Win%</center>'],
+				'height': '214px',
+				'rows': [[
+					row['format'],
+					f"<center>{int(row['wins'])}</center>",
+					f"<center>{int(row['losses'])}</center>",
+					f"<center>{row['win_pct']:.1f}%</center>"
+				] for _, row in format_stats.iterrows()]
+			}
+		else:
+			format_performance_table = {
+				'title': 'Performance by Format',
+				'headers': ['<center>Format</center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Match Win%</center>'],
+				'height': '214px',
+				'rows': []
+			}
+		
+		# Performance by Match Type
+		if matches:
+			df = pd.DataFrame([{
+				'match_type': m.match_type,
+				'match_winner': m.match_winner
+			} for m in matches])
+			
+			# Group by format and calculate stats
+			matchtype_stats = df.groupby('match_type').agg({
+				'match_winner': ['count', lambda x: sum(x == 'P1')]
+			}).round(1)
+			
+			# Flatten column names
+			matchtype_stats.columns = ['total_matches', 'wins']
+			matchtype_stats['losses'] = matchtype_stats['total_matches'] - matchtype_stats['wins']
+			matchtype_stats['win_pct'] = (matchtype_stats['wins'] / matchtype_stats['total_matches'] * 100).round(1)
+			matchtype_stats = matchtype_stats.sort_values(by='total_matches', ascending=False)
+			
+			# Reset index to get format as a column
+			matchtype_stats = matchtype_stats.reset_index()
+			
+			# Create table data for the return JSON
+			matchtype_performance_table = {
+				'title': 'Performance by Match Type',
+				'headers': ['<center>Match Type</center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Match Win%</center>'],
+				'height': '214px',
+				'rows': [[
+					row['match_type'],
+					f"<center>{int(row['wins'])}</center>",
+					f"<center>{int(row['losses'])}</center>",
+					f"<center>{row['win_pct']:.1f}%</center>"
+				] for _, row in matchtype_stats.iterrows()]
+			}
+		else:
+			matchtype_performance_table = {
+				'title': 'Performance by Match Type',
+				'headers': ['<center>Match Type</center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Match Win%</center>'],
+				'height': '214px',
+				'rows': []
+			}
+
+		# Decks Played
+		if matches:
+			df = pd.DataFrame([{
+				'p1_subarch': m.p1_subarch,
+				'match_winner': m.match_winner
+			} for m in matches])
+			
+			# Group by p1_subarch and calculate stats
+			deck_stats = df.groupby('p1_subarch').agg({
+				'match_winner': ['count', lambda x: sum(x == 'P1')]
+			}).round(1)
+			
+			# Flatten column names
+			deck_stats.columns = ['total_matches', 'wins']
+			deck_stats['losses'] = deck_stats['total_matches'] - deck_stats['wins']
+			deck_stats['win_pct'] = (deck_stats['wins'] / deck_stats['total_matches'] * 100).round(1)
+			deck_stats['share_pct'] = (deck_stats['total_matches'] / total_matches * 100).round(1)
+			deck_stats = deck_stats.sort_values(by='total_matches', ascending=False)
+			
+			# Reset index to get p1_subarch as a column
+			deck_stats = deck_stats.reset_index()
+			
+			# Create table data for the return JSON
+			deck_performance_table = {
+				'title': 'Decks Played',
+				'headers': ['<center>Deck</center>', '<center>Share</center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Match Win%</center>'],
+				'height': '214px',
+				'rows': [[
+					row['p1_subarch'],
+					f"<center>{row['wins'] + row['losses']} - ({row['share_pct']:.1f}%)</center>",
+					f"<center>{int(row['wins'])}</center>",
+					f"<center>{int(row['losses'])}</center>",
+					f"<center>{row['win_pct']:.1f}%</center>"
+				] for _, row in deck_stats.iterrows()]
+			}
+		else:
+			deck_performance_table = {
+				'title': 'Decks Played',
+				'headers': ['<center>Deck</center>', '<center>Share</center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Match Win%</center>'],
+				'height': '214px',
+				'rows': []
+			}
+
+		# Observed Metagame
+		if matches:
+			df = pd.DataFrame([{
+				'p2_subarch': m.p2_subarch,
+				'match_winner': m.match_winner
+			} for m in matches])
+			
+			# Group by p2_subarch and calculate stats
+			deck_stats = df.groupby('p2_subarch').agg({
+				'match_winner': ['count', lambda x: sum(x == 'P1')]
+			}).round(1)
+			
+			# Flatten column names
+			deck_stats.columns = ['total_matches', 'wins']
+			deck_stats['losses'] = deck_stats['total_matches'] - deck_stats['wins']
+			deck_stats['win_pct'] = (deck_stats['wins'] / deck_stats['total_matches'] * 100).round(1)
+			deck_stats['share_pct'] = (deck_stats['total_matches'] / total_matches * 100).round(1)
+			deck_stats = deck_stats.sort_values(by='total_matches', ascending=False)
+			
+			# Reset index to get p2_subarch as a column
+			deck_stats = deck_stats.reset_index()
+			
+			# Create table data for the return JSON
+			oppdeck_performance_table = {
+				'title': 'Observed Metagame',
+				'headers': ['<center>Deck</center>', '<center>Share</center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Match Win%</center>'],
+				'height': '214px',
+				'rows': [[
+					row['p2_subarch'],
+					f"<center>{row['wins'] + row['losses']} - ({row['share_pct']:.1f}%)</center>",
+					f"<center>{int(row['wins'])}</center>",
+					f"<center>{int(row['losses'])}</center>",
+					f"<center>{row['win_pct']:.1f}%</center>"
+				] for _, row in deck_stats.iterrows()]
+			}
+		else:
+			oppdeck_performance_table = {
+				'title': 'Observed Metagame',
+				'headers': ['<center>Deck</center>', '<center>Share</center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Match Win%</center>'],
+				'height': '214px',
+				'rows': []
+			}
 		
 		return {
 			'metrics': [
@@ -3304,10 +3465,10 @@ def generate_match_performance_dashboard(filtered_query, filters):
 					'type': 'count'
 				},
 				{
-					'title': 'Avg. Games per Match',
-					'value': f'{avg_games_per_match:.1f}',
-					'subtitle': 'Games played on average',
-					'type': 'average'
+					'title': 'Die Roll Win Rate',
+					'value': f'{die_roll_wr:.1f}%',
+					'subtitle': '',
+					'type': 'percentage'
 				}
 			],
 			'charts': [
@@ -3323,18 +3484,17 @@ def generate_match_performance_dashboard(filtered_query, filters):
 					}
 				}
 			],
-			'tables': [
+			'table_grids': [
 				{
-					'title': 'Recent Matches',
-					'headers': ['Date', 'Opponent', 'Format', 'Result', 'Games'],
-					'rows': [[
-						m.date[:10], 
-						m.p2, 
-						m.format, 
-						'Win' if m.match_winner == 'P1' else 'Loss',
-						f'{m.p1_wins}-{m.p2_wins}'
-					] for m in matches[:10]]  # Show recent 10 matches
+					'type': '2x2',
+					'title': 'Performance Overview',
+					'grid': [
+						[format_performance_table, matchtype_performance_table],
+						[deck_performance_table, oppdeck_performance_table]
+					]
 				}
+			],
+			'tables': [
 			]
 		}
 		
@@ -3345,52 +3505,214 @@ def generate_match_performance_dashboard(filtered_query, filters):
 def generate_card_analysis_dashboard(filtered_query, filters):
 	"""Generate card analysis dashboard data"""
 	try:
-		matches = filtered_query.all()
-		match_ids = [m.match_id for m in matches]
+		# Get perspective from filters (default to 'hero')
+		perspective = filters.get('perspective', 'hero')
 		
-		# Get plays data for these matches
-		plays = Play.query.filter(
+		# Set up casting player filter based on perspective
+		if perspective == 'opponents':
+			casting_player_filter = Play.casting_player != current_user.username
+			perspective_label = 'Opponents'
+		else:
+			casting_player_filter = Play.casting_player == current_user.username
+			perspective_label = 'Hero'
+		
+		# Get plays data for these matches (keeping original queries for metrics)
+		plays_hero = Play.query.filter(
 			Play.uid == current_user.uid,
-			Play.match_id.in_(match_ids),
 			Play.casting_player == current_user.username,
+			Play.action == 'Casts',
+			Play.primary_card != 'NA'
+		).all()
+
+		plays_opp = Play.query.filter(
+			Play.uid == current_user.uid,
+			Play.casting_player != current_user.username,
+			Play.action == 'Casts',
+			Play.primary_card != 'NA'
+		).all()
+			
+		# Basic card frequency analysis
+		card_frequency_hero = {}
+		for play in plays_hero:
+			card = play.primary_card
+			card_frequency_hero[card] = card_frequency_hero.get(card, 0) + 1
+
+		card_frequency_opp = {}
+		for play in plays_opp:
+			card = play.primary_card
+			card_frequency_opp[card] = card_frequency_opp.get(card, 0) + 1
+		
+		# Sort by frequency
+		top_cards_hero = sorted(card_frequency_hero.items(), key=lambda x: x[1], reverse=True)[:10]
+		top_cards_opp = sorted(card_frequency_opp.items(), key=lambda x: x[1], reverse=True)[:10]
+			
+		# Get all games for these matches to calculate game-specific statistics
+		games = Game.query.filter(
+			Game.uid == current_user.uid,
+			Game.p1 == current_user.username
+		).all()
+		
+		# Game 1 Analysis
+		games_g1 = [g for g in games if g.game_num == 1]
+		total_games_g1 = len(games_g1)
+		
+		# Get plays for Game 1
+		plays_g1 = Play.query.filter(
+			Play.uid == current_user.uid,
+			casting_player_filter,
+			Play.game_num == 1,
+			Play.action == 'Casts',
 			Play.primary_card != 'NA'
 		).all()
 		
-		# TODO: Add your custom card analysis here
-		# Example calculations you might want to add:
-		# - Most played cards
-		# - Win rate when playing specific cards
-		# - Card performance by format
-		# - Mana curve analysis
-		# - Card synergies
+		# Calculate Game 1 card statistics
+		if plays_g1 and total_games_g1 > 0:
+			df_g1 = pd.DataFrame([{
+				'card': p.primary_card,
+				'match_id': p.match_id,
+				'game_num': p.game_num
+			} for p in plays_g1])
+			
+			# Count unique games per card (create a composite key)
+			df_g1['game_key'] = df_g1['match_id'] + '_' + df_g1['game_num'].astype(str)
+			card_games_g1 = df_g1.groupby('card').agg({
+				'game_key': 'nunique'
+			}).reset_index()
+			card_games_g1.columns = ['card', 'games_cast']
+			
+			# Calculate games cast percentage
+			card_games_g1['games_cast_pct'] = (card_games_g1['games_cast'] / total_games_g1 * 100).round(1)
+
+			card_games_g1 = card_games_g1[(card_games_g1['games_cast_pct'] >= 2.5)]
+			
+			# Calculate game win rate for each card
+			card_winrates_g1 = []
+			for _, row in card_games_g1.iterrows():
+				card = row['card']
+				# Find games where this card was cast
+				card_plays = [p for p in plays_g1 if p.primary_card == card]
+				card_game_keys = set((p.match_id, p.game_num) for p in card_plays)
+				
+				# Find corresponding games and count wins
+				card_games = [g for g in games_g1 if (g.match_id, g.game_num) in card_game_keys]
+				wins = len([g for g in card_games if g.game_winner == 'P1'])
+				total = len(card_games)
+				win_rate = (wins / total * 100) if total > 0 else 0
+				card_winrates_g1.append(win_rate)
+			
+			card_games_g1['game_win_pct'] = card_winrates_g1
+			
+			# Sort by games cast descending
+			card_games_g1 = card_games_g1.sort_values('games_cast', ascending=False)
+			
+			game1_table = {
+				'title': f'Pre-Sideboard Card Performance ({perspective_label})',
+				'headers': ['<center>Card</center>', '<center>Games Cast</center>', '<center>Hero Game Win%</center>'],
+				'height': '400px',
+				'rows': [[
+					row['card'],
+					f"<center>{int(row['games_cast'])} - ({row['games_cast_pct']:.1f}%)</center>",
+					f"<center>{row['game_win_pct']:.1f}%</center>"
+				] for _, row in card_games_g1.iterrows()]
+			}
+		else:
+			game1_table = {
+				'title': f'Pre-Sideboard Card Performance ({perspective_label})',
+				'headers': ['<center>Card</center>', '<center>Games Cast</center>', '<center>Hero Game Win%</center>'],
+				'height': '400px',
+				'rows': []
+			}
 		
-		# Basic card frequency analysis
-		card_frequency = {}
-		for play in plays:
-			card = play.primary_card
-			card_frequency[card] = card_frequency.get(card, 0) + 1
+		# Games 2/3 Analysis
+		games_g23 = [g for g in games if g.game_num in [2, 3]]
+		total_games_g23 = len(games_g23)
 		
-		# Sort by frequency
-		top_cards = sorted(card_frequency.items(), key=lambda x: x[1], reverse=True)[:10]
+		# Get plays for Games 2/3
+		plays_g23 = Play.query.filter(
+			Play.uid == current_user.uid,
+			casting_player_filter,
+			Play.game_num.in_([2, 3]),
+			Play.action == 'Casts',
+			Play.primary_card != 'NA'
+		).all()
 		
+		# Calculate Games 2/3 card statistics
+		if plays_g23 and total_games_g23 > 0:
+			df_g23 = pd.DataFrame([{
+				'card': p.primary_card,
+				'match_id': p.match_id,
+				'game_num': p.game_num
+			} for p in plays_g23])
+			
+			# Count unique games per card (create a composite key)
+			df_g23['game_key'] = df_g23['match_id'] + '_' + df_g23['game_num'].astype(str)
+			card_games_g23 = df_g23.groupby('card').agg({
+				'game_key': 'nunique'
+			}).reset_index()
+			card_games_g23.columns = ['card', 'games_cast']
+			
+			# Calculate games cast percentage
+			card_games_g23['games_cast_pct'] = (card_games_g23['games_cast'] / total_games_g23 * 100).round(1)
+
+			card_games_g23 = card_games_g23[(card_games_g23['games_cast_pct'] >= 2.5)]
+			
+			# Calculate game win rate for each card
+			card_winrates_g23 = []
+			for _, row in card_games_g23.iterrows():
+				card = row['card']
+				# Find games where this card was cast
+				card_plays = [p for p in plays_g23 if p.primary_card == card]
+				card_game_keys = set((p.match_id, p.game_num) for p in card_plays)
+				
+				# Find corresponding games and count wins
+				card_games = [g for g in games_g23 if (g.match_id, g.game_num) in card_game_keys]
+				wins = len([g for g in card_games if g.game_winner == 'P1'])
+				total = len(card_games)
+				win_rate = (wins / total * 100) if total > 0 else 0
+				card_winrates_g23.append(win_rate)
+			
+			card_games_g23['game_win_pct'] = card_winrates_g23
+			
+			# Sort by games cast descending
+			card_games_g23 = card_games_g23.sort_values('games_cast', ascending=False)
+			
+			games23_table = {
+				'title': f'Post-Sideboard Card Performance ({perspective_label})',
+				'headers': ['<center>Card</center>', '<center>Games Cast</center>', '<center>Hero Game Win%</center>'],
+				'height': '400px',
+				'rows': [[
+					row['card'],
+					f"<center>{int(row['games_cast'])} - ({row['games_cast_pct']:.1f}%)</center>",
+					f"<center>{row['game_win_pct']:.1f}%</center>"
+				] for _, row in card_games_g23.iterrows()]
+			}
+		else:
+			games23_table = {
+				'title': f'Post-Sideboard Card Performance ({perspective_label})',
+				'headers': ['<center>Card</center>', '<center>Games Cast</center>', '<center>Hero Game Win%</center>'],
+				'height': '400px',
+				'rows': []
+			}
+		
+
 		return {
 			'metrics': [
 				{
 					'title': 'Unique Cards Played',
-					'value': str(len(card_frequency)),
-					'subtitle': 'Different cards used',
-					'type': 'count'
-				},
-				{
-					'title': 'Total Plays',
-					'value': str(len(plays)),
-					'subtitle': 'Cards cast/played',
+					'value': str(len(card_frequency_hero)),
+					'subtitle': 'Different cards (non-land)',
 					'type': 'count'
 				},
 				{
 					'title': 'Most Played Card',
-					'value': top_cards[0][0] if top_cards else 'None',
-					'subtitle': f'{top_cards[0][1]} times' if top_cards else 'No data',
+					'value': top_cards_hero[0][0] if top_cards_hero else 'None',
+					'subtitle': f'{top_cards_hero[0][1]} times' if top_cards_hero else 'No data',
+					'type': 'text'
+				},
+				{
+					'title': 'Most Played Card Against',
+					'value': top_cards_opp[0][0] if top_cards_opp else 'None',
+					'subtitle': f'{top_cards_opp[0][1]} times' if top_cards_opp else 'No data',
 					'type': 'text'
 				}
 			],
@@ -3399,25 +3721,25 @@ def generate_card_analysis_dashboard(filtered_query, filters):
 					'title': 'Most Played Cards',
 					'type': 'bar',
 					'data': {
-						'labels': [card[0] for card in top_cards],
+						'labels': [card[0] for card in top_cards_hero],
 						'datasets': [{
 							'label': 'Times Played',
-							'data': [card[1] for card in top_cards]
+							'data': [card[1] for card in top_cards_hero]
 						}]
 					}
 				}
 			],
 			'tables': [
+			],
+			'table_grids': [
 				{
-					'title': 'Card Frequency',
-					'headers': ['Card Name', 'Times Played', 'Percentage'],
-					'rows': [[
-						card[0], 
-						str(card[1]), 
-						f'{(card[1]/len(plays)*100):.1f}%'
-					] for card in top_cards]
+					'type': '2x2',
+					'title': 'Performance Overview',
+					'grid': [
+						[game1_table, games23_table]
+					]
 				}
-			]
+			],
 		}
 		
 	except Exception as e:
@@ -3428,13 +3750,6 @@ def generate_opponent_analysis_dashboard(filtered_query, filters):
 	"""Generate opponent analysis dashboard data"""
 	try:
 		matches = filtered_query.all()
-		
-		# TODO: Add your custom opponent analysis here
-		# Example calculations you might want to add:
-		# - Win rate vs each opponent
-		# - Most common opponents
-		# - Performance against different deck archetypes
-		# - Head-to-head records
 		
 		# Basic opponent analysis
 		opponent_stats = {}
