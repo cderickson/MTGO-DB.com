@@ -364,12 +364,12 @@
 /* Enhanced Match result row coloring with gradients */
 .match-win {
   background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
-  border-left: 4px solid #28a745 !important;
+  border-left: 4px solid #16a34a !important;
 }
 
 .match-loss {
   background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%) !important;
-  border-left: 4px solid #dc3545 !important;
+  border-left: 4px solid #dc2626 !important;
 }
 
 .match-na {
@@ -379,12 +379,12 @@
 
 .match-win:hover {
   background: linear-gradient(135deg, #c3e6cb 0%, #b5d7c0 100%) !important;
-  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2);
+  box-shadow: 0 4px 8px rgba(22, 163, 74, 0.2);
 }
 
 .match-loss:hover {
   background: linear-gradient(135deg, #f5c6cb 0%, #f0b2b8 100%) !important;
-  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.2);
+  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.2);
 }
 
 .match-na:hover {
@@ -403,13 +403,15 @@
 }
 
 .match-result.win {
-  background: rgba(40, 167, 69, 0.1);
-  border: 1px solid rgba(40, 167, 69, 0.2);
+  background: rgba(22, 163, 74, 0.1);
+  border: 1px solid rgba(22, 163, 74, 0.2);
+  border-left: 3px solid #16a34a;
 }
 
 .match-result.loss {
-  background: rgba(220, 53, 69, 0.1);
-  border: 1px solid rgba(220, 53, 69, 0.2);
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-left: 3px solid #dc2626;
 }
 
 .match-result.na {
@@ -424,11 +426,11 @@
 
 /* Add subtle glow to match results */
 .match-result.win {
-  box-shadow: 0 0 8px rgba(40, 167, 69, 0.3);
+  box-shadow: 0 0 8px rgba(22, 163, 74, 0.3);
 }
 
 .match-result.loss {
-  box-shadow: 0 0 8px rgba(220, 53, 69, 0.3);
+  box-shadow: 0 0 8px rgba(220, 38, 38, 0.3);
 }
 
 .match-result:hover {

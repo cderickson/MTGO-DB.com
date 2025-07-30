@@ -213,10 +213,16 @@
                   <span class="nav-text">Import GameLogs</span>
                 </a>
               </li>
-              <li class="nav-item">
+              <!-- <li class="nav-item">
                 <a href="#" class="nav-link" onclick="showImportAppModal()">
                   <i class="fas fa-download nav-icon"></i>
                   <span class="nav-text">Import from MTGO-Tracker</span>
+                </a>
+              </li> -->
+              <li class="nav-item">
+                <a href="#" class="nav-link" onclick="showLoadRevisionsModal()">
+                  <i class="fas fa-history nav-icon"></i>
+                  <span class="nav-text">Load Revisions</span>
                 </a>
               </li>
               <li class="nav-item">
@@ -300,14 +306,16 @@
             <div style="display: flex; align-items: center; gap: var(--spacing-md);">
               <div>
                 <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Missing Game Winners</h3>
+                <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Review the game actions and choose a winner manually.</p>
               </div>
             </div>
+
             <button type="button" class="modal-close" onclick="hideGameWinnerModal()">
               <i class="fas fa-times"></i>
             </button>
           </div>
           <div class="modal-body">
-            <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+            <div class="info-box">
               <div id="GameWinnerModalDate" style="color: var(--fg-body); font-weight: 500; font-size: 0.875rem; text-align: center;">
                 Date
               </div>
@@ -334,10 +342,11 @@
               Game Action 14<br>
               Game Action 15<br>
             </div>
-            <div style="background: rgba(245, 158, 11, 0.05); border-left: 4px solid #f59e0b; border-radius: var(--radius-md); padding: var(--spacing-lg);">
-              <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+            <div class="info-box" style="background: rgba(220, 255, 30, 0.1); border-left-color: var(--yellow);">
+
+              <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
                 <i class="fas fa-exclamation-triangle" style="color: #f59e0b; font-size: 1.125rem;"></i>
-                <p style="margin: 0; color: var(--fg-body); line-height: 1.6;"><strong>Game winner could not be automatically determined.</strong> Please review the game actions above and choose the winner manually.</p>
+                <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Game winner could not be automatically determined. Please review the game actions above and choose a winner manually.</h4>
               </div>
             </div>
           </div>
@@ -375,7 +384,7 @@
             </button>
           </div>
           <div class="modal-body">
-            <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+            <div class="info-box">
               <div id="DraftIdModalDate" style="color: var(--fg-body); font-weight: 500; font-size: 0.875rem; text-align: center;">
               </div>
             </div>
@@ -412,7 +421,7 @@
               </div>
             </div>
 
-            <div class="form-group" style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: 0;">
+            <div class="form-group info-box">
               <h4 style="color: var(--fg-default); font-size: 1rem; font-weight: 600; margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm); justify-content: center;">
                 <i class="fas fa-link" style="color: var(--fg-muted); font-size: 0.875rem;"></i>
                 Choose the Draft ID that should be associated with this match based on the card pool.
@@ -488,7 +497,7 @@
               </div>
             </form>
             
-            <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+            <div class="info-box">
               <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-md);">
                 <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
                 <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">How it Works</h4>
@@ -496,7 +505,7 @@
               <p style="margin: 0; color: var(--fg-body); line-height: 1.6;">This feature analyzes your deck compositions and automatically suggests appropriate deck names based on card patterns, colors, and archetypes.</p>
             </div>
 
-            <div style="background: rgba(245, 158, 11, 0.05); border-left: 4px solid #f59e0b; border-radius: var(--radius-md); padding: var(--spacing-lg); margin-top: var(--spacing-lg);">
+            <div class="info-box" style="background: rgba(220, 255, 30, 0.1); border-left-color: var(--yellow);">
               <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
                 <i class="fas fa-exclamation-triangle" style="color: #f59e0b; font-size: 1.125rem;"></i>
                 <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Important Note</h4>
@@ -523,7 +532,12 @@
       <div id="ImportModal" class="modal" style="display: none;">
         <div class="modal-content" style="max-width: 600px; width: 90%;">
           <div class="modal-header">
-            <h3>Import GameLogs</h3>
+            <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+              <div>
+                <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Import GameLogs/DraftLogs</h3>
+                <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Upload your zipped GameLog and DraftLog files for processing</p>
+              </div>
+            </div>
             <button type="button" class="modal-close" onclick="hideImportModal()">
               <i class="fas fa-times"></i>
             </button>
@@ -531,12 +545,12 @@
           <div class="modal-body">
             <form id="importForm" action="/load" method="POST" enctype="multipart/form-data">
               <div class="form-group">
-                <label class="form-label">Select GameLog Files</label>
+                <label class="form-label">Select GameLog/DraftLog Files</label>
                 <input type="file" class="form-input" name="file" accept=".zip" required id="importFileInput" onchange="validateImportFiles()">
                 <small id="importFileHelpText" style="color: var(--fg-muted);">Select the .zip file created by the Zip-MTGO-Logs script</small>
               </div>
             </form>
-            <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg) 0;">
+            <div class="info-box">
                 <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
                   <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
                   <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Importing Details</h4>
@@ -560,7 +574,12 @@
       <div id="ImportAppModal" class="modal" style="display: none;">
         <div class="modal-content" style="max-width: 700px; width: 90%;">
           <div class="modal-header">
-            <h3>Import from MTGO-Tracker (Windows)</h3>
+            <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+              <div>
+                <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Import from MTGO-Tracker (Windows)</h3>
+                <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Upload your MTGO-Tracker save files for processing</p>
+              </div>
+            </div>
             <button type="button" class="modal-close" onclick="hideImportAppModal()">
               <i class="fas fa-times"></i>
             </button>
@@ -573,7 +592,7 @@
                 <small id="importAppHelpText" style="color: var(--fg-muted);">Select the ALL_DATA, DRAFTS_TABLE, and PICKS_TABLE files from your MTGO-Tracker save folder.</small>
               </div>
               
-              <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-top: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+              <div class="info-box">
                 <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
                   <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
                   <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">How to Select Files</h4>
@@ -589,10 +608,10 @@
                 </ol>
               </div>
 
-              <div style="background: rgba(239, 68, 68, 0.05); border-left: 4px solid #ef4444; border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg) 0;">
+              <div class="info-box" style="background: rgba(239, 68, 68, 0.1); border-left-color: #ef4444;">
                 <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
                   <i class="fas fa-exclamation-triangle" style="color: #ef4444; font-size: 1.125rem;"></i>
-                  <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Important Notes</h4>
+                  <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Warning</h4>
                 </div>
                 <ul style="margin: 0; padding-left: var(--spacing-lg); color: var(--fg-body); line-height: 1.6;">
                   <li style="margin-bottom: var(--spacing-sm);">Records added <strong>will not</strong> have an associated raw file archived and will not be able to be re-processed.</li>
@@ -611,22 +630,88 @@
         </div>
       </div>
 
+      <!-- Load Revisions Modal -->
+      <div id="LoadRevisionsModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 700px; width: 90%;">
+          <div class="modal-header">
+            <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+              <div>
+                <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Load Revisions</h3>
+                <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Upload user-input revisions from your MTGO-Tracker desktop application</p>
+              </div>
+            </div>
+            <button type="button" class="modal-close" onclick="hideLoadRevisionsModal()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="loadRevisionsForm" action="/load_revisions_from_app" method="POST" enctype="multipart/form-data">            
+              <div class="form-group">
+                <label class="form-label">Select ALL_DATA File</label>
+                <input type="file" class="form-input" name="folder" required id="loadRevisionsFileInput" onchange="validateLoadRevisionsFiles()">
+                <small id="loadRevisionsHelpText" style="color: var(--fg-muted);">Select the ALL_DATA file from your MTGO-Tracker save folder.</small>
+              </div>
+              
+              <div class="info-box">
+                <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
+                  <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
+                  <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">How to Select File</h4>
+                </div>
+                <ol style="margin: 0; padding-left: var(--spacing-lg); color: var(--fg-body); line-height: 1.6;">
+                  <li style="margin-bottom: var(--spacing-sm);">Navigate to your <code style="background: var(--bg-subtle); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-sm); font-family: monospace;">MTGO-Tracker/save/</code> folder</li>
+                  <li style="margin-bottom: var(--spacing-sm);">Select this file: <code style="background: var(--bg-subtle); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-sm); font-family: monospace;">ALL_DATA</code></li>
+                </ol>
+              </div>
+
+              <div class="info-box" style="background: rgba(239, 68, 68, 0.1); border-left-color: #ef4444;">
+                <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
+                  <i class="fas fa-exclamation-triangle" style="color: #ef4444; font-size: 1.125rem;"></i>
+                  <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Warning</h4>
+                </div>
+                <ul style="margin: 0; padding-left: var(--spacing-lg); color: var(--fg-body); line-height: 1.6;">
+                  <li style="margin-bottom: var(--spacing-sm);">This will load user-input revisions from your MTGO-Tracker save file.</li>
+                  <li>This process will overwrite existing revisions and is <strong><u>not reversible</u></strong>.</li>
+                </ul>
+              </div>
+
+            </form>
+          </div>
+          <div class="modal-footer">
+            <div class="d-flex gap-3 justify-content-end">
+              <button type="button" class="button secondary" onclick="hideLoadRevisionsModal()">Cancel</button>
+              <button type="submit" class="button primary" form="loadRevisionsForm" id="loadRevisionsSubmitBtn" disabled>Load Revisions</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Reprocess Modal -->
       <div id="ReprocessModal" class="modal" style="display: none;">
         <div class="modal-content" style="max-width: 600px; width: 90%;">
           <div class="modal-header">
-            <h3>Re-Process Data</h3>
+            <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+              <div>
+                <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Re-Process Data</h3>
+                <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Delete existing data and re-process your archived files.</p>
+              </div>
+            </div>
             <button type="button" class="modal-close" onclick="hideReprocessModal()">
               <i class="fas fa-times"></i>
             </button>
           </div>
           <div class="modal-body">
             <form id="reprocessForm" action="/reprocess" method="POST">
-              <p style="color: var(--fg-body); line-height: 1.6; margin-bottom: var(--spacing-lg);">
-                Your archived GameLog and DraftLog files will be <strong>re-parsed</strong>. Use this function if <strong>MTGO-Tracker</strong> parsing rules have changed.<br><br>
-                Any manual revisions you have made (such as deck names) <strong><u>will not</u></strong> be lost.
-              </p>
-              <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg) 0;">
+              <div class="info-box">
+                <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
+                  <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
+                  <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">When to use this feature</h4>
+                </div>
+                <ul style="margin: 0; padding-left: var(--spacing-lg); color: var(--fg-body); line-height: 1.6;">
+                  <li><strong>Re-parse</strong> your archived GameLog and DraftLog files if MTGO-Tracker parsing rules have changed.</li>
+                  <li><strong>Manual revisions</strong> you have made (such as deck names) <strong><u>will not</u></strong> be lost.</li>
+                </ul>
+              </div>
+              <div class="info-box">
                 <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
                   <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
                   <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Processing Details</h4>
@@ -678,38 +763,29 @@
               <i class="fas fa-times"></i>
             </button>
           </div>
-          <div class="modal-body">
-            <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
-              <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-md);">
-                <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
-                <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Get Started</h4>
-              </div>
-              <p style="margin: 0; color: var(--fg-body); line-height: 1.6;">Download and run the <strong><a href="https://github.com/cderickson/Scripts/raw/main/Zip-MTGO-Logs.exe" target="_blank" rel="noopener noreferrer" style="color: var(--sky-blue); text-decoration: none; font-weight: 600;">Zip-MTGO-Logs</a></strong> script to automatically package your MTGO files.</p>
-            </div>
-            
-            <div style="margin-bottom: var(--spacing-lg);">
-              <h4 style="color: var(--fg-default); font-size: 1rem; font-weight: 600; margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm);">
-                <i class="fas fa-cog" style="color: var(--fg-muted); font-size: 0.875rem;"></i>
-                What this script does
-              </h4>
-              <div style="display: grid; gap: var(--spacing-md);">
-                <div style="display: flex; align-items: start; gap: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-subtle); border-radius: var(--radius-md); border: 1px solid var(--border);">
-                  <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: rgba(34, 197, 94, 0.1); border-radius: var(--radius-md); color: #22c562; flex-shrink: 0;">
-                    <i class="fas fa-file-archive" style="font-size: 0.875rem;"></i>
-                  </div>
-                  <div>
-                    <p style="margin: 0; color: var(--fg-default); font-weight: 500;">Creates a .zip file</p>
-                    <p style="margin: 0; color: var(--fg-body); font-size: 0.875rem; line-height: 1.5;">Automatically packages your GameLog and DraftLog files into a single archive.</p>
-                  </div>
+          <div class="modal-body">           
+            <div class="steps-container">
+              <div class="link-card">
+                <div class="link-icon">
+                  <i class="fab fa-github"></i>
                 </div>
-                <div style="display: flex; align-items: start; gap: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-subtle); border-radius: var(--radius-md); border: 1px solid var(--border);">
-                  <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: rgba(168, 85, 247, 0.1); border-radius: var(--radius-md); color: #a855f7; flex-shrink: 0;">
-                    <i class="fas fa-upload" style="font-size: 0.875rem;"></i>
-                  </div>
-                  <div>
-                    <p style="margin: 0; color: var(--fg-default); font-weight: 500;">Ready for import</p>
-                    <p style="margin: 0; color: var(--fg-body); font-size: 0.875rem; line-height: 1.5;">Upload the generated file using <strong>Processing → Import GameLogs</strong>.</p>
-                  </div>
+                <div class="link-content">
+                  <h4><a href="https://github.com/cderickson/Scripts/raw/main/Zip-MTGO-Logs.exe" target="_blank">Download and run the Zip-MTGO-Logs script</a></h4>
+                  <p>The script code is open source and available on GitHub</p>
+                </div>
+              </div>
+              <div class="step-card">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                  <h4>Create a .zip file</h4>
+                  <p>Use the <strong>Zip-MTGO-Logs</strong> script to create a .zip file of your GameLog and DraftLog files.</p>
+                </div>
+              </div>
+              <div class="step-card">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                  <h4>Ready for import</h4>
+                  <p>Upload the generated file using <strong>Processing → Import GameLogs</strong>.</p>
                 </div>
               </div>
             </div>
@@ -1193,6 +1269,248 @@
         padding: var(--spacing-xs) var(--spacing-md);
       }
     }
+    
+    /* FAQ/Changelog Component Styles for Modals */
+
+    .modal p {
+      margin: var(--spacing-md) 0 var(--spacing-md) 0;
+      font-size: 0.75rem;
+      line-height: 1.5;
+    }
+
+    .modal ul {
+      margin: var(--spacing-md) 0 var(--spacing-md) 0;
+      padding-left: var(--spacing-md);
+    }
+
+    .modal h4 {
+      margin: var(--spacing-md) 0 var(--spacing-md) 0;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--fg-default);
+    }
+
+    .modal li {
+      margin-bottom: var(--spacing-xs);
+      font-size: 0.75rem;
+    }
+
+    .modal a {
+      color: var(--fg-brand);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color var(--transition-fast);
+    }
+
+    .modal a:hover {
+      color: var(--hyper-04);
+      text-decoration: underline;
+    }
+
+    /* Info Box Styles */
+    .modal .info-box {
+      background: rgba(128, 219, 255, 0.1);
+      border-left: 4px solid var(--sky-blue);
+      border-radius: var(--radius-sm);
+      padding: var(--spacing-md);
+      margin: 0 0 var(--spacing-sm) 0 !important;
+    }
+
+    .modal .info-box:last-child {
+      margin-bottom: 0 !important;
+    }
+
+    .modal .info-box h4 {
+      margin: 0 0 var(--spacing-sm) 0 !important;
+      color: var(--fg-default);
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .modal .info-box p {
+      margin: 0;
+      color: var(--fg-body);
+      font-size: 0.75rem;
+      line-height: 1.5;
+    }
+
+    /* Step Container & Card Styles */
+    .modal .steps-container {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+    }
+
+    .modal .step-card {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-md);
+      background: var(--bg-default);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      transition: all var(--transition-fast);
+    }
+
+    .modal .step-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .modal .step-number {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: var(--fg-brand);
+      color: var(--base-white);
+      border-radius: 50%;
+      font-weight: 700;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    .modal .step-content h4 {
+      margin: 0 0 var(--spacing-xs) 0;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--fg-default);
+    }
+
+    .modal .step-content p {
+      margin: 0;
+      color: var(--fg-body);
+      font-size: 0.75rem;
+      line-height: 1.4;
+    }
+
+    .modal .step-content code {
+      background: var(--bg-code);
+      color: var(--fg-code);
+      padding: 0.2rem 0.4rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.7rem;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* Link Card Styles */
+    .modal .link-card {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-md);
+      background: var(--bg-default);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      transition: all var(--transition-fast);
+    }
+
+    .modal .link-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .modal .link-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: var(--fg-brand);
+      color: var(--base-white);
+      border-radius: 50%;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+
+    .modal .link-content h4 {
+      margin: 0 0 var(--spacing-xs) 0;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .modal .link-content h4 a {
+      color: var(--fg-default);
+      text-decoration: none;
+    }
+
+    .modal .link-content h4 a:hover {
+      color: var(--fg-brand);
+    }
+
+    .modal .link-content p {
+      margin: 0;
+      color: var(--fg-body);
+      font-size: 0.75rem;
+      line-height: 1.4;
+    }
+
+    /* Feature Grid & Item Styles */
+    .modal .feature-grid {
+      margin: 0 0 var(--spacing-sm) 0 !important;
+    }
+
+    .modal .feature-grid:last-child {
+      margin-bottom: 0 !important;
+    }
+
+    .modal .feature-item {
+      text-align: center;
+      padding: var(--spacing-sm);
+      background: var(--bg-default);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      transition: all var(--transition-fast);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .modal .feature-item:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .modal .feature-item i {
+      font-size: 1rem;
+      margin-bottom: var(--spacing-xs);
+      display: block;
+    }
+
+    .modal .feature-item h5 {
+      margin: 0 0 var(--spacing-xs) 0;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--fg-default);
+    }
+
+    .modal .feature-item p {
+      margin: 0;
+      font-size: 0.7rem;
+      color: var(--fg-body);
+      line-height: 1.3;
+    }
+
+    .modal .info-box div[style*="display: flex"] h4 {
+      margin: 0 !important;
+    }
+    
+    /* Responsive Styles for Modal Components */
+    @media (max-width: 768px) {
+      .modal .step-card {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .modal .link-card {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .modal .feature-grid {
+        grid-template-columns: 1fr;
+      }
+    }
     </style>
 
     <script>
@@ -1375,6 +1693,28 @@
       document.getElementById('importAppForm').reset();
       const helpText = document.getElementById('importAppHelpText');
       helpText.innerHTML = 'Select the ALL_DATA, DRAFTS_TABLE, and PICKS_TABLE files from your MTGO-Tracker save folder.';
+      helpText.style.color = 'var(--fg-muted)';
+    }
+    
+    function showLoadRevisionsModal() {
+      const modal = document.getElementById('LoadRevisionsModal');
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      
+      // Reset form and validation when modal opens
+      document.getElementById('loadRevisionsForm').reset();
+      validateLoadRevisionsFiles();
+    }
+    
+    function hideLoadRevisionsModal() {
+      const modal = document.getElementById('LoadRevisionsModal');
+      modal.style.display = 'none';
+      document.body.style.overflow = 'auto';
+      
+      // Reset form and help text
+      document.getElementById('loadRevisionsForm').reset();
+      const helpText = document.getElementById('loadRevisionsHelpText');
+      helpText.innerHTML = 'Select the ALL_DATA file from your MTGO-Tracker save folder.';
       helpText.style.color = 'var(--fg-muted)';
     }
     
@@ -1719,6 +2059,35 @@
         submitBtn.disabled = false;
       } else {
         helpText.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Please select a ZIP file.';
+        helpText.style.color = '#ef4444';
+        submitBtn.disabled = true;
+      }
+    }
+    
+    // File validation for LoadRevisions modal
+    function validateLoadRevisionsFiles() {
+      const fileInput = document.getElementById('loadRevisionsFileInput');
+      const submitBtn = document.getElementById('loadRevisionsSubmitBtn');
+      const helpText = document.getElementById('loadRevisionsHelpText');
+      
+      if (fileInput.files.length === 0) {
+        helpText.innerHTML = 'Select the ALL_DATA file from your MTGO-Tracker save folder.';
+        helpText.style.color = 'var(--fg-muted)';
+        submitBtn.disabled = true;
+        return;
+      }
+      
+      const selectedFile = fileInput.files[0];
+      // Extract filename (handle paths from different OS)
+      const fileName = selectedFile.name.split('/').pop().split('\\').pop();
+      
+      // Check if it's the ALL_DATA file
+      if (fileName === 'ALL_DATA') {
+        helpText.innerHTML = '<i class="fas fa-check-circle"></i> ALL_DATA file selected.';
+        helpText.style.color = '#22c562';
+        submitBtn.disabled = false;
+      } else {
+        helpText.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Please select the ALL_DATA file.';
         helpText.style.color = '#ef4444';
         submitBtn.disabled = true;
       }

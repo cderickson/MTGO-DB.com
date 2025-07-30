@@ -170,6 +170,7 @@ def build_cards_played_db(uid):
 		#debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Found {len(match_ids)} unique match IDs")
 		
 		cards_added = 0
+		proc_dt = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific'))
 		for i in match_ids:
 			#debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Processing match {i}")
 			
@@ -207,7 +208,8 @@ def build_cards_played_db(uid):
 											plays1=sorted(list(plays1),reverse=False),
 											plays2=sorted(list(plays2),reverse=False),
 											lands1=sorted(list(lands1),reverse=False),
-											lands2=sorted(list(lands2),reverse=False))
+											lands2=sorted(list(lands2),reverse=False),
+											proc_dt=proc_dt)
 				db.session.add(cards_played)
 				cards_added += 1
 				#debug_log(f"🔍 BUILD CARDS PLAYED DEBUG: Added cards played for match {i}")
@@ -475,6 +477,7 @@ def process_logs(self, data):
 		from app import create_app
 		app = create_app()
 		
+		proc_dt = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific'))
 		with app.app_context():
 			for file_info in files_to_process:
 				filename = file_info['filename']
@@ -513,7 +516,7 @@ def process_logs(self, data):
 						continue
 
 					if len(parsed_data_inverted[2]) == 0:
-						newIgnore = Removed(uid=uid, match_id=fname, reason='Empty')
+						newIgnore = Removed(uid=uid, match_id=fname, date=mtime, reason='Empty', proc_dt=proc_dt)
 						db.session.add(newIgnore)
 						counts['gamelogs_skipped_empty'] += 1
 						continue
@@ -546,6 +549,7 @@ def process_logs(self, data):
 							existing.p2_roll = match[9]
 							existing.roll_winner = match[10]
 							existing.date = match[17]
+							existing.proc_dt = proc_dt
 							Play.query.filter_by(uid=uid, match_id=match[0]).delete()
 							try:
 								db.session.commit()
@@ -571,7 +575,8 @@ def process_logs(self, data):
 											format=match[14],
 											limited_format=match[15],
 											match_type=match[16],
-											date=match[17])
+											date=match[17],
+											proc_dt=proc_dt)
 							db.session.add(new_match)
 							counts['new_matches'] += 1
 					for game in parsed_data_inverted[1]:
@@ -585,6 +590,7 @@ def process_logs(self, data):
 							existing.p1_mulls=game[8]
 							existing.p2_mulls=game[9]
 							existing.turns=game[10]
+							existing.proc_dt = proc_dt
 							try:
 								db.session.commit()
 							except:
@@ -603,7 +609,8 @@ def process_logs(self, data):
 											p1_mulls=game[8],
 											p2_mulls=game[9],
 											turns=game[10],
-											game_winner=game[11])
+											game_winner=game[11],
+											proc_dt=proc_dt)
 							db.session.add(new_game)
 							counts['new_games'] += 1
 					for play in parsed_data_inverted[2]:
@@ -625,7 +632,8 @@ def process_logs(self, data):
 										cards_drawn=play[12],
 										attackers=play[13],
 										active_player=play[14],
-										non_active_player=play[15])
+										non_active_player=play[15],
+										proc_dt=proc_dt)
 						db.session.add(new_play)
 						counts['new_plays'] += 1
 					for game in parsed_data_inverted[3]:
@@ -634,7 +642,8 @@ def process_logs(self, data):
 						new_ga15 = GameActions(uid=uid,
 											match_id=game[:-2],
 											game_num=game[-1],
-											game_actions='\n'.join(parsed_data_inverted[3][game][-15:]))
+											game_actions='\n'.join(parsed_data_inverted[3][game][-15:]),
+											proc_dt=proc_dt)
 						db.session.add(new_ga15)
 					try:
 						db.session.commit()
@@ -658,6 +667,7 @@ def process_logs(self, data):
 							existing.player8 = draft[8]
 							existing.format = draft[11]
 							existing.date = draft[12]
+							existing.proc_dt = proc_dt
 							Pick.query.filter_by(uid=uid, draft_id=draft[0]).delete()
 							counts['drafts_replaced'] += 1
 							try:
@@ -679,7 +689,8 @@ def process_logs(self, data):
 											match_wins=draft[9],
 											match_losses=draft[10],
 											format=draft[11],
-											date=draft[12])
+											date=draft[12],
+											proc_dt=proc_dt)
 							db.session.add(new_draft)
 							counts['new_drafts'] += 1
 							debug_log(f"🔍 DRAFTLOG DB: Added new draft {draft[0]} to session")
@@ -711,7 +722,8 @@ def process_logs(self, data):
 										avail11=p[15],
 										avail12=p[16],
 										avail13=p[17],
-										avail14=p[18])
+										avail14=p[18],
+										proc_dt=proc_dt)
 						db.session.add(new_pick)
 						counts['new_picks'] += 1
 					debug_log(f"🔍 DRAFTLOG DB: Added {counts['new_picks']} picks to session for this file")
@@ -837,6 +849,197 @@ def process_logs(self, data):
 	return 'DONE'
 
 @shared_task(bind=True, base=AbortableTask)
+def process_revisions_from_app(self, data):
+	def update_draft_wins(draft_id):
+		# Update draft match statistics
+		match_wins = 0
+		match_losses = 0
+		proc_dt = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific'))
+		associated_matches = Match.query.filter_by(
+			uid=current_user.uid, 
+			draft_id=draft_id, 
+			p1=current_user.username
+		)
+		
+		for match in associated_matches:
+			if match.p1_wins > match.p2_wins:
+				match_wins += 1
+			elif match.p2_wins > match.p1_wins:
+				match_losses += 1
+		
+		draft = Draft.query.filter_by(
+			uid=current_user.uid, 
+			draft_id=draft_id
+		).first()
+		
+		if draft:
+			draft.match_wins = match_wins
+			draft.match_losses = match_losses
+			draft.proc_dt = proc_dt
+
+		try:
+			db.session.commit()
+		except Exception as e:
+			db.session.rollback()
+			debug_log(f"Error committing draft ID update: {str(e)}")
+	
+	counts = {
+		'updated_matches':0,
+		'updated_games':0,
+		'updated_drafts':0
+	}
+	uid = data['user_id']
+	drafts_to_update = []
+	submit_date = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific'))
+	error_code = None
+
+	# Get Flask app from Celery BEFORE processing files
+	from app import create_app
+	app = create_app()
+	debug_log(f'App Created')
+	with app.app_context():
+		debug_log(f'App Context')
+		try:
+			debug_log(f'Starting Match Loop')
+			debug_log(f'Match Loop Length: {len(data["all_data"][0])}')
+			proc_dt = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific'))
+			for match in data['all_data'][0]:
+				if Match.query.filter_by(uid=uid, match_id=match[0], p1=match[2]).first():
+					debug_log(f'Updating Match: {match[0]} is in match table')
+					existing_match = Match.query.filter_by(uid=uid, match_id=match[0], p1=match[2]).first()
+					if Draft.query.filter_by(uid=uid, draft_id=match[1]).first():
+						existing_match.draft_id = match[1]
+						drafts_to_update.append(match[1])
+					existing_match.p1_arch = match[3]
+					existing_match.p1_subarch = match[4]
+					existing_match.p2_arch = match[6]
+					existing_match.p2_subarch = match[7]
+					existing_match.p1_wins = match[11]
+					existing_match.p2_wins = match[12]
+					existing_match.match_winner = match[13]
+					existing_match.format = match[14]
+					existing_match.limited_format = match[15]
+					existing_match.match_type = match[16]
+					existing_match.proc_dt = proc_dt
+					merged_match = db.session.merge(existing_match)
+					db.session.add(merged_match)
+					counts['updated_matches'] += 1
+			debug_log(f'Starting Game Loop')
+			for game in data['all_data'][1]:
+				if Game.query.filter_by(uid=uid, match_id=game[0], game_num=game[3], p1=game[1]).first():
+					existing_game = Game.query.filter_by(uid=uid, match_id=game[0], game_num=game[3], p1=game[1]).first()
+					existing_game.game_winner = game[11]
+					existing_game.proc_dt = proc_dt
+					merged_game = db.session.merge(existing_game)
+					db.session.add(merged_game)
+					counts['updated_games'] += 1
+			for draft_id in drafts_to_update:
+				update_draft_wins(draft_id)
+				counts['updated_drafts'] += 1
+
+			try:
+				debug_log(f'Committing to DB')
+				db.session.commit()
+			except:
+				debug_log(f'DBError: {e}')
+				db.session.rollback()
+			debug_log(f'counts: {counts}')
+			build_cards_played_db(uid)
+		except Exception as e:
+			debug_log(f'Error: {e}')
+			error_code = e
+
+		complete_date = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific'))
+		curr_date = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific')).strftime('%Y-%m-%d')
+		curr_time = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific')).time().strftime('%H:%M')
+
+		new_task_history = TaskHistory(
+			uid=data['user_id'],
+			curr_username=data['username'],
+			submit_date=submit_date,
+			complete_date=complete_date,
+			task_type='Load Revisions From MTGO-Tracker',
+			error_code=error_code
+		)
+		db.session.add(new_task_history)
+		try:
+			db.session.commit()
+		except:
+			db.session.rollback()
+
+		mail = app.extensions['mail']
+		msg = Message(f'MTGO-DB Load Report #{new_task_history.task_id}', sender=app.config.get('MAIL_USERNAME'), recipients=[data['email']])
+		msg.html = f'''
+		<h2 style="text-align: center">Load Report, Import from MTGO-Tracker - #{new_task_history.task_id}<br></h2>
+		<h3 style="text-align: center">Completed: {curr_date} at {curr_time}<h3><br><br>
+
+		<div style="display: flex; justify-content: center;">
+			<table>
+				<thead>
+					<tr>
+						<th style="font-size: 14pt; max-width: 350px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">Load Result</th>
+						<th style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">Matches</th>
+						<th style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">Games</th>
+						<th style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">Plays</th>
+						<th style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">Drafts</th>
+						<th style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">Draft Picks</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<th style="font-size: 14pt; max-width: 350px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">New Records Loaded</th>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+					</tr>
+					<tr>
+						<th style="font-size: 14pt; max-width: 350px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Records Updated</th>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['updated_matches']}</td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['updated_games']}</td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center">{counts['updated_drafts']}</td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+					</tr>
+					<tr>
+						<th style="font-size: 14pt; max-width: 350px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Files Skipped (Outdated*)</th>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+					</tr>
+					<tr>
+						<th style="font-size: 14pt; max-width: 350px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Files Skipped (Ignored)</th>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+					</tr>
+					<tr>
+						<th style="font-size: 14pt; max-width: 350px; min-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left">Files Skipped (Duplicate)</th>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+						<td style="font-size: 14pt; max-width: 125px; min-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center"></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div style="display: flex; justify-content: center;">
+			<p style="text-align: center; font-style: italic;">Note: Two records are loaded and stored for each Match and Game.<br>
+			*Outdated records were parsed using an outdated version of MTGO-Tracker.</p>
+		</div>
+		'''
+		mail.send(msg)
+		debug_log("📧 DEBUG: Email sent here")
+
+	return 'DONE'
+
+@shared_task(bind=True, base=AbortableTask)
 def process_from_app(self, data):
 	counts = {
 		'new_matches':0,
@@ -876,6 +1079,7 @@ def process_from_app(self, data):
 		try:
 			debug_log(f'Starting Match Loop')
 			debug_log(f'Match Loop Length: {len(data["all_data"][0])}')
+			proc_dt = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific'))
 			for match in data['all_data'][0]:
 				new_match_dict[match[0]] = False
 				if match[0][0:12].isdigit():
@@ -899,6 +1103,7 @@ def process_from_app(self, data):
 					existing_match.format = match[14]
 					existing_match.limited_format = match[15]
 					existing_match.match_type = match[16]
+					existing_match.proc_dt = proc_dt
 					merged_match = db.session.merge(existing_match)
 					db.session.add(merged_match)
 					counts['updated_matches'] += 1
@@ -922,7 +1127,8 @@ def process_from_app(self, data):
 									format=match[14],
 									limited_format=match[15],
 									match_type=match[16],
-									date=match[17])
+									date=match[17],
+									proc_dt=proc_dt)
 					db.session.add(new_match)
 					new_match_dict[match[0]] = True
 					counts['new_matches'] += 1
@@ -935,6 +1141,7 @@ def process_from_app(self, data):
 				if Game.query.filter_by(uid=uid, match_id=game[0], game_num=game[3], p1=game[1]).first():
 					existing_game = Game.query.filter_by(uid=uid, match_id=game[0], game_num=game[3], p1=game[1]).first()
 					existing_game.game_winner = game[11]
+					existing_game.proc_dt = proc_dt
 					merged_game = db.session.merge(existing_game)
 					db.session.add(merged_game)
 					counts['updated_games'] += 1
@@ -951,7 +1158,8 @@ def process_from_app(self, data):
 									p1_mulls=game[8],
 									p2_mulls=game[9],
 									turns=game[10],
-									game_winner=game[11])
+									game_winner=game[11],
+									proc_dt=proc_dt)
 					db.session.add(new_game)
 					counts['new_games'] += 1
 			debug_log(f'Starting Play Loop')
@@ -982,7 +1190,8 @@ def process_from_app(self, data):
 									cards_drawn=play[12],
 									attackers=play[13],
 									active_player=play[14],
-									non_active_player=play[15])
+									non_active_player=play[15],
+									proc_dt=proc_dt)
 					db.session.add(new_play)
 					counts['new_plays'] += 1
 			debug_log(f'Starting Game Action Loop')
@@ -1000,7 +1209,8 @@ def process_from_app(self, data):
 					new_action = GameActions(uid=uid,
 											match_id=action[:-2],
 											game_num=action[-1],
-											game_actions='\n'.join(data['all_data'][3][action][-15:]))
+											game_actions='\n'.join(data['all_data'][3][action][-15:]),
+											proc_dt=proc_dt)
 					db.session.add(new_action)
 			debug_log(f'Starting Draft Loop')
 			if len(data['drafts_table']) > 0:
@@ -1021,6 +1231,7 @@ def process_from_app(self, data):
 						existing_draft.match_losses = draft[10]
 						existing_draft.format = draft[11]
 						existing_draft.date = draft[12]
+						existing_draft.proc_dt = proc_dt
 						merged_draft = db.session.merge(existing_draft)
 						db.session.add(merged_draft)
 						counts['updated_drafts'] += 1
@@ -1039,7 +1250,8 @@ def process_from_app(self, data):
 										match_wins=draft[9],
 										match_losses=draft[10],
 										format=draft[11],
-										date=draft[12])
+										date=draft[12],
+										proc_dt=proc_dt)
 						db.session.add(new_draft)
 						counts['new_drafts'] += 1
 			debug_log(f'Starting Pick Loop')
@@ -1073,7 +1285,8 @@ def process_from_app(self, data):
 									avail11=p[15],
 									avail12=p[16],
 									avail13=p[17],
-									avail14=p[18])
+									avail14=p[18],
+									proc_dt=proc_dt)
 					db.session.add(new_pick)
 					counts['new_picks'] += 1
 			try:
@@ -1214,6 +1427,7 @@ def reprocess_logs(self, data):
 		try:
 			# Get list of files to process based on storage type
 			files_to_process = []
+			proc_dt = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific'))
 			
 			if log_container_client is None:  # Local file storage
 				local_storage_dir = os.path.join('local-dev', 'data', 'uploads', str(uid))
@@ -1323,7 +1537,7 @@ def reprocess_logs(self, data):
 						continue
 
 					if len(parsed_data_inverted[2]) == 0:
-						newIgnore = Removed(uid=uid, match_id=fname, reason='Empty')
+						newIgnore = Removed(uid=uid, match_id=fname, date=mtime, reason='Empty', proc_dt=proc_dt)
 						db.session.add(newIgnore)
 						counts['gamelogs_skipped_empty'] += 1
 						debug_log(f'Skipping GameLog: {fname} - Empty')
@@ -1353,7 +1567,8 @@ def reprocess_logs(self, data):
 											format=match[14],
 											limited_format=match[15],
 											match_type=match[16],
-											date=match[17])
+											date=match[17],
+											proc_dt=proc_dt)
 							db.session.add(new_match)
 							counts['new_matches'] += 1
 					for game in parsed_data_inverted[1]:
@@ -1374,7 +1589,8 @@ def reprocess_logs(self, data):
 											p1_mulls=game[8],
 											p2_mulls=game[9],
 											turns=game[10],
-											game_winner=game[11])
+											game_winner=game[11],
+											proc_dt=proc_dt)
 							db.session.add(new_game)
 							counts['new_games'] += 1
 					for play in parsed_data_inverted[2]:
@@ -1399,7 +1615,8 @@ def reprocess_logs(self, data):
 											cards_drawn=play[12],
 											attackers=play[13],
 											active_player=play[14],
-											non_active_player=play[15])
+											non_active_player=play[15],
+											proc_dt=proc_dt)
 							db.session.add(new_play)
 							counts['new_plays'] += 1
 					for game in parsed_data_inverted[3]:
@@ -1408,7 +1625,8 @@ def reprocess_logs(self, data):
 						new_ga15 = GameActions(uid=uid,
 											match_id=game[:-2],
 											game_num=game[-1],
-											game_actions='\n'.join(parsed_data_inverted[3][game][-15:]))
+											game_actions='\n'.join(parsed_data_inverted[3][game][-15:]),
+											proc_dt=proc_dt)
 						db.session.add(new_ga15)
 					try:
 						db.session.commit()
@@ -1436,7 +1654,7 @@ def reprocess_logs(self, data):
 						continue
 
 					if len(parsed_data[1]) == 0:
-						newIgnore = Removed(uid=uid, match_id=fname, reason='Empty')
+						newIgnore = Removed(uid=uid, match_id=fname, date=mtime, reason='Empty', proc_dt=proc_dt)
 						db.session.add(newIgnore)
 						counts['draftlogs_skipped_empty'] += 1
 						continue
@@ -1453,7 +1671,8 @@ def reprocess_logs(self, data):
 											format=draft[2],
 											picks=draft[3],
 											wins=draft[4],
-											losses=draft[5])
+											losses=draft[5],
+											proc_dt=proc_dt)
 							db.session.add(new_draft)
 							counts['new_drafts'] += 1
 
@@ -1486,7 +1705,8 @@ def reprocess_logs(self, data):
 											avail11=p[15],
 											avail12=p[16],
 											avail13=p[17],
-											avail14=p[18])
+											avail14=p[18],
+											proc_dt=proc_dt)
 							db.session.add(new_pick)
 							counts['new_picks'] += 1
 					try:
@@ -1981,7 +2201,44 @@ def load_from_app():
 
 	flash(f'MTGO-Tracker save data is being processed. A Load Report will be emailed upon completion.', category='success')
 	return redirect(url_for('views.index'))
-	
+
+@views.route('/load_revisions_from_app', methods=['POST'])
+@login_required
+def load_revisions_from_app():
+	files = request.files.getlist('folder')
+	process_total = 0
+
+	all_data = []
+
+	for i in files:
+		if not i:
+			continue
+		filename = i.filename.split('/')[-1]
+		debug_log(f'Filename: {filename}')
+		if (filename not in ['ALL_DATA']):
+			continue
+		if filename == 'ALL_DATA':
+			try:
+				all_data = pickle.loads(i.read())
+				all_data = modo.invert_join(all_data)
+			except pickle.UnpicklingError:
+				flash(f'Unable to read file: {i.filename}.', category='error')
+				return redirect(url_for('views.index'))
+			process_total += len(all_data[0])
+			process_total += len(all_data[1])
+			process_total += len(all_data[2])
+			process_total += len(all_data[3])
+			debug_log(f'All Data: {len(all_data[0])} matches, {len(all_data[1])} games, {len(all_data[2])} plays, {len(all_data[3])} gameactions')
+
+	if (len(all_data) == 0):
+		flash('No MTGO-Tracker save data was found.', 'error')
+		return redirect(url_for('views.index'))
+
+	task = process_revisions_from_app.delay({'all_data':all_data, 'user_id':current_user.uid, 'username':current_user.username, 'email':current_user.email})
+
+	flash(f'MTGO-Tracker save data is being analyzed. A Load Report will be emailed upon completion.', category='success')
+	return redirect(url_for('views.index'))
+
 @views.route('/table/<table_name>/<page_num>')
 @login_required
 def table(table_name, page_num):
@@ -2039,7 +2296,7 @@ def ignored():
 	#table = Removed.query.filter_by(uid=current_user.uid, reason='Ignored').order_by(Removed.match_id).all()
 	if len(table) == 0:
 		flash(f'No ignored matches to display.', category='error')
-		return redirect(url_for('views.profile'))
+		return redirect(url_for('views.index'))
 	return render_template('tables.html', user=current_user, table_name='ignored', table=table)
 
 @views.route('/table/<table_name>/<row_id>/<game_num>')
@@ -3203,12 +3460,8 @@ def api_dashboard_generate():
 			dashboard_data = generate_card_analysis_dashboard(filtered_query, filters)
 		elif dashboard_type == 'opponent-analysis':
 			dashboard_data = generate_opponent_analysis_dashboard(filtered_query, filters)
-		elif dashboard_type == 'format-breakdown':
-			dashboard_data = generate_format_breakdown_dashboard(filtered_query, filters)
-		elif dashboard_type == 'deck-performance':
-			dashboard_data = generate_deck_performance_dashboard(filtered_query, filters)
-		elif dashboard_type == 'time-trends':
-			dashboard_data = generate_time_trends_dashboard(filtered_query, filters)
+		elif dashboard_type == 'game-data':
+			dashboard_data = generate_game_data_dashboard(filtered_query, filters)
 		else:
 			return jsonify({'error': 'Invalid dashboard type'}), 400
 		
@@ -3770,15 +4023,141 @@ def generate_opponent_analysis_dashboard(filtered_query, filters):
 			wins = opponent_stats[opp]['wins']
 			opponent_stats[opp]['win_rate'] = (wins / total * 100) if total > 0 else 0
 		
+		# Apply minimum match threshold filter
+		min_threshold = int(filters.get('opponentThreshold', 1))  # Default to 1 if not specified
+		filtered_opponent_stats = {opp: stats for opp, stats in opponent_stats.items() if stats['total'] >= min_threshold}
+		
 		# Sort by total matches
-		top_opponents = sorted(opponent_stats.items(), key=lambda x: x[1]['total'], reverse=True)
+		top_opponents = sorted(filtered_opponent_stats.items(), key=lambda x: x[1]['total'], reverse=True)
+		
+		# Helper functions for formatting
+		def match_result(p1_wins, p2_wins):
+			if p1_wins == p2_wins:
+				return f'NA {p1_wins}-{p2_wins}'
+			elif p1_wins > p2_wins:
+				return f'Win {p1_wins}-{p2_wins}'
+			elif p2_wins > p1_wins:
+				return f'Loss {p1_wins}-{p2_wins}'
+		
+		def format_date(date_str):
+			"""Format date string to 'Month Day, Year' format"""
+			if not date_str:
+				return str(date_str)
+			
+			try:
+				date_obj = datetime.datetime.strptime(date_str, '%Y-%m-%d-%H:%M').date()
+				# Format as "July 6, 2025" (cross-platform compatible)
+				formatted_date = date_obj.strftime('%B %d, %Y')
+				# Remove leading zero from day if present (e.g., "July 06" -> "July 6")
+				return formatted_date.replace(' 0', ' ')
+			except ValueError:
+				return date_str
+		
+		def format_match_format(fmt, limited_format):
+			if limited_format and limited_format != 'NA':
+				return f'{fmt}: {limited_format}'
+			return fmt
+		
+		# Create opponent stats table
+		def escape_for_js(text):
+			"""Escape text for use in JavaScript onclick handlers"""
+			return text.replace("'", "\\'").replace('"', '\\"').replace('\\', '\\\\')
+		
+		opponent_stats_table = {
+			'title': 'Opponent Performance',
+			'headers': ['<center>Opponent</center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Win% Against</center>'],
+			'height': '300px',
+			'rows': [[
+				f'<a href="#" onclick="filterByOpponent(\'{escape_for_js(opp[0])}\'); return false;" style="color: var(--sky-blue); text-decoration: none; font-weight: 600; cursor: pointer;" onmouseover="this.style.textDecoration=\'underline\'" onmouseout="this.style.textDecoration=\'none\'">{opp[0]}</a>',
+				f"<center>{opp[1]['wins']}</center>",
+				f"<center>{opp[1]['losses']}</center>",
+				f"<center>{opp[1]['win_rate']:.1f}%</center>"
+			] for opp in top_opponents]
+		}
+		
+		# Create match history table (most recent matches first)
+		recent_matches = filtered_query.order_by(Match.date.desc()).limit(25).all()
+		
+		def get_row_color(result_text):
+			"""Get background color based on match result"""
+			if 'Win' in result_text:
+				return 'background-color: #dcfce7; border-left: 3px solid #16a34a;'  # Light green with green border
+			elif 'Loss' in result_text:
+				return 'background-color: #fef2f2; border-left: 3px solid #dc2626;'  # Light red with red border
+			else:  # NA/Tie
+				return 'background-color: #f3f4f6; border-left: 3px solid #6b7280;'  # Light grey with grey border
+		
+		match_history_table = {
+			'title': 'Recent Match History',
+			'headers': ['<center>Date</center>', '<center>Deck</center>', '<center>Opp. Deck</center>', '<center>Match Result</center>', '<center>Match Format</center>', '<center>Match Type</center>'],
+			'height': '400px',
+			'rows': []
+		}
+		
+		for match in recent_matches:
+			result_text = match_result(match.p1_wins, match.p2_wins)
+			row_style = get_row_color(result_text)
+			match_history_table['rows'].append([
+				f"<center>{format_date(match.date)}</center>",
+				f"<center>{match.p1_subarch}</center>",
+				f"<center>{match.p2_subarch}</center>",
+				f"<center>{result_text}</center>",
+				f"<center>{format_match_format(match.format, match.limited_format)}</center>",
+				f"<center>{match.match_type}</center>",
+				row_style  # Add row styling as the 7th element
+			])
+		
+		# Observed Metagame
+		total_matches = len(matches)
+		if matches:
+			import pandas as pd
+			df = pd.DataFrame([{
+				'p2_subarch': m.p2_subarch,
+				'match_winner': m.match_winner
+			} for m in matches])
+			
+			# Group by p2_subarch and calculate stats
+			deck_stats = df.groupby('p2_subarch').agg({
+				'match_winner': ['count', lambda x: sum(x == 'P1')]
+			}).round(1)
+			
+			# Flatten column names
+			deck_stats.columns = ['total_matches', 'wins']
+			deck_stats['losses'] = deck_stats['total_matches'] - deck_stats['wins']
+			deck_stats['win_pct'] = (deck_stats['wins'] / deck_stats['total_matches'] * 100).round(1)
+			deck_stats['share_pct'] = (deck_stats['total_matches'] / total_matches * 100).round(1)
+			deck_stats = deck_stats.sort_values(by='total_matches', ascending=False)
+			
+			# Reset index to get p2_subarch as a column
+			deck_stats = deck_stats.reset_index()
+			
+			# Create table data for the return JSON
+			observed_metagame_table = {
+				'title': 'Decks Played',
+				'headers': ['<center>Deck</center>', '<center>Share</center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Win% Against</center>'],
+				'height': '300px',
+				'rows': [[
+					row['p2_subarch'],
+					f"<center>{row['wins'] + row['losses']} - ({row['share_pct']:.1f}%)</center>",
+					f"<center>{int(row['wins'])}</center>",
+					f"<center>{int(row['losses'])}</center>",
+					f"<center>{row['win_pct']:.1f}%</center>"
+				] for _, row in deck_stats.iterrows()]
+			}
+		else:
+			observed_metagame_table = {
+				'title': 'Decks Played',
+				'headers': ['<center>Deck</center>', '<center>Share</center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Win% Against</center>'],
+				'height': '300px',
+				'rows': []
+			}
 		
 		return {
 			'metrics': [
 				{
 					'title': 'Unique Opponents',
-					'value': str(len(opponent_stats)),
-					'subtitle': 'Different players faced',
+					'value': str(len(filtered_opponent_stats)),
+					'subtitle': f'With {min_threshold}+ matches',
 					'type': 'count'
 				},
 				{
@@ -3789,35 +4168,29 @@ def generate_opponent_analysis_dashboard(filtered_query, filters):
 				},
 				{
 					'title': 'Best Matchup',
-					'value': max(opponent_stats.keys(), key=lambda x: opponent_stats[x]['win_rate']) if opponent_stats else 'None',
-					'subtitle': f'{opponent_stats[max(opponent_stats.keys(), key=lambda x: opponent_stats[x]["win_rate"])]["win_rate"]:.1f}% win rate' if opponent_stats else 'No data',
+					'value': max(filtered_opponent_stats.keys(), key=lambda x: filtered_opponent_stats[x]['win_rate']) if filtered_opponent_stats else 'None',
+					'subtitle': f'{filtered_opponent_stats[max(filtered_opponent_stats.keys(), key=lambda x: filtered_opponent_stats[x]["win_rate"])]["win_rate"]:.1f}% win rate' if filtered_opponent_stats else 'No data',
 					'type': 'text'
 				}
 			],
 			'charts': [
 				{
-					'title': 'Win Rate vs Top Opponents',
+					'title': 'Most Played Cards',
 					'type': 'bar',
 					'data': {
-						'labels': [opp[0] for opp in top_opponents[:10]],
-						'datasets': [{
-							'label': 'Win Rate %',
-							'data': [opp[1]['win_rate'] for opp in top_opponents[:10]]
-						}]
 					}
 				}
 			],
 			'tables': [
+				match_history_table
+			],
+			'table_grids': [
 				{
-					'title': 'Opponent Records',
-					'headers': ['Opponent', 'Wins', 'Losses', 'Total', 'Win Rate'],
-					'rows': [[
-						opp[0], 
-						str(opp[1]['wins']), 
-						str(opp[1]['losses']),
-						str(opp[1]['total']),
-						f'{opp[1]["win_rate"]:.1f}%'
-					] for opp in top_opponents]
+					'type': '2x2',
+					'title': 'Performance Overview',
+					'grid': [
+						[opponent_stats_table, observed_metagame_table]
+					]
 				}
 			]
 		}
@@ -3826,275 +4199,150 @@ def generate_opponent_analysis_dashboard(filtered_query, filters):
 		debug_log(f"Error generating opponent analysis dashboard: {str(e)}")
 		raise e
 
-def generate_format_breakdown_dashboard(filtered_query, filters):
-	"""Generate format breakdown dashboard data"""
+def generate_game_data_dashboard(filtered_query, filters):
+	"""Generate game data dashboard with hierarchical statistics"""
 	try:
 		matches = filtered_query.all()
 		
-		# TODO: Add your custom format analysis here
-		# Example calculations you might want to add:
-		# - Win rate by format
-		# - Most played formats
-		# - Performance in limited vs constructed
-		# - Format-specific trends over time
+		if not matches:
+			# Return empty structure if no matches
+			return {
+				'metrics': [],
+				'charts': [],
+				'tables': [{
+					'title': 'Game Performance Statistics',
+					'headers': ['<center></center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Win%</center>', '<center>Mulls/Game</center>', '<center>Opp Mulls/Game</center>', '<center>Turns/Game</center>'],
+					'height': '400px',
+					'rows': []
+				}]
+			}
 		
-		# Basic format analysis
-		format_stats = {}
-		for match in matches:
-			fmt = match.format
-			if fmt not in format_stats:
-				format_stats[fmt] = {'wins': 0, 'losses': 0, 'total': 0}
+		# Get all games for the filtered matches
+		games_query = Game.query.filter(
+			Game.uid == current_user.uid,
+			Game.p1 == current_user.username
+		)
+		
+		# Apply mulligans filters
+		hero_mulls_filter = int(filters.get('heroMulls', 0))
+		opp_mulls_filter = int(filters.get('oppMulls', 0))
+		
+		if hero_mulls_filter > 0:
+			games_query = games_query.filter(Game.p1_mulls >= hero_mulls_filter)
+		
+		if opp_mulls_filter > 0:
+			games_query = games_query.filter(Game.p2_mulls >= opp_mulls_filter)
+		
+		games = games_query.all()
+		
+		def calculate_stats(game_list, group_name):
+			"""Calculate statistics for a group of games"""
+			if not game_list:
+				return [group_name, '<center>0</center>', '<center>0</center>', '<center>0.0%</center>', 
+					   '<center>0.0</center>', '<center>0.0</center>', '<center>0.0</center>']
 			
-			format_stats[fmt]['total'] += 1
-			if match.match_winner == 'P1':
-				format_stats[fmt]['wins'] += 1
-			else:
-				format_stats[fmt]['losses'] += 1
-		
-		# Calculate win rates
-		for fmt in format_stats:
-			total = format_stats[fmt]['total']
-			wins = format_stats[fmt]['wins']
-			format_stats[fmt]['win_rate'] = (wins / total * 100) if total > 0 else 0
-		
-		return {
-			'metrics': [
-				{
-					'title': 'Formats Played',
-					'value': str(len(format_stats)),
-					'subtitle': 'Different formats',
-					'type': 'count'
-				},
-				{
-					'title': 'Most Played Format',
-					'value': max(format_stats.keys(), key=lambda x: format_stats[x]['total']) if format_stats else 'None',
-					'subtitle': f'{format_stats[max(format_stats.keys(), key=lambda x: format_stats[x]["total"])]["total"]} matches' if format_stats else 'No data',
-					'type': 'text'
-				},
-				{
-					'title': 'Best Format',
-					'value': max(format_stats.keys(), key=lambda x: format_stats[x]['win_rate']) if format_stats else 'None',
-					'subtitle': f'{format_stats[max(format_stats.keys(), key=lambda x: format_stats[x]["win_rate"])]["win_rate"]:.1f}% win rate' if format_stats else 'No data',
-					'type': 'text'
-				}
-			],
-			'charts': [
-				{
-					'title': 'Matches by Format',
-					'type': 'pie',
-					'data': {
-						'labels': list(format_stats.keys()),
-						'datasets': [{
-							'data': [stats['total'] for stats in format_stats.values()]
-						}]
-					}
-				}
-			],
-			'tables': [
-				{
-					'title': 'Format Performance',
-					'headers': ['Format', 'Wins', 'Losses', 'Total', 'Win Rate'],
-					'rows': [[
-						fmt, 
-						str(stats['wins']), 
-						str(stats['losses']),
-						str(stats['total']),
-						f'{stats["win_rate"]:.1f}%'
-					] for fmt, stats in format_stats.items()]
-				}
-			]
-		}
-		
-	except Exception as e:
-		debug_log(f"Error generating format breakdown dashboard: {str(e)}")
-		raise e
-
-def generate_deck_performance_dashboard(filtered_query, filters):
-	"""Generate deck performance dashboard data"""
-	try:
-		matches = filtered_query.all()
-		
-		# TODO: Add your custom deck analysis here
-		# Example calculations you might want to add:
-		# - Win rate by deck archetype
-		# - Deck performance over time
-		# - Matchup analysis (your deck vs opponent deck)
-		# - Meta game analysis
-		
-		# Basic deck analysis
-		deck_stats = {}
-		for match in matches:
-			deck = match.p1_subarch or 'Unknown'
-			if deck not in deck_stats:
-				deck_stats[deck] = {'wins': 0, 'losses': 0, 'total': 0}
+			wins = len([g for g in game_list if g.game_winner == 'P1'])
+			losses = len(game_list) - wins
+			win_pct = (wins / len(game_list) * 100) if game_list else 0
 			
-			deck_stats[deck]['total'] += 1
-			if match.match_winner == 'P1':
-				deck_stats[deck]['wins'] += 1
-			else:
-				deck_stats[deck]['losses'] += 1
-		
-		# Calculate win rates
-		for deck in deck_stats:
-			total = deck_stats[deck]['total']
-			wins = deck_stats[deck]['wins']
-			deck_stats[deck]['win_rate'] = (wins / total * 100) if total > 0 else 0
-		
-		return {
-			'metrics': [
-				{
-					'title': 'Decks Played',
-					'value': str(len(deck_stats)),
-					'subtitle': 'Different deck types',
-					'type': 'count'
-				},
-				{
-					'title': 'Most Played Deck',
-					'value': max(deck_stats.keys(), key=lambda x: deck_stats[x]['total']) if deck_stats else 'None',
-					'subtitle': f'{deck_stats[max(deck_stats.keys(), key=lambda x: deck_stats[x]["total"])]["total"]} matches' if deck_stats else 'No data',
-					'type': 'text'
-				},
-				{
-					'title': 'Best Performing Deck',
-					'value': max(deck_stats.keys(), key=lambda x: deck_stats[x]['win_rate']) if deck_stats else 'None',
-					'subtitle': f'{deck_stats[max(deck_stats.keys(), key=lambda x: deck_stats[x]["win_rate"])]["win_rate"]:.1f}% win rate' if deck_stats else 'No data',
-					'type': 'text'
-				}
-			],
-			'charts': [
-				{
-					'title': 'Win Rate by Deck',
-					'type': 'bar',
-					'data': {
-						'labels': list(deck_stats.keys()),
-						'datasets': [{
-							'label': 'Win Rate %',
-							'data': [stats['win_rate'] for stats in deck_stats.values()]
-						}]
-					}
-				}
-			],
-			'tables': [
-				{
-					'title': 'Deck Performance',
-					'headers': ['Deck', 'Wins', 'Losses', 'Total', 'Win Rate'],
-					'rows': [[
-						deck, 
-						str(stats['wins']), 
-						str(stats['losses']),
-						str(stats['total']),
-						f'{stats["win_rate"]:.1f}%'
-					] for deck, stats in deck_stats.items()]
-				}
+			avg_p1_mulls = sum([g.p1_mulls or 0 for g in game_list]) / len(game_list) if game_list else 0
+			avg_p2_mulls = sum([g.p2_mulls or 0 for g in game_list]) / len(game_list) if game_list else 0
+			avg_turns = sum([g.turns or 0 for g in game_list]) / len(game_list) if game_list else 0
+			
+			return [
+				group_name,
+				f'<center>{wins}</center>',
+				f'<center>{losses}</center>', 
+				f'<center>{win_pct:.1f}%</center>',
+				f'<center>{avg_p1_mulls:.2f}</center>',
+				f'<center>{avg_p2_mulls:.2f}</center>',
+				f'<center>{avg_turns:.1f}</center>'
 			]
-		}
 		
-	except Exception as e:
-		debug_log(f"Error generating deck performance dashboard: {str(e)}")
-		raise e
+		table_rows = []
+		
+		# Define styling for main category rows
+		main_category_style = 'background-color: var(--bg-subtle); border-top: 3px solid var(--fg-muted); border-bottom: 3px solid var(--fg-muted); font-weight: 600;'
+		
+		# Overall stats
+		overall_row = calculate_stats(games, '<strong>All Games</strong>')
+		overall_row.append(main_category_style)
+		table_rows.append(overall_row)
+		
+		# Game number breakdown for Overall
+		for game_num in [1, 2, 3]:
+			game_subset = [g for g in games if g.game_num == game_num]
+			if game_subset:  # Only show if there are games
+				table_rows.append(calculate_stats(game_subset, f'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Game {game_num}'))
+		
+		# Play stats
+		play_games = [g for g in games if g.on_play == 'P1']
+		play_row = calculate_stats(play_games, '<strong>Play</strong>')
+		play_row.append(main_category_style)
+		table_rows.append(play_row)
+		
+		# Game number breakdown for Play
+		for game_num in [1, 2, 3]:
+			game_subset = [g for g in play_games if g.game_num == game_num]
+			if game_subset:  # Only show if there are games
+				table_rows.append(calculate_stats(game_subset, f'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Game {game_num}'))
+		
+		# Draw stats
+		draw_games = [g for g in games if g.on_draw == 'P1']
+		draw_row = calculate_stats(draw_games, '<strong>Draw</strong>')
+		draw_row.append(main_category_style)
+		table_rows.append(draw_row)
+		
+		# Game number breakdown for Draw
+		for game_num in [1, 2, 3]:
+			game_subset = [g for g in draw_games if g.game_num == game_num]
+			if game_subset:  # Only show if there are games
+				table_rows.append(calculate_stats(game_subset, f'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Game {game_num}'))
+		
+		# Calculate summary metrics
+		total_games = len(games)
+		total_wins = len([g for g in games if g.game_winner == 'P1'])
+		overall_win_rate = (total_wins / total_games * 100) if total_games > 0 else 0
+		
+		play_win_rate = (len([g for g in play_games if g.game_winner == 'P1']) / len(play_games) * 100) if play_games else 0
+		draw_win_rate = (len([g for g in draw_games if g.game_winner == 'P1']) / len(draw_games) * 100) if draw_games else 0
+		
+		game_performance_table = {
+			'title': 'Game Performance Statistics',
+			'headers': ['<center></center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Win%</center>', '<center>Mulls/Game</center>', '<center>Opp Mulls/Game</center>', '<center>Turns/Game</center>'],
+			'height': '423px',
+			'rows': table_rows
+		}
 
-def generate_time_trends_dashboard(filtered_query, filters):
-	"""Generate time trends dashboard data"""
-	try:
-		matches = filtered_query.order_by(Match.date).all()
-		
-		# TODO: Add your custom time trend analysis here
-		# Example calculations you might want to add:
-		# - Win rate over time (daily/weekly/monthly)
-		# - Performance trends by season
-		# - Activity patterns (matches per day/week)
-		# - Format popularity over time
-		# - Improvement metrics
-		
-		# Basic time analysis - group by month
-		from collections import defaultdict
-		import datetime
-		
-		monthly_stats = defaultdict(lambda: {'wins': 0, 'losses': 0, 'total': 0})
-		
-		for match in matches:
-			try:
-				# Extract year-month from date
-				month_key = match.date[:7]  # YYYY-MM format
-				monthly_stats[month_key]['total'] += 1
-				if match.match_winner == 'P1':
-					monthly_stats[month_key]['wins'] += 1
-				else:
-					monthly_stats[month_key]['losses'] += 1
-			except:
-				continue
-		
-		# Calculate win rates
-		for month in monthly_stats:
-			total = monthly_stats[month]['total']
-			wins = monthly_stats[month]['wins']
-			monthly_stats[month]['win_rate'] = (wins / total * 100) if total > 0 else 0
-		
-		# Sort by month
-		sorted_months = sorted(monthly_stats.items())
-		
 		return {
 			'metrics': [
 				{
-					'title': 'Time Period',
-					'value': f'{len(sorted_months)} months' if sorted_months else '0 months',
-					'subtitle': 'Data available',
-					'type': 'text'
+					'title': 'Overall Game Win Rate',
+					'value': f'{overall_win_rate:.1f}%',
+					'subtitle': f'{total_wins} wins, {total_games - total_wins} losses',
+					'type': 'percentage'
 				},
 				{
-					'title': 'Peak Activity Month',
-					'value': max(monthly_stats.keys(), key=lambda x: monthly_stats[x]['total']) if monthly_stats else 'None',
-					'subtitle': f'{monthly_stats[max(monthly_stats.keys(), key=lambda x: monthly_stats[x]["total"])]["total"]} matches' if monthly_stats else 'No data',
-					'type': 'text'
+					'title': 'On the Play',
+					'value': f'{play_win_rate:.1f}%',
+					'subtitle': f'{len(play_games)} games played',
+					'type': 'percentage'
 				},
 				{
-					'title': 'Recent Trend',
-					'value': 'Improving' if len(sorted_months) >= 2 and sorted_months[-1][1]['win_rate'] > sorted_months[-2][1]['win_rate'] else 'Stable',
-					'subtitle': 'Based on last 2 months',
-					'type': 'text'
+					'title': 'On the Draw',
+					'value': f'{draw_win_rate:.1f}%',
+					'subtitle': f'{len(draw_games)} games played',
+					'type': 'percentage'
 				}
 			],
-			'charts': [
-				{
-					'title': 'Win Rate Over Time',
-					'type': 'line',
-					'data': {
-						'labels': [month[0] for month in sorted_months],
-						'datasets': [{
-							'label': 'Win Rate %',
-							'data': [month[1]['win_rate'] for month in sorted_months]
-						}]
-					}
-				},
-				{
-					'title': 'Match Activity Over Time',
-					'type': 'bar',
-					'data': {
-						'labels': [month[0] for month in sorted_months],
-						'datasets': [{
-							'label': 'Matches Played',
-							'data': [month[1]['total'] for month in sorted_months]
-						}]
-					}
-				}
-			],
+			'charts': [],
 			'tables': [
-				{
-					'title': 'Monthly Performance',
-					'headers': ['Month', 'Wins', 'Losses', 'Total', 'Win Rate'],
-					'rows': [[
-						month[0], 
-						str(month[1]['wins']), 
-						str(month[1]['losses']),
-						str(month[1]['total']),
-						f'{month[1]["win_rate"]:.1f}%'
-					] for month in sorted_months]
-				}
+				game_performance_table
 			]
 		}
 		
 	except Exception as e:
-		debug_log(f"Error generating time trends dashboard: {str(e)}")
+		debug_log(f"Error generating game data dashboard: {str(e)}")
 		raise e
 
 # Initialize these variables as None - they'll be loaded on demand
@@ -4479,6 +4727,7 @@ def api_match_remove():
 		match_count = 0
 		game_count = 0
 		play_count = 0
+		proc_dt = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific'))
 		
 		for match_id in match_ids:
 			# Count records before deletion
@@ -4490,10 +4739,12 @@ def api_match_remove():
 			Match.query.filter_by(uid=current_user.uid, match_id=match_id).delete()
 			Game.query.filter_by(uid=current_user.uid, match_id=match_id).delete()
 			Play.query.filter_by(uid=current_user.uid, match_id=match_id).delete()
+
+			mtime = Match.query.filter_by(uid=current_user.uid, match_id=match_id).first().date
 			
 			# Add to ignored list if requested
 			if remove_type == 'Ignore':
-				new_ignore = Removed(uid=current_user.uid, match_id=match_id, reason='Ignored')
+				new_ignore = Removed(uid=current_user.uid, match_id=match_id, date=mtime, reason='Ignored', proc_dt=proc_dt)
 				db.session.add(new_ignore)
 		
 		try:

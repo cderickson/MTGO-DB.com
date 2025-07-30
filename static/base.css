@@ -860,7 +860,8 @@ body {
 #ReprocessModal .modal-body,
 #processingModal .modal-body,
 #ZipLogsModal .modal-body,
-#resetModal .modal-body {
+#resetModal .modal-body,
+#LoadRevisionsModal .modal-body {
   padding: var(--spacing-md) var(--spacing-lg) !important;
 }
 
@@ -875,7 +876,8 @@ body {
 #ReprocessModal .modal-footer,
 #processingModal .modal-footer,
 #ZipLogsModal .modal-footer,
-#resetModal .modal-footer {
+#resetModal .modal-footer,
+#LoadRevisionsModal .modal-footer {
   padding: var(--spacing-md) var(--spacing-lg) !important;
 }
 
@@ -888,7 +890,8 @@ body {
 #ReprocessModal .modal-footer .button,
 #processingModal .modal-footer .button,
 #ZipLogsModal .modal-footer .button,
-#resetModal .modal-footer .button {
+#resetModal .modal-footer .button,
+#LoadRevisionsModal .modal-footer .button {
   width: 200px !important;
   min-width: 200px !important;
   max-width: 200px !important;

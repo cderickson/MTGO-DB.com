@@ -439,9 +439,7 @@
                 <option value="match-performance" selected>Match Performance</option>
                 <option value="card-analysis">Card Analysis</option>
                 <option value="opponent-analysis">Opponent Analysis</option>
-                <option value="format-breakdown">Format Breakdown</option>
-                <option value="deck-performance">Deck Performance</option>
-                <option value="time-trends">Time Trends</option>
+                <option value="game-data">Game Statistics</option>
               </select>
             </div>
             
@@ -658,6 +656,9 @@ async function updateCascadingFilters() {
 
 function getCurrentFilterValues() {
   const perspectiveInput = document.getElementById('perspectiveFilter');
+  const opponentThresholdInput = document.getElementById('opponentThresholdFilter');
+  const heroMullsInput = document.getElementById('heroMullsFilter');
+  const oppMullsInput = document.getElementById('oppMullsFilter');
   return {
     card: document.getElementById('cardFilter').value,
     opponent: document.getElementById('opponentFilter').value,
@@ -667,7 +668,10 @@ function getCurrentFilterValues() {
     oppDeck: document.getElementById('oppDeckFilter').value,
     startDate: document.getElementById('startDate').value,
     endDate: document.getElementById('endDate').value,
-    perspective: perspectiveInput ? perspectiveInput.value : 'hero'
+    perspective: perspectiveInput ? perspectiveInput.value : 'hero',
+    opponentThreshold: opponentThresholdInput ? opponentThresholdInput.value : '1',
+    heroMulls: heroMullsInput ? heroMullsInput.value : '0',
+    oppMulls: oppMullsInput ? oppMullsInput.value : '0'
   };
 }
 
@@ -703,6 +707,35 @@ function applyFilters() {
   // This function will be used to refresh the current dashboard with new filters
   const dashboardType = document.getElementById('dashboardType').value;
   if (dashboardType) {
+    generateDashboard();
+  }
+}
+
+function filterByOpponent(opponentName) {
+  // Set the opponent filter to the selected opponent
+  const opponentFilter = document.getElementById('opponentFilter');
+  if (opponentFilter) {
+    // First, make sure the opponent is in the dropdown options
+    let optionExists = false;
+    for (let i = 0; i < opponentFilter.options.length; i++) {
+      if (opponentFilter.options[i].value === opponentName) {
+        optionExists = true;
+        break;
+      }
+    }
+    
+    // If the option doesn't exist, add it
+    if (!optionExists) {
+      const newOption = document.createElement('option');
+      newOption.value = opponentName;
+      newOption.textContent = opponentName;
+      opponentFilter.appendChild(newOption);
+    }
+    
+    // Set the filter value
+    opponentFilter.value = opponentName;
+    
+    // Trigger the dashboard refresh
     generateDashboard();
   }
 }
@@ -780,12 +813,10 @@ function renderDashboardContent(dashboardData, dashboardType) {
     'match-performance': 'Match Performance Dashboard',
     'card-analysis': 'Card Analysis Dashboard',
     'opponent-analysis': 'Opponent Analysis Dashboard',
-    'format-breakdown': 'Format Breakdown Dashboard',
-    'deck-performance': 'Deck Performance Dashboard',
-    'time-trends': 'Time Trends Dashboard'
+    'game-data': 'Game Statistics Dashboard'
   };
   
-  // Create title with buttons for card-analysis dashboard
+  // Create title with controls for specific dashboards
   let titleContent = '';
   if (dashboardType === 'card-analysis') {
     const currentPerspective = getCurrentFilterValues().perspective || 'hero';
@@ -822,6 +853,84 @@ function renderDashboardContent(dashboardData, dashboardType) {
             border-color: ${opponentsActive ? 'var(--sky-blue)' : 'var(--border)'};
             box-shadow: ${opponentsActive ? 'inset 0 2px 4px rgba(0,0,0,0.2)' : 'none'};
           " ${opponentsActive ? '' : `onmouseover="this.style.background = 'var(--gray-100)'" onmouseout="this.style.background = 'var(--bg-default)'"`}>Opponents</button>
+        </div>
+      </div>
+    `;
+  } else if (dashboardType === 'opponent-analysis') {
+    const currentThreshold = getCurrentFilterValues().opponentThreshold || '1';
+    
+    titleContent = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md);">
+        <h3 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">${titles[dashboardType] || 'Dashboard'}</h3>
+        <div style="display: flex; align-items: center; gap: var(--spacing-xs);">
+          <label for="opponentThresholdFilter" style="font-size: 0.75rem; font-weight: 600; color: var(--fg-body);">Min Matches:</label>
+          <input type="number" id="opponentThresholdFilter" value="${currentThreshold}" min="1" max="100" 
+            onchange="generateDashboard();" 
+            style="
+              width: 60px;
+              padding: var(--spacing-xs);
+              border: 1px solid var(--border);
+              border-radius: var(--radius-sm);
+              font-size: 0.75rem;
+              background: var(--bg-default);
+              color: var(--fg-default);
+              text-align: center;
+              transition: all var(--transition-fast);
+            "
+            onmouseover="this.style.borderColor = 'var(--sky-blue)'"
+            onmouseout="this.style.borderColor = 'var(--border)'"
+            onfocus="this.style.borderColor = 'var(--sky-blue)'; this.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.1)'"
+            onblur="this.style.borderColor = 'var(--border)'; this.style.boxShadow = 'none'"
+          />
+        </div>
+      </div>
+    `;
+  } else if (dashboardType === 'game-data') {
+    const currentHeroMulls = getCurrentFilterValues().heroMulls || '0';
+    const currentOppMulls = getCurrentFilterValues().oppMulls || '0';
+    
+    titleContent = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md);">
+        <h3 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">${titles[dashboardType] || 'Dashboard'}</h3>
+        <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
+          <label for="heroMullsFilter" style="font-size: 0.75rem; font-weight: 600; color: var(--fg-body);">Hero Mulls:</label>
+          <input type="number" id="heroMullsFilter" value="${currentHeroMulls}" min="0" max="10" 
+            onchange="generateDashboard();" 
+            style="
+              width: 50px;
+              padding: var(--spacing-xs);
+              border: 1px solid var(--border);
+              border-radius: var(--radius-sm);
+              font-size: 0.75rem;
+              background: var(--bg-default);
+              color: var(--fg-default);
+              text-align: center;
+              transition: all var(--transition-fast);
+            "
+            onmouseover="this.style.borderColor = 'var(--sky-blue)'"
+            onmouseout="this.style.borderColor = 'var(--border)'"
+            onfocus="this.style.borderColor = 'var(--sky-blue)'; this.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.1)'"
+            onblur="this.style.borderColor = 'var(--border)'; this.style.boxShadow = 'none'"
+          />
+          <label for="oppMullsFilter" style="font-size: 0.75rem; font-weight: 600; color: var(--fg-body);">Opp. Mulls:</label>
+          <input type="number" id="oppMullsFilter" value="${currentOppMulls}" min="0" max="10" 
+            onchange="generateDashboard();" 
+            style="
+              width: 50px;
+              padding: var(--spacing-xs);
+              border: 1px solid var(--border);
+              border-radius: var(--radius-sm);
+              font-size: 0.75rem;
+              background: var(--bg-default);
+              color: var(--fg-default);
+              text-align: center;
+              transition: all var(--transition-fast);
+            "
+            onmouseover="this.style.borderColor = 'var(--sky-blue)'"
+            onmouseout="this.style.borderColor = 'var(--border)'"
+            onfocus="this.style.borderColor = 'var(--sky-blue)'; this.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.1)'"
+            onblur="this.style.borderColor = 'var(--border)'; this.style.boxShadow = 'none'"
+          />
         </div>
       </div>
     `;
@@ -872,46 +981,12 @@ function renderDashboardContent(dashboardData, dashboardType) {
     });
   }
   
-  // Render tables
-  if (dashboardData.tables && dashboardData.tables.length > 0) {
-    dashboardData.tables.forEach(table => {
-      const tableHeight = table.height || 'auto';
-      const useFixedHeight = tableHeight !== 'auto';
-      
-      content += `
-        <div style="margin-bottom: var(--spacing-md); background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); ${useFixedHeight ? `height: ${tableHeight}; display: flex; flex-direction: column;` : ''}">
-          <div style="padding: var(--spacing-sm) var(--spacing-md); border-bottom: 1px solid var(--border); background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%); ${useFixedHeight ? 'flex-shrink: 0;' : ''}">
-            <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">${table.title}</h4>
-          </div>
-          <div style="${useFixedHeight ? 'flex: 1; overflow: hidden; display: flex; flex-direction: column;' : ''}">
-            <div style="overflow-x: auto; ${useFixedHeight ? 'overflow-y: auto; flex: 1;' : ''}">
-              <table style="width: 100%; border-collapse: collapse; font-size: 0.75rem;">
-                <thead ${useFixedHeight ? 'style="position: sticky; top: 0; z-index: 1;"' : ''}>
-                  <tr style="background: var(--bg-default);">
-                    ${table.headers.map(header => `<th style="padding: var(--spacing-xs) var(--spacing-sm); text-align: left; font-weight: 600; color: var(--fg-default); border-bottom: 1px solid var(--border); font-size: 0.75rem;">${header}</th>`).join('')}
-                  </tr>
-                </thead>
-                <tbody>
-                  ${table.rows.map((row, index) => `
-                    <tr style="border-bottom: 1px solid var(--border); background: ${index % 2 === 0 ? 'var(--bg-default)' : 'var(--bg-subtle)'};">
-                      ${row.map(cell => `<td style="padding: var(--spacing-xs) var(--spacing-sm); color: var(--fg-body); font-size: 0.75rem;">${cell}</td>`).join('')}
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      `;
-    });
-  }
-
   // Render table grids
   if (dashboardData.table_grids && dashboardData.table_grids.length > 0) {
     dashboardData.table_grids.forEach(grid => {
       if (grid.type === '2x2') {
         content += `
-          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md); margin-top: var(--spacing-md);">
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md); margin-bottom: var(--spacing-md);">
         `;
         // Flatten the grid structure - iterate through all tables directly
         grid.grid.forEach(row => {
@@ -932,11 +1007,21 @@ function renderDashboardContent(dashboardData, dashboardType) {
                         </tr>
                       </thead>
                       <tbody>
-                        ${table.rows.map((row, index) => `
-                          <tr style="border-bottom: 1px solid var(--border); background: ${index % 2 === 0 ? 'var(--bg-default)' : 'var(--bg-subtle)'};">
-                            ${row.map(cell => `<td style="padding: var(--spacing-xs) var(--spacing-sm); color: var(--fg-body); font-size: 0.75rem;">${cell}</td>`).join('')}
-                          </tr>
-                        `).join('')}
+                        ${table.rows.map((row, index) => {
+                          // Check if row has custom styling (last element is a CSS style string)
+                          const hasCustomStyle = row.length > table.headers.length && typeof row[row.length - 1] === 'string' && row[row.length - 1].includes('background-color');
+                          const customStyle = hasCustomStyle ? row[row.length - 1] : '';
+                          const defaultStyle = `border-bottom: 1px solid var(--border); ${hasCustomStyle ? customStyle : `background: ${index % 2 === 0 ? 'var(--bg-default)' : 'var(--bg-subtle)'};`}`;
+                          
+                          // Get data cells (exclude the style element if present)
+                          const dataCells = hasCustomStyle ? row.slice(0, -1) : row;
+                          
+                          return `
+                            <tr style="${defaultStyle}">
+                              ${dataCells.map(cell => `<td style="padding: var(--spacing-xs) var(--spacing-sm); color: var(--fg-body); font-size: 0.75rem;">${cell}</td>`).join('')}
+                            </tr>
+                          `;
+                        }).join('')}
                       </tbody>
                     </table>
                   </div>
@@ -950,6 +1035,50 @@ function renderDashboardContent(dashboardData, dashboardType) {
     });
   }
   
+  // Render tables
+  if (dashboardData.tables && dashboardData.tables.length > 0) {
+    dashboardData.tables.forEach(table => {
+      const tableHeight = table.height || 'auto';
+      const useFixedHeight = tableHeight !== 'auto';
+      
+      content += `
+        <div style="margin-bottom: var(--spacing-md); background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); ${useFixedHeight ? `height: ${tableHeight}; display: flex; flex-direction: column;` : ''}">
+          <div style="padding: var(--spacing-sm) var(--spacing-md); border-bottom: 1px solid var(--border); background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%); ${useFixedHeight ? 'flex-shrink: 0;' : ''}">
+            <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">${table.title}</h4>
+          </div>
+          <div style="${useFixedHeight ? 'flex: 1; overflow: hidden; display: flex; flex-direction: column;' : ''}">
+            <div style="overflow-x: auto; ${useFixedHeight ? 'overflow-y: auto; flex: 1;' : ''}">
+              <table style="width: 100%; border-collapse: collapse; font-size: 0.75rem;">
+                <thead ${useFixedHeight ? 'style="position: sticky; top: 0; z-index: 1;"' : ''}>
+                  <tr style="background: var(--bg-default);">
+                    ${table.headers.map(header => `<th style="padding: var(--spacing-xs) var(--spacing-sm); text-align: left; font-weight: 600; color: var(--fg-default); border-bottom: 1px solid var(--border); font-size: 0.75rem;">${header}</th>`).join('')}
+                  </tr>
+                </thead>
+                <tbody>
+                  ${table.rows.map((row, index) => {
+                    // Check if row has custom styling (last element is a CSS style string)
+                    const hasCustomStyle = row.length > table.headers.length && typeof row[row.length - 1] === 'string' && row[row.length - 1].includes('background-color');
+                    const customStyle = hasCustomStyle ? row[row.length - 1] : '';
+                    const defaultStyle = `border-bottom: 1px solid var(--border); ${hasCustomStyle ? customStyle : `background: ${index % 2 === 0 ? 'var(--bg-default)' : 'var(--bg-subtle)'};`}`;
+                    
+                    // Get data cells (exclude the style element if present)
+                    const dataCells = hasCustomStyle ? row.slice(0, -1) : row;
+                    
+                    return `
+                      <tr style="${defaultStyle}">
+                        ${dataCells.map(cell => `<td style="padding: var(--spacing-xs) var(--spacing-sm); color: var(--fg-body); font-size: 0.75rem;">${cell}</td>`).join('')}
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+  }
+
   // If no data sections, show message
   if (!dashboardData.metrics?.length && !dashboardData.charts?.length && !dashboardData.tables?.length && !dashboardData.table_grids?.length) {
     content += `

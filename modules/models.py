@@ -39,6 +39,7 @@ class Match(db.Model):
 	limited_format = db.Column(db.String(15))
 	match_type = db.Column(db.String(30))
 	date = db.Column(db.String(20))
+	proc_dt = db.Column(db.DateTime)
 	def as_dict(self):
 		return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
@@ -56,6 +57,7 @@ class Game(db.Model):
 	p2_mulls = db.Column(db.Integer)
 	turns = db.Column(db.Integer)
 	game_winner = db.Column(db.String(2))
+	proc_dt = db.Column(db.DateTime)
 	def as_dict(self):
 		return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
@@ -77,6 +79,7 @@ class Play(db.Model):
 	attackers = db.Column(db.Integer)
 	active_player = db.Column(db.String(30))
 	non_active_player = db.Column(db.String(30))
+	proc_dt = db.Column(db.DateTime)
 	def as_dict(self):
 		return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
@@ -101,6 +104,7 @@ class Pick(db.Model):
 	avail12 = db.Column(db.String(75))
 	avail13 = db.Column(db.String(75))
 	avail14 = db.Column(db.String(75))
+	proc_dt = db.Column(db.DateTime)
 	def as_dict(self):
 		return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
@@ -119,6 +123,7 @@ class Draft(db.Model):
 	match_losses = db.Column(db.Integer)
 	format = db.Column(db.String(20))
 	date = db.Column(db.String(20))
+	proc_dt = db.Column(db.DateTime)
 	def as_dict(self):
 		return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 		
@@ -127,14 +132,16 @@ class GameActions(db.Model):
 	match_id = db.Column(db.String(75), primary_key=True)
 	game_num = db.Column(db.Integer, primary_key=True)
 	game_actions = db.Column(db.String(5000))
-	
+	proc_dt = db.Column(db.DateTime)
 	def as_dict(self):
 		return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 class Removed(db.Model):
 	uid = db.Column(db.Integer, primary_key=True)
 	match_id = db.Column(db.String(75), primary_key=True)
+	date = db.Column(db.String(20))
 	reason = db.Column(db.String(20))
+	proc_dt = db.Column(db.DateTime)
 	def as_dict(self):
 		return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
@@ -147,6 +154,7 @@ class CardsPlayed(db.Model):
 	plays2 = db.Column(db.PickleType)
 	lands1 = db.Column(db.PickleType)
 	lands2 = db.Column(db.PickleType)
+	proc_dt = db.Column(db.DateTime)
 	def as_dict(self):
 		return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
@@ -157,7 +165,6 @@ class TaskHistory(db.Model):
 	submit_date = db.Column(db.DateTime)
 	complete_date = db.Column(db.DateTime, nullable=True)
 	task_type = db.Column(db.String(35))
-	error_code = db.Column(db.String(50), nullable=True)
-	
+	error_code = db.Column(db.String(50), nullable=True)	
 	def as_dict(self):
 		return {c.name: getattr(self, c.name) for c in self.__table__.columns}
