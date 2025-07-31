@@ -23,13 +23,13 @@
             <div class="alert alert-{{ category }}" role="alert">
               <div class="alert-content">
                 {% if category == 'success' %}
-                  <i class="fas fa-check-circle" style="margin-right: var(--spacing-sm); color: #22c562;"></i>
+                  <i class="fas fa-check-circle" style="margin-right: var(--spacing-sm); color: #ffffff;"></i>
                 {% elif category == 'error' %}
-                  <i class="fas fa-exclamation-circle" style="margin-right: var(--spacing-sm); color: #ef4444;"></i>
+                  <i class="fas fa-exclamation-circle" style="margin-right: var(--spacing-sm); color: #ffffff;"></i>
                 {% elif category == 'warning' %}
-                  <i class="fas fa-exclamation-triangle" style="margin-right: var(--spacing-sm); color: #f59e0b;"></i>
+                  <i class="fas fa-exclamation-triangle" style="margin-right: var(--spacing-sm); color: #ffffff;"></i>
                 {% else %}
-                  <i class="fas fa-info-circle" style="margin-right: var(--spacing-sm); color: #3b82f6;"></i>
+                  <i class="fas fa-info-circle" style="margin-right: var(--spacing-sm); color: #ffffff;"></i>
                 {% endif %}
                 {{ message }}
               </div>
@@ -520,7 +520,7 @@
                 Cancel
               </button>
               <button type="submit" class="button primary" form="getBestGuessModal">
-                <i class="fas fa-magic" style="margin-right: var(--spacing-sm);"></i>
+                <i class="fas fa-check" style="margin-right: var(--spacing-xs);"></i>
                 Apply
               </button>
             </div>
@@ -563,8 +563,14 @@
           </div>
           <div class="modal-footer">
             <div class="d-flex gap-3 justify-content-end">
-              <button type="button" class="button secondary" onclick="hideImportModal()">Cancel</button>
-              <button type="submit" class="button primary" form="importForm" id="importSubmitBtn" disabled>Import Files</button>
+              <button type="button" class="button secondary" onclick="hideImportModal()">
+                <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
+                Cancel
+              </button>
+              <button type="submit" class="button primary" form="importForm" id="importSubmitBtn" disabled>
+                <i class="fas fa-check" style="margin-right: var(--spacing-xs);"></i>
+                Import Files
+              </button>
             </div>
           </div>
         </div>
@@ -623,8 +629,14 @@
           </div>
           <div class="modal-footer">
             <div class="d-flex gap-3 justify-content-end">
-              <button type="button" class="button secondary" onclick="hideImportAppModal()">Cancel</button>
-              <button type="submit" class="button primary" form="importAppForm" id="importAppSubmitBtn" disabled>Import Data</button>
+              <button type="button" class="button secondary" onclick="hideImportAppModal()">
+                <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
+                Cancel
+              </button>
+              <button type="submit" class="button primary" form="importAppForm" id="importAppSubmitBtn" disabled>
+                <i class="fas fa-check" style="margin-right: var(--spacing-xs);"></i>
+                Import Data
+              </button>
             </div>
           </div>
         </div>
@@ -678,8 +690,14 @@
           </div>
           <div class="modal-footer">
             <div class="d-flex gap-3 justify-content-end">
-              <button type="button" class="button secondary" onclick="hideLoadRevisionsModal()">Cancel</button>
-              <button type="submit" class="button primary" form="loadRevisionsForm" id="loadRevisionsSubmitBtn" disabled>Load Revisions</button>
+              <button type="button" class="button secondary" onclick="hideLoadRevisionsModal()">
+                <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
+                Cancel
+              </button>
+              <button type="submit" class="button primary" form="loadRevisionsForm" id="loadRevisionsSubmitBtn" disabled>
+                <i class="fas fa-check" style="margin-right: var(--spacing-xs);"></i>
+                Load Revisions
+              </button>
             </div>
           </div>
         </div>
@@ -725,8 +743,14 @@
           </div>
           <div class="modal-footer">
             <div class="d-flex gap-3 justify-content-end">
-              <button type="button" class="button secondary" onclick="hideReprocessModal()">Cancel</button>
-              <button type="submit" class="button primary" form="reprocessForm">Re-Process</button>
+              <button type="button" class="button secondary" onclick="hideReprocessModal()">
+                <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
+                Cancel
+              </button>
+              <button type="submit" class="button primary" form="reprocessForm">
+                <i class="fas fa-check" style="margin-right: var(--spacing-xs);"></i>
+                Re-Process
+              </button>
             </div>
           </div>
         </div>

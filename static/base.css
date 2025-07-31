@@ -1286,12 +1286,13 @@ body:has(.image-modal[style*="display: flex"]) {
 
 .flash-messages {
   position: fixed !important;
-  top: 12px !important;
-  left: calc(280px + (50vw - 280px) / 2) !important;
+  top: 20px !important;
+  left: 50% !important;
   transform: translateX(-50%) !important;
   z-index: 20000 !important;
   max-width: 600px !important;
-  width: calc(100vw - 280px - 40px) !important;
+  width: auto !important;
+  min-width: 300px !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -1305,51 +1306,53 @@ body:has(.image-modal[style*="display: flex"]) {
 .flash-messages .alert-info {
   pointer-events: auto !important;
   margin-bottom: var(--spacing-sm) !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
-  height: 30px !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15) !important;
+  width: 100% !important;
+  min-height: 48px !important;
+  height: auto !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  min-height: 36px !important;
-  max-height: 36px !important;
-  padding: var(--spacing-sm) var(--spacing-md) !important;
-  border-radius: var(--radius-md) !important;
+  padding: var(--spacing-md) var(--spacing-lg) !important;
+  border-radius: var(--radius-lg) !important;
   opacity: 1 !important;
   position: relative !important;
   border: 1px solid transparent !important;
+  font-weight: 500 !important;
+  font-size: 0.95rem !important;
 }
 
-/* Specific alert type styles for flash messages */
+/* Specific alert type styles for flash messages - 100% opaque backgrounds */
 .flash-messages .alert-success {
-  background: rgba(34, 197, 98, 0.1) !important;
-  color: #166534 !important;
-  border-color: rgba(34, 197, 98, 0.3) !important;
+  background: #22c562 !important;
+  color: #ffffff !important;
+  border-color: #1ea54e !important;
 }
 
 .flash-messages .alert-error {
-  background: rgba(239, 68, 68, 0.1) !important;
-  color: #dc2626 !important;
-  border-color: rgba(239, 68, 68, 0.3) !important;
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  border-color: #dc2626 !important;
 }
 
 .flash-messages .alert-warning {
-  background: rgba(245, 158, 11, 0.1) !important;
-  color: #d97706 !important;
-  border-color: rgba(245, 158, 11, 0.3) !important;
+  background: #f59e0b !important;
+  color: #ffffff !important;
+  border-color: #d97706 !important;
 }
 
 .flash-messages .alert-info {
-  background: rgba(59, 130, 246, 0.1) !important;
-  color: #2563eb !important;
-  border-color: rgba(59, 130, 246, 0.3) !important;
+  background: #3b82f6 !important;
+  color: #ffffff !important;
+  border-color: #2563eb !important;
 }
 
 .flash-messages .alert-close {
   background: none !important;
   border: none !important;
   cursor: pointer !important;
-  color: inherit !important;
-  opacity: 0.7 !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  opacity: 1 !important;
   padding: var(--spacing-xs) !important;
   height: auto !important;
   min-height: auto !important;
@@ -1357,17 +1360,20 @@ body:has(.image-modal[style*="display: flex"]) {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  border-radius: var(--radius-sm) !important;
+  transition: all 0.2s ease !important;
 }
 
 .flash-messages .alert-close:hover {
-  opacity: 1 !important;
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.1) !important;
 }
 
 @media (max-width: 768px) {
   .flash-messages {
-    top: 8px !important;
+    top: 10px !important;
     left: 50% !important;
-    width: calc(98vw - 20px) !important;
-    max-width: calc(98vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+    min-width: calc(100vw - 40px) !important;
   }
 }

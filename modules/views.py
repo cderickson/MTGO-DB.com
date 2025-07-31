@@ -75,6 +75,40 @@ except Exception as e:
 s = URLSafeTimedSerializer(os.environ.get("URL_SAFETIMEDSERIALIZER", "dev-secret-key"))
 views = Blueprint('views', __name__)
 
+def update_draft_wins(uid, username, draft_id):
+	"""Update draft match statistics - shared function used by multiple processes"""
+	match_wins = 0
+	match_losses = 0
+	proc_dt = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific'))
+	print(f"🔍 UPDATE DRAFT WINS DEBUG: uid = {uid}, username = {username}, draft_id = {draft_id}")
+	associated_matches = Match.query.filter_by(
+		uid=uid, 
+		draft_id=draft_id, 
+		p1=username
+	)
+	
+	for match in associated_matches:
+		if match.p1_wins > match.p2_wins:
+			match_wins += 1
+		elif match.p2_wins > match.p1_wins:
+			match_losses += 1
+	
+	draft = Draft.query.filter_by(
+		uid=uid, 
+		draft_id=draft_id
+	).first()
+	
+	if draft:
+		draft.match_wins = match_wins
+		draft.match_losses = match_losses
+		draft.proc_dt = proc_dt
+
+	try:
+		db.session.commit()
+	except Exception as e:
+		db.session.rollback()
+		debug_log(f"Error committing draft ID update: {str(e)}")
+
 def get_input_options():
 	"""Load input options from local file"""
 	input_options_file = os.path.join('auxiliary', 'INPUT_OPTIONS.txt')
@@ -850,39 +884,6 @@ def process_logs(self, data):
 
 @shared_task(bind=True, base=AbortableTask)
 def process_revisions_from_app(self, data):
-	def update_draft_wins(draft_id):
-		# Update draft match statistics
-		match_wins = 0
-		match_losses = 0
-		proc_dt = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific'))
-		associated_matches = Match.query.filter_by(
-			uid=current_user.uid, 
-			draft_id=draft_id, 
-			p1=current_user.username
-		)
-		
-		for match in associated_matches:
-			if match.p1_wins > match.p2_wins:
-				match_wins += 1
-			elif match.p2_wins > match.p1_wins:
-				match_losses += 1
-		
-		draft = Draft.query.filter_by(
-			uid=current_user.uid, 
-			draft_id=draft_id
-		).first()
-		
-		if draft:
-			draft.match_wins = match_wins
-			draft.match_losses = match_losses
-			draft.proc_dt = proc_dt
-
-		try:
-			db.session.commit()
-		except Exception as e:
-			db.session.rollback()
-			debug_log(f"Error committing draft ID update: {str(e)}")
-	
 	counts = {
 		'updated_matches':0,
 		'updated_games':0,
@@ -934,7 +935,7 @@ def process_revisions_from_app(self, data):
 					db.session.add(merged_game)
 					counts['updated_games'] += 1
 			for draft_id in drafts_to_update:
-				update_draft_wins(draft_id)
+				update_draft_wins(uid, data['username'], draft_id)
 				counts['updated_drafts'] += 1
 
 			try:
@@ -1399,6 +1400,8 @@ def reprocess_logs(self, data):
 		'new_plays':0,
 		'new_drafts':0,
 		'new_picks':0,
+		'matches_updated':0,
+		'drafts_updated':0,
 		'matches_skipped_dupe':0,
 		'games_skipped_dupe':0,
 		'plays_skipped_dupe':0,
@@ -1546,8 +1549,24 @@ def reprocess_logs(self, data):
 					for match in parsed_data_inverted[0]:
 						existing = Match.query.filter_by(uid=uid, match_id=match[0], p1=match[2]).first()
 						if existing:
-							counts['matches_skipped_dupe'] += 1
-							continue
+							# Update existing match, preserving user-revised columns
+							# Delete related child records first
+							Game.query.filter_by(uid=uid, match_id=match[0]).delete()
+							Play.query.filter_by(uid=uid, match_id=match[0]).delete()
+							GameActions.query.filter_by(uid=uid, match_id=match[0]).delete()
+							
+							# Update match, preserving user-revised columns
+							existing.p2 = match[5]
+							existing.p1_roll = match[8]
+							existing.p2_roll = match[9]
+							existing.roll_winner = match[10]
+							existing.p1_wins = match[11]
+							existing.p2_wins = match[12]
+							existing.match_winner = match[13]
+							existing.date = match[17]
+							existing.proc_dt = proc_dt
+							# Preserve user-revised columns: draft_id, p1_arch, p1_subarch, p2_arch, p2_subarch, format, limited_format, match_type
+							counts['matches_updated'] += 1
 						else:
 							new_match = Match(uid=uid,
 											match_id=match[0],
@@ -1572,34 +1591,26 @@ def reprocess_logs(self, data):
 							db.session.add(new_match)
 							counts['new_matches'] += 1
 					for game in parsed_data_inverted[1]:
-						existing = Game.query.filter_by(uid=uid, match_id=game[0], game_num=game[3], p1=game[1]).first()
-						if existing:
-							counts['games_skipped_dupe'] += 1
-							continue
-						else:
-							new_game = Game(uid=uid,
-											match_id=game[0],
-											p1=game[1],
-											p2=game[2],
-											game_num=game[3],
-											pd_selector=game[4],
-											pd_choice=game[5],
-											on_play=game[6],
-											on_draw=game[7],
-											p1_mulls=game[8],
-											p2_mulls=game[9],
-											turns=game[10],
-											game_winner=game[11],
-											proc_dt=proc_dt)
-							db.session.add(new_game)
-							counts['new_games'] += 1
+						# Games are always new since we deleted all games for this match_id above
+						new_game = Game(uid=uid,
+										match_id=game[0],
+										p1=game[1],
+										p2=game[2],
+										game_num=game[3],
+										pd_selector=game[4],
+										pd_choice=game[5],
+										on_play=game[6],
+										on_draw=game[7],
+										p1_mulls=game[8],
+										p2_mulls=game[9],
+										turns=game[10],
+										game_winner=game[11],
+										proc_dt=proc_dt)
+						db.session.add(new_game)
+						counts['new_games'] += 1
 					for play in parsed_data_inverted[2]:
-						existing = Play.query.filter_by(uid=uid, match_id=play[0], game_num=play[1], play_num=play[2]).first()
-						if existing:
-							counts['plays_skipped_dupe'] += 1
-							continue
-						else:
-							new_play = Play(uid=uid,
+						# Plays are always new since we deleted all plays for this match_id above
+						new_play = Play(uid=uid,
 											match_id=play[0],
 											game_num=play[1],
 											play_num=play[2],
@@ -1617,11 +1628,10 @@ def reprocess_logs(self, data):
 											active_player=play[14],
 											non_active_player=play[15],
 											proc_dt=proc_dt)
-							db.session.add(new_play)
-							counts['new_plays'] += 1
+						db.session.add(new_play)
+						counts['new_plays'] += 1
 					for game in parsed_data_inverted[3]:
-						if GameActions.query.filter_by(uid=uid, match_id=game[:-2], game_num=game[-1]).first():
-							continue
+						# GameActions are always new since we deleted all game_actions for this match_id above
 						new_ga15 = GameActions(uid=uid,
 											match_id=game[:-2],
 											game_num=game[-1],
@@ -1643,7 +1653,7 @@ def reprocess_logs(self, data):
 						continue
 
 					try:
-						parsed_data = modo.get_draft_data(initial,mtime,fname)
+						parsed_data = modo.parse_draft_log(filename, initial)
 						counts['total_draftlogs'] += 1
 					except Exception as error:
 						counts['draftlogs_skipped_error'] += 1
@@ -1659,56 +1669,76 @@ def reprocess_logs(self, data):
 						counts['draftlogs_skipped_empty'] += 1
 						continue
 
-					for draft in [parsed_data[0]]:
+					for draft in parsed_data[0]:
 						existing = Draft.query.filter_by(uid=uid, draft_id=draft[0]).first()
 						if existing:
-							counts['drafts_skipped_dupe'] += 1
-							continue
+							# Delete related picks before reprocessing
+							Pick.query.filter_by(uid=uid, draft_id=draft[0]).delete()
+							
+							# Update existing draft with all new data
+							existing.hero = draft[1]
+							existing.player2 = draft[2]
+							existing.player3 = draft[3]
+							existing.player4 = draft[4]
+							existing.player5 = draft[5]
+							existing.player6 = draft[6]
+							existing.player7 = draft[7]
+							existing.player8 = draft[8]
+							existing.match_wins = draft[9]
+							existing.match_losses = draft[10]
+							existing.format = draft[11]
+							existing.date = draft[12]
+							existing.proc_dt = proc_dt
+							counts['drafts_updated'] += 1
 						else:
 							new_draft = Draft(uid=uid,
 											draft_id=draft[0],
-											date=draft[1],
-											format=draft[2],
-											picks=draft[3],
-											wins=draft[4],
-											losses=draft[5],
+											hero=draft[1],
+											player2=draft[2],
+											player3=draft[3],
+											player4=draft[4],
+											player5=draft[5],
+											player6=draft[6],
+											player7=draft[7],
+											player8=draft[8],
+											match_wins=draft[9],
+											match_losses=draft[10],
+											format=draft[11],
+											date=draft[12],
 											proc_dt=proc_dt)
 							db.session.add(new_draft)
 							counts['new_drafts'] += 1
+						update_draft_wins(uid, data['username'], draft[0])
 
 					for pick in parsed_data[1]:
-						existing = Pick.query.filter_by(uid=uid, draft_id=pick[0], pick_ovr=pick[4]).first()
-						if existing:
-							counts['picks_skipped_dupe'] += 1
-							continue
-						else:
-							p = pick
-							for index,i in enumerate(p):
-								if i == 'NA':
-									p[index] = ''
-							new_pick = Pick(uid=uid,
-											draft_id=pick[0],
-											card=pick[1],
-											pack_num=pick[2],
-											pick_num=pick[3],
-											pick_ovr=pick[4],
-											avail1=p[5],
-											avail2=p[6],
-											avail3=p[7],
-											avail4=p[8],
-											avail5=p[9],
-											avail6=p[10],
-											avail7=p[11],
-											avail8=p[12],
-											avail9=p[13],
-											avail10=p[14],
-											avail11=p[15],
-											avail12=p[16],
-											avail13=p[17],
-											avail14=p[18],
-											proc_dt=proc_dt)
-							db.session.add(new_pick)
-							counts['new_picks'] += 1
+						# Picks are always new since we deleted all picks for this draft_id above
+						p = pick
+						for index,i in enumerate(p):
+							if i == 'NA':
+								p[index] = ''
+						new_pick = Pick(uid=uid,
+										draft_id=pick[0],
+										card=pick[1],
+										pack_num=pick[2],
+										pick_num=pick[3],
+										pick_ovr=pick[4],
+										avail1=p[5],
+										avail2=p[6],
+										avail3=p[7],
+										avail4=p[8],
+										avail5=p[9],
+										avail6=p[10],
+										avail7=p[11],
+										avail8=p[12],
+										avail9=p[13],
+										avail10=p[14],
+										avail11=p[15],
+										avail12=p[16],
+										avail13=p[17],
+										avail14=p[18],
+										proc_dt=proc_dt)
+						db.session.add(new_pick)
+						counts['new_picks'] += 1
 					try:
 						db.session.commit()
 					except:

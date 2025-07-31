@@ -34,21 +34,12 @@
 }
 
 .profile-section {
-  margin-bottom: 0;
+  margin-bottom: var(--spacing-sm);
+  /* Ensure consistent padding for all sections */
+  padding: 0;
 }
 
-/* Grid positioning */
-.profile-section:nth-child(1) { /* User Information */
-  grid-area: user-info;
-}
 
-.profile-section:nth-child(2) { /* Lifetime Statistics */
-  grid-area: lifetime-stats;
-}
-
-.profile-section:nth-child(3) { /* Match History */
-  grid-area: match-history;
-}
 
 .profile-card {
   background: var(--bg-card);
@@ -248,16 +239,26 @@
   padding: 0;
 }
 
-/* Make match history card fit table size */
-.profile-section:has(.match-history-table) .profile-card {
-  width: fit-content;
-  margin: 0 auto;
-}
-
-/* Fallback for browsers that don't support :has() */
+/* Make match history card consistent regardless of content */
 .match-history-card {
   width: fit-content !important;
   margin: 0 auto !important;
+  min-width: 600px; /* Ensure consistent minimum width */
+}
+
+/* When there's a table, let it expand naturally */
+.profile-section:has(.match-history-table) .profile-card {
+  width: fit-content;
+  margin: 0 auto;
+  min-width: 600px;
+}
+
+/* Empty state styling to match table spacing */
+.match-history-empty-state {
+  text-align: center;
+  color: var(--fg-muted);
+  padding: 0; /* Remove extra padding - card-body already has padding */
+  margin: 0;
 }
 
 .match-history-table {

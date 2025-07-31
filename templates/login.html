@@ -31,13 +31,17 @@
               </div>
             </div>
 
-            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; justify-content: center; align-items: center;">
+            <div style="display: flex; justify-content: center; margin-bottom: 1rem;">
               <button type="submit" class="btn btn-primary" style="width: 160px;">
+                <i class="fas fa-check" style="margin-right: var(--spacing-xs);"></i>
                 Sign In
               </button>
-              <button type="button" class="btn btn-primary" onclick="showResetModal()" style="width: 160px;">
+            </div>
+            
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+              <a href="#" onclick="showResetModal(); return false;" style="color: var(--primary-button-bg); text-decoration: none; font-size: 0.875rem;">
                 Reset Password
-              </button>
+              </a>
             </div>
 
             {% if not_confirmed %}
@@ -55,7 +59,7 @@
             <p style="color: var(--fg-muted); margin-bottom: var(--spacing-sm);">
               Don't have an account?
             </p>
-            <a href="{{ url_for('views.register') }}" class="btn btn-primary">
+            <a href="{{ url_for('views.register') }}" style="color: var(--primary-button-bg); text-decoration: none; font-weight: 500;">
               Create Account
             </a>
           </div>
@@ -92,8 +96,14 @@
       </div>
     </div>
     <div class="modal-footer" style="display: flex; gap: var(--spacing-sm); justify-content: flex-end;">
-      <button type="button" class="btn btn-primary" onclick="hideResetModal()">Cancel</button>
-      <button type="button" class="btn btn-primary" onclick="sendResetEmail()">Send Reset Link</button>
+      <button type="button" class="btn btn-primary" onclick="hideResetModal()">
+        <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
+        Cancel
+      </button>
+      <button type="button" class="btn btn-primary" onclick="sendResetEmail()">
+        <i class="fas fa-check" style="margin-right: var(--spacing-xs);"></i>
+        Send Reset Link
+      </button>
     </div>
   </div>
 </div>

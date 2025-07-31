@@ -679,6 +679,7 @@ class DraftIdManager {
 
   async loadNextMatch() {
     try {
+      console.log('DraftIdManager: Loading next match...');
       const response = await fetch('/api/draft-id/next', {
         method: 'GET',
         headers: {
@@ -687,11 +688,15 @@ class DraftIdManager {
         }
       });
 
+      console.log('DraftIdManager: Response status:', response.status);
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('DraftIdManager: API Error:', errorText);
         throw new Error('Failed to fetch next match data');
       }
 
       const data = await response.json();
+      console.log('DraftIdManager: Received data:', data);
       
       if (!data.hasMatches) {
         // Check if we're in the modal or just initializing
@@ -723,8 +728,10 @@ class DraftIdManager {
       this.enableMenuButton();
       
     } catch (error) {
-      console.error('Error loading next match:', error);
+      console.error('DraftIdManager: Error loading next match:', error);
       this.showErrorMessage('Failed to load next match data');
+      // Enable buttons even if there's an error so user can close modal
+      this.enableButtons();
     }
   }
 
@@ -778,6 +785,23 @@ class DraftIdManager {
     }
   }
 
+  enableButtons() {
+    // Enable the modal buttons in case they get stuck
+    const skipButton = document.querySelector('#DraftIdModal button[onclick*="applyGetDraftId(true)"]');
+    const applyButton = document.querySelector('#DraftIdModal button[onclick*="applyGetDraftId(false)"]');
+    
+    if (skipButton) {
+      skipButton.disabled = false;
+      skipButton.style.opacity = '1';
+      skipButton.style.pointerEvents = 'auto';
+    }
+    if (applyButton) {
+      applyButton.disabled = false;
+      applyButton.style.opacity = '1';
+      applyButton.style.pointerEvents = 'auto';
+    }
+  }
+
   clearProcessedMatches() {
     this.processedMatches.clear();
   }
@@ -788,30 +812,33 @@ let draftIdManager = null;
 
 // Flash message helper function
 function showFlashMessage(message, category = 'info') {
-  const flashContainer = document.querySelector('.flash-messages') || 
-                        document.querySelector('.main-content');
+  // Always use or create the flash-messages container
+  let flashContainer = document.querySelector('.flash-messages');
   
-  if (!flashContainer) return;
+  if (!flashContainer) {
+    // Create the flash-messages container if it doesn't exist
+    flashContainer = document.createElement('div');
+    flashContainer.className = 'flash-messages';
+    flashContainer.id = 'flash-messages';
+    document.body.appendChild(flashContainer);
+  }
 
   const alertDiv = document.createElement('div');
   alertDiv.className = `alert alert-${category}`;
   alertDiv.setAttribute('role', 'alert');
   
   let iconClass = 'fas fa-info-circle';
-  let iconColor = '#3b82f6';
+  let iconColor = '#ffffff'; // White icons for better contrast on solid backgrounds
   
   switch(category) {
     case 'success':
       iconClass = 'fas fa-check-circle';
-      iconColor = '#22c562';
       break;
     case 'error':
       iconClass = 'fas fa-exclamation-circle';
-      iconColor = '#ef4444';
       break;
     case 'warning':
       iconClass = 'fas fa-exclamation-triangle';
-      iconColor = '#f59e0b';
       break;
   }
   
@@ -825,12 +852,8 @@ function showFlashMessage(message, category = 'info') {
     </button>
   `;
   
-  // Insert at the beginning of flash container or main content
-  if (flashContainer.classList.contains('flash-messages')) {
-    flashContainer.appendChild(alertDiv);
-  } else {
-    flashContainer.insertBefore(alertDiv, flashContainer.firstChild);
-  }
+  // Always append to flash container (newest messages at bottom)
+  flashContainer.appendChild(alertDiv);
   
   // Auto-remove after 5 seconds for success messages
   if (category === 'success') {
