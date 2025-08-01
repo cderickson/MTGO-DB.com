@@ -2,9 +2,12 @@
 
 {% block page_title %}{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
+{% endblock %}
+
 {% block content %}
 
-<link rel="stylesheet" href="{{ url_for('static', filename='table.css') }}">
 <script src="{{ url_for('static', filename='table.js') }}"></script>
 
 <input type="hidden" name="tname" id="tname" value="{{ table_name }}">
@@ -298,13 +301,13 @@
     {% endif %}
 
     <!-- Modern Revision Modal -->
-    <div id="ReviseModal" class="modal" style="display: none;">
-      <div class="modal-content" style="max-width: 900px !important; width: 90%;">
+    <div id="ReviseModal" class="modal">
+      <div class="modal-content" >
         <div class="modal-header">
-          <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+          <div >
             <div>
-              <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Revise Record</h3>
-              <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Update match information</p>
+              <h3 >Revise Record</h3>
+              <p >Update match information</p>
             </div>
           </div>
           <button type="button" class="modal-close" onclick="hideReviseModal()">
@@ -313,17 +316,17 @@
         </div>
         <div class="modal-body">
           <!-- Game Information -->
-          <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-md);">
-            <div id="ModalMatchId" style="color: var(--fg-body); font-weight: 600; font-size: 1rem; text-align: center; margin-bottom: var(--spacing-xs);">
+          <div >
+            <div id="ModalMatchId" >
               Match ID
             </div>
-            <div id="ModalDate" style="color: var(--fg-body); font-weight: 500; font-size: 0.875rem; text-align: center;">
+            <div id="ModalDate" >
               Date
             </div>
           </div>
 
           <!-- Players and Cards -->
-          <div style="margin-bottom: var(--spacing-lg);">
+          <div >
             <div class="revision-players">
               <div class="player-section">
                 <div id="ModalP1" class="player-name">Player 1</div>
@@ -357,7 +360,7 @@
           <!-- Revision Form -->
           <form id="reviseForm">
             <!-- Row 1: Player Fields -->
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
+            <div >
               <div class="form-group">
                 <label class="form-label">P1 Archetype</label>
                 <div class="dropdown">
@@ -390,7 +393,7 @@
             </div>
             
             <!-- Row 2: Match Fields (Centered) -->
-            <div style="display: grid; grid-template-columns: 1fr repeat(3, minmax(200px, 1fr)) 1fr; gap: var(--spacing-md); align-items: start; margin-bottom: 0;">
+            <div >
               <div></div> <!-- Empty spacer -->
               <div class="form-group">
                 <label class="form-label">Format</label>
@@ -427,13 +430,13 @@
         </div>
         
         <div class="modal-footer">
-          <div class="d-flex gap-3 justify-content-end">
+          <div >
             <button type="button" class="button secondary" onclick="hideReviseModal()">
-              <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
+              <i class="fas fa-times" ></i>
               Cancel
             </button>
             <button type="button" class="button primary" onclick="changeHiddenInputs()">
-              <i class="fas fa-check" style="margin-right: var(--spacing-xs);"></i>
+              <i class="fas fa-check" ></i>
               Apply
             </button>
           </div>
@@ -442,13 +445,13 @@
     </div>
 
     <!-- Multi-Revision Modal -->
-    <div id="ReviseMultiModal" class="modal" style="display: none;">
+    <div id="ReviseMultiModal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
-          <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+          <div >
             <div>
-              <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Revise Multiple Records</h3>
-              <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Update multiple matches at once</p>
+              <h3 >Revise Multiple Records</h3>
+              <p >Update multiple matches at once</p>
             </div>
           </div>
           <button type="button" class="modal-close" onclick="hideReviseMultiModal()">
@@ -458,10 +461,10 @@
         <div class="modal-body">
           <!-- Step 1: Field Selector -->
           <div class="field-selector-section">
-            <div class="form-group" style="text-align: center; margin-bottom: 0;">
+            <div class="form-group" >
               <label class="form-label">Step 1: Select Field to Change</label>
-              <div class="dropdown" style="display: inline-block;">
-                <button class="button secondary dropdown-toggle" type="button" id="FieldToChangeButton" onclick="toggleDropdown(event, 'FieldToChangeMenu')" style="width: 200px;">
+              <div class="dropdown" >
+                <button class="button secondary dropdown-toggle" type="button" id="FieldToChangeButton" onclick="toggleDropdown(event, 'FieldToChangeMenu')" >
                   P1 Deck
                 </button>
                 <ul class="dropdown-menu" id="FieldToChangeMenu">
@@ -476,14 +479,14 @@
 
           <!-- Step 2: Revision Fields -->
           <div class="revision-fields-section">
-            <div style="text-align: center; margin-bottom: var(--spacing-md);">
-              <label class="form-label" style="color: var(--fg-muted); font-size: 0.875rem;">Step 2: Set New Values</label>
+            <div >
+              <label class="form-label" >Step 2: Set New Values</label>
             </div>
             <form>
               <!-- P1 Deck Fields (Side by Side) -->
-              <div id="P1FieldsContainer" style="display: block;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
-                  <div class="form-group" style="text-align: center;">
+              <div id="P1FieldsContainer" >
+                <div >
+                  <div class="form-group" >
                     <label class="form-label">P1 Archetype</label>
                     <div class="dropdown">
                       <button class="button secondary dropdown-toggle" type="button" id="P1ArchButtonMulti" onclick="toggleDropdown(event, 'P1ArchMenuMulti')">
@@ -493,7 +496,7 @@
                     </div>
                   </div>
 
-                  <div class="form-group" style="text-align: center;">
+                  <div class="form-group" >
                     <label class="form-label">P1 Subarchetype</label>
                     <input type="text" class="form-input" id="P1_Subarch_Multi" placeholder="P1_Subarch" value="NA">
                   </div>
@@ -501,9 +504,9 @@
               </div>
 
               <!-- P2 Deck Fields (Side by Side) -->
-              <div id="P2FieldsContainer" style="display: none;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
-                  <div class="form-group" style="text-align: center;">
+              <div id="P2FieldsContainer" >
+                <div >
+                  <div class="form-group" >
                     <label class="form-label">P2 Archetype</label>
                     <div class="dropdown">
                       <button class="button secondary dropdown-toggle" type="button" id="P2ArchButtonMulti" onclick="toggleDropdown(event, 'P2ArchMenuMulti')">
@@ -513,7 +516,7 @@
                     </div>
                   </div>
 
-                  <div class="form-group" style="text-align: center;">
+                  <div class="form-group" >
                     <label class="form-label">P2 Subarchetype</label>
                     <input type="text" class="form-input" id="P2_Subarch_Multi" placeholder="P2_Subarch" value="NA">
                   </div>
@@ -521,9 +524,9 @@
               </div>
 
               <!-- Format Fields (Side by Side) -->
-              <div id="FormatFieldsContainer" style="display: none;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
-                  <div class="form-group" style="text-align: center;">
+              <div id="FormatFieldsContainer" >
+                <div >
+                  <div class="form-group" >
                     <label class="form-label">Format</label>
                     <div class="dropdown">
                       <button class="button secondary dropdown-toggle" type="button" id="FormatButtonMulti" onclick="toggleDropdown(event, 'FormatMenuMulti')">
@@ -533,7 +536,7 @@
                     </div>
                   </div>
 
-                  <div class="form-group" style="text-align: center;">
+                  <div class="form-group" >
                     <label class="form-label">Limited Format</label>
                     <div class="dropdown">
                       <button class="button secondary dropdown-toggle" type="button" id="LimitedFormatButtonMulti" onclick="toggleDropdown(event, 'LimitedFormatMenuMulti')" disabled>
@@ -546,9 +549,9 @@
               </div>
 
               <!-- Match Type Field (Centered across full width) -->
-              <div id="MatchTypeFieldsContainer" style="display: none;">
-                <div style="display: flex; justify-content: center;">
-                  <div class="form-group" style="width: 300px; text-align: center;">
+              <div id="MatchTypeFieldsContainer" >
+                <div >
+                  <div class="form-group" >
                     <label class="form-label">Match Type</label>
                     <div class="dropdown">
                       <button class="button secondary dropdown-toggle" type="button" id="MatchTypeButtonMulti" onclick="toggleDropdown(event, 'MatchTypeMenuMulti')">
@@ -563,13 +566,13 @@
           </div>
         </div>
         <div class="modal-footer">
-          <div class="d-flex gap-3 justify-content-end">
+          <div >
             <button type="button" class="button secondary" onclick="hideReviseMultiModal()">
-              <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
+              <i class="fas fa-times" ></i>
               Cancel
             </button>
             <button type="button" class="button primary" onclick="changeHiddenInputsMulti()">
-              <i class="fas fa-check" style="margin-right: var(--spacing-xs);"></i>
+              <i class="fas fa-check" ></i>
               Apply
             </button>
           </div>
@@ -578,13 +581,13 @@
     </div>
 
     <!-- Remove Modal -->
-    <div id="RemoveModal" class="modal" style="display: none;">
-      <div class="modal-content" style="max-width: 500px; width: 90%;">
+    <div id="RemoveModal" class="modal" >
+      <div class="modal-content" >
         <div class="modal-header">
-          <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+          <div >
             <div>
-              <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Remove Records</h3>
-              <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Delete selected matches</p>
+              <h3 >Remove Records</h3>
+              <p >Delete selected matches</p>
             </div>
           </div>
           <button type="button" class="modal-close" onclick="hideRemoveModal()">
@@ -592,12 +595,12 @@
           </button>
         </div>
         <div class="modal-body">
-          <div style="background: rgba(239, 68, 68, 0.05); border-left: 4px solid #ef4444; border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
-            <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
-              <i class="fas fa-exclamation-triangle" style="color: #ef4444; font-size: 1.125rem;"></i>
-              <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Warning</h4>
+          <div>
+            <div>
+              <i class="fas fa-exclamation-triangle"></i>
+              <h4>Warning</h4>
             </div>
-            <p style="margin: 0; color: var(--fg-body); line-height: 1.6;">This will remove all selected matches and their associated games/plays from your database.</p>
+            <p>This will remove all selected matches and their associated games/plays from your database.</p>
           </div>
 
           <div class="removal-options">
@@ -612,13 +615,13 @@
           </div>
         </div>
         <div class="modal-footer">
-          <div class="d-flex gap-3 justify-content-center">
+          <div >
             <button type="button" class="button danger" onclick="removeHidden('Remove')">
-              <i class="fas fa-trash" style="margin-right: var(--spacing-xs);"></i>
+              <i class="fas fa-trash" ></i>
               Remove
             </button>
             <button type="button" class="button danger" onclick="removeHidden('Ignore')">
-              <i class="fas fa-eye-slash" style="margin-right: var(--spacing-xs);"></i>
+              <i class="fas fa-eye-slash" ></i>
               Remove & Ignore
             </button>
           </div>
@@ -627,13 +630,13 @@
     </div>
 
     <!-- Revise Ignored Modal -->
-    <div id="ReviseIgnoredModal" class="modal" style="display: none;">
-      <div class="modal-content" style="max-width: 500px; width: 90%;">
+    <div id="ReviseIgnoredModal" class="modal" >
+      <div class="modal-content" >
         <div class="modal-header">
-          <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+          <div >
             <div>
-              <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Unignore Match</h3>
-              <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Remove from ignored list</p>
+              <h3 >Unignore Match</h3>
+              <p >Remove from ignored list</p>
             </div>
           </div>
           <button type="button" class="modal-close" onclick="hideReviseIgnoredModal()">
@@ -641,29 +644,29 @@
           </button>
         </div>
         <div class="modal-body">
-          <div style="background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--sky-blue); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
-            <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
-              <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
-              <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Confirmation</h4>
+          <div>
+            <div>
+              <i class="fas fa-info-circle"></i>
+              <h4>Confirmation</h4>
             </div>
-            <p style="margin: 0; color: var(--fg-body); line-height: 1.6;">
+            <p>
               This will remove the selected match from your ignored list. The match will be included in future data imports.
             </p>
           </div>
-          <div style="text-align: center; padding: var(--spacing-md);">
-            <div style="font-family: var(--font-mono); font-weight: 600; font-size: 1.125rem; color: var(--fg-default);">
+          <div>
+            <div>
               Match ID: <span id="selectedMatchId">None selected</span>
             </div>
           </div>
         </div>
         <div class="modal-footer">
-          <div class="d-flex gap-3 justify-content-end">
+          <div >
             <button type="button" class="button secondary" onclick="hideReviseIgnoredModal()">
-              <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
+              <i class="fas fa-times" ></i>
               Cancel
             </button>
             <button type="button" class="button danger" onclick="unignoreMatch()">
-              <i class="fas fa-undo" style="margin-right: var(--spacing-xs);"></i>
+              <i class="fas fa-undo" ></i>
               Unignore Match
             </button>
           </div>
@@ -673,15 +676,7 @@
   </div>
 </div>
 
-<style>
-    #ReviseModal .modal-content {
-      max-width: 1000px !important;
-    }
-    
-    #ReviseMultiModal .modal-content {
-      max-width: 550px !important;
-    }
-</style>
+
 
 <!-- Modal helper functions -->
 <script>

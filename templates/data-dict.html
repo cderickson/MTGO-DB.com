@@ -6,21 +6,21 @@
 
 <div class="content-wrapper">
   <div class="data-dict-container">
-    <div class="accordion-container full-width">
+    <div >
 	
 	<!-- Matches Table -->
-	<div class="accordion-item" data-target="matches">
-	<div class="accordion-header">
-		<h3 class="accordion-title">
+  <div class="card" data-target="matches">
+	<div class="card-header">
+      <h3 class="card-title">
 		Matches Table
 		<span class="table-badge">Primary</span>
 		</h3>
-		<i class="fas fa-chevron-down accordion-arrow"></i>
+		<i class="fas fa-chevron-down"></i>
 	</div>
-	<div class="accordion-content" id="matches">
-		<div class="accordion-body">
-		<div class="info-box">
-			<p><strong>Match-level table:</strong> Contains match details including players, decks, results, and metadata for each MTGO match.</p>
+    <div class="card-content" id="matches">
+		      <div class="card-body">
+                <div class="card">
+          <p><strong>Match-level table:</strong> Contains match details including players, decks, results, and metadata for each MTGO match.</p>
 		</div>
 		
 		<div class="table-container">
@@ -256,18 +256,18 @@
 	</div>
 
 	<!-- Games Table -->
-	<div class="accordion-item" data-target="games">
-	<div class="accordion-header">
-		<h3 class="accordion-title">
+  <div class="card" data-target="games">
+	    <div class="card-header">
+      <h3 class="card-title">
 		Games Table
 		<span class="table-badge">Secondary</span>
 		</h3>
-		<i class="fas fa-chevron-down accordion-arrow"></i>
+		<i class="fas fa-chevron-down"></i>
 	</div>
-	<div class="accordion-content" id="games">
-		<div class="accordion-body">
-		<div class="info-box">
-			<p><strong>Game-level data:</strong> Individual game details within each match, including play/draw decisions and game outcomes.</p>
+    <div class="card-content" id="games">
+		      <div class="card-body">
+                <div class="card">
+          <p><strong>Game-level data:</strong> Individual game details within each match, including play/draw decisions and game outcomes.</p>
 		</div>
 		
 		<div class="table-container">
@@ -411,18 +411,18 @@
 	</div>
 
 	<!-- Plays Table -->
-	<div class="accordion-item" data-target="plays">
-	<div class="accordion-header">
-		<h3 class="accordion-title">
+  <div class="card" data-target="plays">
+	    <div class="card-header">
+      <h3 class="card-title">
 		Plays Table
 		<span class="table-badge">Secondary</span>
 		</h3>
-		<i class="fas fa-chevron-down accordion-arrow"></i>
+		<i class="fas fa-chevron-down"></i>
 	</div>
-	<div class="accordion-content" id="plays">
-		<div class="accordion-body">
-		<div class="info-box">
-			<p><strong>Play-by-play data:</strong> Individual card plays and actions within each game, providing detailed gameplay analysis.</p>
+    <div class="card-content" id="plays">
+		      <div class="card-body">
+                <div class="card">
+          <p><strong>Play-by-play data:</strong> Individual card plays and actions within each game, providing detailed gameplay analysis.</p>
 		</div>
 		
 		<div class="table-container">
@@ -567,18 +567,18 @@
 	</div>
 
 	<!-- Drafts Table -->
-	<div class="accordion-item" data-target="drafts">
-	<div class="accordion-header">
-		<h3 class="accordion-title">
+  <div class="card" data-target="drafts">
+	    <div class="card-header">
+      <h3 class="card-title">
 		Drafts Table
 		<span class="table-badge">Primary</span>
 		</h3>
-		<i class="fas fa-chevron-down accordion-arrow"></i>
+		<i class="fas fa-chevron-down"></i>
 	</div>
-	<div class="accordion-content" id="drafts">
-		<div class="accordion-body">
-		<div class="info-box">
-			<p><strong>Draft session data:</strong> Information about draft sessions, including players, format, and results.</p>
+    <div class="card-content" id="drafts">
+		      <div class="card-body">
+                <div class="card">
+          <p><strong>Draft session data:</strong> Information about draft sessions, including players, format, and results.</p>
 		</div>
 		
 		<div class="table-container">
@@ -621,7 +621,7 @@
 						<span class="option">1</span>
 						<span class="option">2</span>
 					</div>
-					<div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--fg-muted);">
+					<div >
 						Set automatically after using <strong>Apply Associated Draft_IDs</strong> function
 					</div>
 					</td>
@@ -636,7 +636,7 @@
 						<span class="option">1</span>
 						<span class="option">2</span>
 					</div>
-					<div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--fg-muted);">
+					<div >
 						Set automatically after using <strong>Apply Associated Draft_IDs</strong> function
 					</div>
 					</td>
@@ -667,18 +667,18 @@
 	</div>
 
 	<!-- Draft Picks Table -->
-	<div class="accordion-item" data-target="draft-picks">
-	<div class="accordion-header">
-		<h3 class="accordion-title">
+  <div class="card" data-target="draft-picks">
+	    <div class="card-header">
+      <h3 class="card-title">
 		Draft Picks Table
 		<span class="table-badge">Secondary</span>
 		</h3>
-		<i class="fas fa-chevron-down accordion-arrow"></i>
+		<i class="fas fa-chevron-down"></i>
 	</div>
-	<div class="accordion-content" id="draft-picks">
-		<div class="accordion-body">
-		<div class="info-box">
-			<p><strong>Draft pick data:</strong> Individual card picks during draft sessions, including pack and pick numbers and available cards.</p>
+    <div class="card-content" id="draft-picks">
+		      <div class="card-body">
+                <div class="card">
+          <p><strong>Draft pick data:</strong> Individual card picks during draft sessions, including pack and pick numbers and available cards.</p>
 		</div>
 		
 		<div class="table-container">
@@ -741,355 +741,6 @@
   </div>
 </div>
 
-<style>
-/* Override global layout min-heights to prevent unwanted scrolling */
-.app-layout {
-  min-height: auto !important;
-}
 
-.main-content {
-  min-height: auto !important;
-}
-
-.content-wrapper {
-  flex: none !important;
-  padding: var(--spacing-md) !important;
-}
-
-/* Data Dictionary Container - Fixed Width like Profile/Dashboard */
-.data-dict-container {
-  width: 1000px !important;
-  max-width: 1000px !important;
-  min-width: 1000px !important;
-  margin: 0 auto;
-  padding: 0;
-  position: relative;
-  flex: none !important;
-}
-
-/* Responsive Design */
-@media (max-width: 1100px) {
-  .data-dict-container {
-    width: 95% !important;
-    max-width: 95% !important;
-    min-width: 95% !important;
-  }
-}
-
-/* Accordion Container */
-.accordion-container {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.accordion-item {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  transition: all var(--transition-normal);
-  margin-bottom: var(--spacing-md);
-  box-shadow: var(--shadow-sm);
-}
-
-.accordion-item:hover {
-  box-shadow: var(--shadow-md);
-}
-
-.accordion-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--spacing-md);
-  cursor: pointer;
-  background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
-  border-bottom: 1px solid var(--border);
-  transition: all var(--transition-fast);
-  user-select: none;
-}
-
-.accordion-header:hover {
-  background: var(--bg-default-hover);
-}
-
-.accordion-title {
-  display: flex;
-  align-items: center;
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--fg-default);
-  flex-wrap: wrap;
-  gap: var(--spacing-sm);
-}
-
-.table-badge {
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: var(--fg-muted);
-  background: var(--bg-default);
-  padding: 0.2rem 0.4rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.accordion-arrow {
-  color: var(--fg-muted);
-  transition: transform var(--transition-fast);
-  font-size: 0.75rem;
-  flex-shrink: 0;
-}
-
-.accordion-item.active .accordion-arrow {
-  transform: rotate(180deg);
-}
-
-.accordion-content {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height var(--transition-normal) ease-out;
-}
-
-.accordion-item.active .accordion-content {
-  max-height: 5000px;
-}
-
-.accordion-body {
-  padding: var(--spacing-md);
-  color: var(--fg-body);
-  line-height: 1.5;
-}
-
-.accordion-body p {
-  margin-bottom: var(--spacing-sm);
-  font-size: 0.875rem;
-}
-
-.accordion-body a {
-  color: var(--fg-brand);
-  text-decoration: none;
-  font-weight: 500;
-  transition: color var(--transition-fast);
-}
-
-.accordion-body a:hover {
-  color: var(--hyper-04);
-  text-decoration: underline;
-}
-
-/* Info Box */
-.info-box {
-  background: rgba(59, 130, 246, 0.05);
-  border-left: 4px solid var(--sky-blue);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-sm);
-  margin-bottom: var(--spacing-md);
-}
-
-.info-box p {
-  margin: 0;
-  font-size: 0.75rem;
-  color: var(--fg-body);
-  line-height: 1.4;
-}
-
-/* Enhanced Table Styling */
-.table-container {
-  background: var(--bg-subtle);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  margin: var(--spacing-sm) 0;
-  box-shadow: var(--shadow-sm);
-}
-
-.table-wrapper {
-  overflow-x: auto;
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.75rem;
-}
-
-.data-table thead {
-  background: var(--bg-default);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.data-table th {
-  padding: var(--spacing-xs) var(--spacing-sm);
-  text-align: left;
-  font-weight: 600;
-  color: var(--fg-default);
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-  border-bottom: 1px solid var(--border);
-}
-
-.data-table th.col-name {
-  width: 160px;
-  min-width: 160px;
-}
-
-.data-table th.col-desc {
-  width: 220px;
-  min-width: 220px;
-}
-
-.data-table th.col-type {
-  width: 100px;
-  min-width: 100px;
-  text-align: center;
-}
-
-.data-table th.col-format {
-  min-width: 280px;
-}
-
-.data-table tbody tr {
-  border-bottom: 1px solid var(--border);
-  transition: background-color var(--transition-fast);
-}
-
-.data-table tbody tr:nth-child(even) {
-  background: var(--bg-subtle);
-}
-
-.data-table tbody tr:hover {
-  background: var(--bg-default-hover);
-}
-
-.data-table td {
-  padding: var(--spacing-xs) var(--spacing-sm);
-  vertical-align: top;
-  font-size: 0.75rem;
-}
-
-.col-name-cell {
-  font-weight: 600;
-  color: var(--fg-default);
-  font-family: var(--mono-font);
-  background: rgba(59, 130, 246, 0.05);
-}
-
-.col-desc-cell {
-  color: var(--fg-body);
-}
-
-.col-type-cell {
-  text-align: center;
-}
-
-.col-format-cell {
-  font-size: 0.7rem;
-}
-
-/* Type Badges */
-.type-badge {
-  display: inline-block;
-  padding: 0.2rem 0.4rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.7rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.type-badge.string {
-  background: rgba(59, 130, 246, 0.1);
-  color: var(--sky-blue);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-}
-
-.type-badge.integer {
-  background: rgba(245, 158, 11, 0.1);
-  color: #f59e0b;
-  border: 1px solid rgba(245, 158, 11, 0.3);
-}
-
-.type-badge.datetime {
-  background: rgba(168, 85, 247, 0.1);
-  color: #a855f7;
-  border: 1px solid rgba(168, 85, 247, 0.3);
-}
-
-.type-badge.binary {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-/* Options Lists */
-.options-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.2rem;
-}
-
-.option {
-  display: inline-block;
-  background: var(--bg-default);
-  color: var(--fg-body);
-  padding: 0.15rem 0.3rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.7rem;
-  font-family: var(--mono-font);
-  border: 1px solid var(--border);
-}
-
-/* Code styling */
-code {
-  background: var(--bg-default);
-  padding: 0.15em 0.3em;
-  border-radius: var(--radius-sm);
-  font-family: var(--mono-font);
-  font-size: 0.7rem;
-  color: var(--fg-default);
-  border: 1px solid var(--border);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .accordion-header {
-    padding: var(--spacing-sm);
-  }
-  
-  .accordion-body {
-    padding: var(--spacing-sm);
-  }
-  
-  .accordion-title {
-    font-size: 0.875rem;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .table-badge {
-    align-self: flex-start;
-  }
-  
-  .data-table {
-    font-size: 0.7rem;
-  }
-  
-  .data-table th,
-  .data-table td {
-    padding: var(--spacing-xs);
-  }
-  
-  .data-table th.col-name,
-  .data-table th.col-desc {
-    min-width: 100px;
-  }
-}
-</style>
 
 {% endblock %}

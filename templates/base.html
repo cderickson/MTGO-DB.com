@@ -8,6 +8,7 @@
     <link rel="icon" href="{{ url_for('static', filename='images/icon_1.png') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+
     {% block extra_css %}{% endblock %}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
     <script src="{{ url_for('static', filename='base.js') }}" defer></script>
@@ -20,16 +21,16 @@
       {% if messages %}
         <div class="flash-messages" id="flash-messages">
           {% for category, message in messages %}
-            <div class="alert alert-{{ category }}" role="alert">
+            <div class="alert-{{ category }}" role="alert">
               <div class="alert-content">
                 {% if category == 'success' %}
-                  <i class="fas fa-check-circle" style="margin-right: var(--spacing-sm); color: #ffffff;"></i>
+                  <i class="fas fa-check-circle"></i>
                 {% elif category == 'error' %}
-                  <i class="fas fa-exclamation-circle" style="margin-right: var(--spacing-sm); color: #ffffff;"></i>
+                  <i class="fas fa-exclamation-circle"></i>
                 {% elif category == 'warning' %}
-                  <i class="fas fa-exclamation-triangle" style="margin-right: var(--spacing-sm); color: #ffffff;"></i>
+                  <i class="fas fa-exclamation-triangle"></i>
                 {% else %}
-                  <i class="fas fa-info-circle" style="margin-right: var(--spacing-sm); color: #ffffff;"></i>
+                  <i class="fas fa-info-circle"></i>
                 {% endif %}
                 {{ message }}
               </div>
@@ -71,7 +72,7 @@
               <i class="fas fa-user nav-icon"></i>
               Profile
             </a>
-            <div style="border-top: 1px solid var(--border); margin: var(--spacing-sm) 0;"></div>
+            <div class="divider"></div>
             <a href="{{ url_for('views.faq') }}" class="user-dropdown-item">
               <i class="fas fa-question-circle nav-icon"></i>
               FAQ
@@ -88,7 +89,7 @@
               <i class="fas fa-file-archive nav-icon"></i>
               Zip-MTGO-Logs Script
             </a>
-            <div style="border-top: 1px solid var(--border); margin: var(--spacing-sm) 0;"></div>
+            <div class="divider"></div>
             <a href="{{ url_for('views.logout') }}" class="user-dropdown-item">
               <i class="fas fa-sign-out-alt nav-icon"></i>
               Logout
@@ -300,32 +301,31 @@
     <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 
       <!-- Game Winner Modal -->
-      <div id="GameWinnerModal" class="modal" style="display: none;">
-        <div class="modal-content">
+      <div id="GameWinnerModal" class="modal">
+        <div class="modal-content modal-min-300">
           <div class="modal-header">
-            <div style="display: flex; align-items: center; gap: var(--spacing-md);">
-              <div>
-                <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Missing Game Winners</h3>
-                <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Review the game actions and choose a winner manually.</p>
-              </div>
+            <div>
+              <h3>Missing Game Winners</h3>
+              <p>Review the game actions and choose a winner manually.</p>
             </div>
-
             <button type="button" class="modal-close" onclick="hideGameWinnerModal()">
               <i class="fas fa-times"></i>
             </button>
           </div>
           <div class="modal-body">
-            <div class="info-box">
-              <div id="GameWinnerModalDate" style="color: var(--fg-body); font-weight: 500; font-size: 0.875rem; text-align: center;">
+            <div class="message-box standard">
+              <div id="GameWinnerModalDate">
                 Date
-              </div>
+              </div>  
             </div>
             
-            <h4 style="color: var(--fg-default); font-size: 1rem; font-weight: 600; margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm);">
-              <i class="fas fa-list" style="color: var(--fg-muted); font-size: 0.875rem;"></i>
-              End Game Actions
-            </h4>
-            <div id="EndGameActions" style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: var(--spacing-lg); border: 1px solid var(--border); font-family: monospace; font-size: 0.875rem; line-height: 1.6; color: var(--fg-body); height: calc(17 * 1.4rem + 2 * var(--spacing-lg)); overflow: hidden; margin-bottom: var(--spacing-md);">
+            <div class="card">
+              <h4>
+                <i class="fas fa-list"></i>
+                End Game Actions
+              </h4>
+            </div>
+            <div id="EndGameActions">
               Game Action 1<br>
               Game Action 2<br>
               Game Action 3<br>
@@ -342,93 +342,79 @@
               Game Action 14<br>
               Game Action 15<br>
             </div>
-            <div class="info-box" style="background: rgba(220, 255, 30, 0.1); border-left-color: var(--yellow);">
 
-              <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
-                <i class="fas fa-exclamation-triangle" style="color: #f59e0b; font-size: 1.125rem;"></i>
-                <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Game winner could not be automatically determined. Please review the game actions above and choose a winner manually.</h4>
-              </div>
+            <div class="message-box standard">
+              <h4><i class="fas fa-exclamation-triangle"></i>Instructions</h4>
+              <p>Game winner could not be determined.<br>
+              Please review the game actions above and choose a winner manually.</p>
             </div>
           </div>
           <div class="modal-footer">
-            <div class="d-flex gap-3 justify-content-center">
-              <button type="button" class="button secondary" onclick="applyGetWinner('0')">
-                <i class="fas fa-forward" style="margin-right: var(--spacing-xs);"></i>
-                Skip
-              </button>
-              <button type="button" class="button primary" onclick="applyGetWinner('P1')">
-                <i class="fas fa-user" style="margin-right: var(--spacing-xs);"></i>
-                Player 1
-              </button>
-              <button type="button" class="button primary" onclick="applyGetWinner('P2')">
-                <i class="fas fa-user" style="margin-right: var(--spacing-xs);"></i>
-                Player 2
-              </button>
-            </div>
+            <button type="button" class="button secondary" onclick="applyGetWinner('0')">
+              <i class="fas fa-forward"></i>
+              Skip
+            </button>
+            <button type="button" class="button primary" onclick="applyGetWinner('P1')">
+              <i class="fas fa-user"></i>
+              Player 1
+            </button>
+            <button type="button" class="button primary" onclick="applyGetWinner('P2')">
+              <i class="fas fa-user"></i>
+              Player 2
+            </button>
           </div>
         </div>
       </div>
 
       <!-- Draft ID Modal -->
-      <div id="DraftIdModal" class="modal" style="display: none;">
-        <div class="modal-content">
+      <div id="DraftIdModal" class="modal">
+        <div class="modal-content modal-min-300">
           <div class="modal-header">
-            <div style="display: flex; align-items: center; gap: var(--spacing-md);">
-              <div>
-                <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Apply Associated Draft ID</h3>
-                <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Link limited matches to corresponding drafts</p>
-              </div>
+            <div>
+              <h3>Apply Associated Draft ID</h3>
+              <p>Link limited matches to corresponding drafts</p>
             </div>
             <button type="button" class="modal-close" onclick="hideDraftIdModal()">
               <i class="fas fa-times"></i>
             </button>
           </div>
           <div class="modal-body">
-            <div class="info-box">
-              <div id="DraftIdModalDate" style="color: var(--fg-body); font-weight: 500; font-size: 0.875rem; text-align: center;">
-              </div>
+            <div id="DraftIdModalDate" class="message-box standard">
             </div>
             
-            <div style="margin-bottom: var(--spacing-md);">
-              <h4 style="color: var(--fg-default); font-size: 1rem; font-weight: 600; margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm);">
-                <i class="fas fa-cards" style="color: var(--fg-muted); font-size: 0.875rem;"></i>
-                Draft Pool
-              </h4>
-              <div class="draft-pool-container" style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: var(--spacing-lg); border: 1px solid var(--border);">
-                <div class="d-grid grid-3 gap-4">
-                  <div>
-                    <h5 style="margin: 0 0 var(--spacing-sm) 0; color: var(--fg-default); font-size: 0.875rem; font-weight: 600; display: flex; align-items: center; gap: var(--spacing-xs);">
-                      <i class="fas fa-mountain" style="color: #8B4513; font-size: 0.75rem;"></i>
-                      Lands
-                    </h5>
-                    <div id="DraftIdLands" style="font-size: 0.875rem; line-height: 1.5; color: var(--fg-body);"></div>
-                  </div>
-                  <div>
-                    <h5 style="margin: 0 0 var(--spacing-sm) 0; color: var(--fg-default); font-size: 0.875rem; font-weight: 600; display: flex; align-items: center; gap: var(--spacing-xs);">
-                      <i class="fas fa-magic" style="color: #4A90E2; font-size: 0.75rem;"></i>
-                      Spells
-                    </h5>
-                    <div id="DraftIdSpells" style="font-size: 0.875rem; line-height: 1.5; color: var(--fg-body);"></div>
-                  </div>
-                  <div>
-                    <h5 style="margin: 0 0 var(--spacing-sm) 0; color: var(--fg-default); font-size: 0.875rem; font-weight: 600; display: flex; align-items: center; gap: var(--spacing-xs);">
-                      <i class="fas fa-bolt" style="color: #E94E77; font-size: 0.75rem;"></i>
-                      More Spells
-                    </h5>
-                    <div id="DraftIdSpells2" style="font-size: 0.875rem; line-height: 1.5; color: var(--fg-body);"></div>
-                  </div>
+            <div class="card">
+              <i class="fas fa-cards"></i>
+              <h4>Draft Pool</h4>
+              <div class="draft-pool-container">
+                <div class="card">
+                  <h5>
+                    <i class="fas fa-mountain"></i>
+                    Lands
+                  </h5>
+                  <div id="DraftIdLands" ></div>
+                </div>
+                <div class="card">
+                  <h5>
+                    <i class="fas fa-magic"></i>
+                    Spells
+                  </h5>
+                  <div id="DraftIdSpells"></div>
+                </div>
+                <div class="card">
+                  <h5>
+                    <i class="fas fa-bolt"></i>
+                    More Spells
+                  </h5>
+                  <div id="DraftIdSpells2"></div>
                 </div>
               </div>
             </div>
 
-            <div class="form-group info-box">
-              <h4 style="color: var(--fg-default); font-size: 1rem; font-weight: 600; margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm); justify-content: center;">
-                <i class="fas fa-link" style="color: var(--fg-muted); font-size: 0.875rem;"></i>
-                Choose the Draft ID that should be associated with this match based on the card pool.
-              </h4>
-              <div class="dropdown" style="display: flex; justify-content: center;">
-                <button class="button secondary dropdown-toggle" type="button" id="DraftIdButton" onclick="toggleDropdown(event, 'DraftIdMenu')" style="width: 450px;">
-                  <i class="fas fa-chevron-down" style="margin-right: var(--spacing-xs);"></i>
+            <div class="message-box standard">
+              <h4><i class="fas fa-link"></i>Choose the Draft ID that should be associated with this match based on the card pool.</h4>
+              <div class="dropdown">
+                <button class="button secondary dropdown-toggle" type="button" id="DraftIdButton" onclick="toggleDropdown(event, 'DraftIdMenu')" >
+                  <i class="fas fa-chevron-down"></i>
                   Draft ID
                 </button>
                 <ul class="dropdown-menu" id="DraftIdMenu"></ul>
@@ -438,29 +424,26 @@
           </div>
 
           <div class="modal-footer">
-            <div class="d-flex gap-3 justify-content-end">
-              <button type="button" class="button secondary" onclick="applyGetDraftId(true)">
-                <i class="fas fa-forward" style="margin-right: var(--spacing-xs);"></i>
-                Skip
-              </button>
-              <button type="button" class="button primary" onclick="applyGetDraftId(false)">
-                <i class="fas fa-check" style="margin-right: var(--spacing-xs);"></i>
-                Apply
-              </button>
-            </div>
+            <button type="button" class="button secondary" onclick="applyGetDraftId(true)">
+              <i class="fas fa-forward"></i>
+              Skip
+            </button>
+            <button type="button" class="button primary" onclick="applyGetDraftId(false)">
+              <i class="fas fa-check"></i>
+              Apply
+            </button>
           </div>
+
         </div>
       </div>
 
       <!-- Best Guess Modal -->
-      <div id="BestGuessModal" class="modal" style="display: none;">
+      <div id="BestGuessModal" class="modal">
         <div class="modal-content">
           <div class="modal-header">
-            <div style="display: flex; align-items: center; gap: var(--spacing-md);">
-              <div>
-                <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Best Guess Deck Names</h3>
-                <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Automatically assign deck names based on card analysis</p>
-              </div>
+            <div>
+              <h3>Best Guess Deck Names</h3>
+              <p>Automatically assign deck names based on card analysis</p>
             </div>
             <button type="button" class="modal-close" onclick="hideBestGuessModal()">
               <i class="fas fa-times"></i>
@@ -472,8 +455,8 @@
               <input type="hidden" name="BG_Replace" id="BG_Replace" value="Replace NA">
               
               <div class="form-group">
-                <label class="form-label" style="display: flex; align-items: center; gap: var(--spacing-sm);">
-                  <i class="fas fa-filter" style="color: var(--fg-muted); font-size: 0.875rem;"></i>
+                <label class="form-label" >
+                  <i class="fas fa-filter" ></i>
                   Match Set
                 </label>
                 <select class="form-input" id="BG_Match_Set_Select" onchange="updateBestGuessForm()">
@@ -481,146 +464,125 @@
                   <option value="Limited Only">Limited Only</option>
                   <option value="Constructed Only">Constructed Only</option>
                 </select>
-                <small style="color: var(--fg-muted); margin-top: var(--spacing-xs); display: block;">Choose which matches to analyze for deck name suggestions</small>
+                <small >Choose which matches to analyze for deck name suggestions</small>
               </div>
               
               <div class="form-group">
-                <label class="form-label" style="display: flex; align-items: center; gap: var(--spacing-sm);">
-                  <i class="fas fa-sync-alt" style="color: var(--fg-muted); font-size: 0.875rem;"></i>
+                <label class="form-label" >
+                  <i class="fas fa-sync-alt" ></i>
                   Replace Strategy
                 </label>
                 <select class="form-input" id="BG_Replace_Select" onchange="updateBestGuessForm()">
                   <option value="Overwrite All">Overwrite All</option>
                   <option value="Replace NA">Replace NA</option>
                 </select>
-                <small style="color: var(--fg-muted); margin-top: var(--spacing-xs); display: block;">Decide whether to overwrite manually assigned deck names</small>
+                <small >Decide whether to overwrite manually assigned deck names</small>
               </div>
             </form>
             
-            <div class="info-box">
-              <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-md);">
-                <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
-                <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">How it Works</h4>
-              </div>
-              <p style="margin: 0; color: var(--fg-body); line-height: 1.6;">This feature analyzes your deck compositions and automatically suggests appropriate deck names based on card patterns, colors, and archetypes.</p>
+            <div class="message-box standard">
+              <h4><i class="fas fa-info-circle"></i>How it Works</h4>
+              <p>This feature analyzes your deck compositions and automatically suggests appropriate deck names based on card patterns, colors, and archetypes.</p>
             </div>
 
-            <div class="info-box" style="background: rgba(220, 255, 30, 0.1); border-left-color: var(--yellow);">
-              <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
-                <i class="fas fa-exclamation-triangle" style="color: #f59e0b; font-size: 1.125rem;"></i>
-                <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Important Note</h4>
-              </div>
-              <p style="margin: 0; color: var(--fg-body); line-height: 1.6;">This process may take a few minutes to complete depending on the number of matches to analyze. You can continue using other features while it runs in the background.</p>
+            <div class="message-box warning">
+              <h4><i class="fas fa-exclamation-triangle"></i>Important Note</h4>
+              <p>This process may take a few minutes to complete depending on the number of matches to analyze. You can continue using other features while it runs in the background.</p>
             </div>
           </div>
           <div class="modal-footer">
-            <div class="d-flex gap-3 justify-content-end">
-              <button type="button" class="button secondary" onclick="hideBestGuessModal()">
-                <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
-                Cancel
-              </button>
-              <button type="submit" class="button primary" form="getBestGuessModal">
-                <i class="fas fa-check" style="margin-right: var(--spacing-xs);"></i>
-                Apply
-              </button>
-            </div>
+            <button type="button" class="button secondary" onclick="hideBestGuessModal()">
+              <i class="fas fa-times"></i>
+              Cancel
+            </button>
+            <button type="submit" class="button primary" form="getBestGuessModal">
+              <i class="fas fa-check"></i>
+              Apply
+            </button>
           </div>
         </div>
       </div>
 
       <!-- Import Modal -->
-      <div id="ImportModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 600px; width: 90%;">
+      <div id="ImportModal" class="modal">
+        <div class="modal-content">
           <div class="modal-header">
-            <div style="display: flex; align-items: center; gap: var(--spacing-md);">
-              <div>
-                <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Import GameLogs/DraftLogs</h3>
-                <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Upload your zipped GameLog and DraftLog files for processing</p>
-              </div>
+            <div>
+              <h3>Import GameLogs/DraftLogs</h3>
+              <p>Upload your zipped GameLog and DraftLog files for processing</p>
             </div>
             <button type="button" class="modal-close" onclick="hideImportModal()">
               <i class="fas fa-times"></i>
             </button>
           </div>
+
           <div class="modal-body">
             <form id="importForm" action="/load" method="POST" enctype="multipart/form-data">
-              <div class="form-group">
+              <div>
                 <label class="form-label">Select GameLog/DraftLog Files</label>
                 <input type="file" class="form-input" name="file" accept=".zip" required id="importFileInput" onchange="validateImportFiles()">
-                <small id="importFileHelpText" style="color: var(--fg-muted);">Select the .zip file created by the Zip-MTGO-Logs script</small>
+                <small id="importFileHelpText" >Select the .zip file created by the Zip-MTGO-Logs script</small>
               </div>
             </form>
-            <div class="info-box">
-                <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
-                  <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
-                  <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Importing Details</h4>
-                </div>
-                <ul style="margin: 0; padding-left: var(--spacing-lg); color: var(--fg-body); line-height: 1.6;">
-                  <li style="margin-bottom: var(--spacing-sm);">This may take several minutes depending on how many archived files you have to reprocess.</li>
-                  <li>A load report will be emailed upon completion.</li>
-                </ul>
-              </div>
+            <div class="message-box standard">
+              <h4><i class="fas fa-info-circle"></i>Importing Details</h4>
+              <ul>
+                <li>This may take several minutes depending on how many archived files you have to reprocess.</li>
+                <li>A load report will be emailed upon completion.</li>
+              </ul>
+            </div>
           </div>
           <div class="modal-footer">
-            <div class="d-flex gap-3 justify-content-end">
-              <button type="button" class="button secondary" onclick="hideImportModal()">
-                <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
-                Cancel
-              </button>
-              <button type="submit" class="button primary" form="importForm" id="importSubmitBtn" disabled>
-                <i class="fas fa-check" style="margin-right: var(--spacing-xs);"></i>
-                Import Files
-              </button>
-            </div>
+            <button type="button" class="button secondary" onclick="hideImportModal()">
+              <i class="fas fa-times"></i>
+              Cancel
+            </button>
+            <button type="submit" class="button primary" form="importForm" id="importSubmitBtn" disabled>
+              <i class="fas fa-check"></i>
+              Import Files
+            </button>
           </div>
         </div>
       </div>
 
       <!-- Import App Modal -->
-      <div id="ImportAppModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 700px; width: 90%;">
+      <div id="ImportAppModal" class="modal">
+        <div class="modal-content">
           <div class="modal-header">
-            <div style="display: flex; align-items: center; gap: var(--spacing-md);">
-              <div>
-                <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Import from MTGO-Tracker (Windows)</h3>
-                <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Upload your MTGO-Tracker save files for processing</p>
-              </div>
+            <div>
+              <h3>Import from MTGO-Tracker (Windows)</h3>
+              <p>Upload your MTGO-Tracker save files for processing</p>
             </div>
             <button type="button" class="modal-close" onclick="hideImportAppModal()">
               <i class="fas fa-times"></i>
             </button>
           </div>
+
           <div class="modal-body">
             <form id="importAppForm" action="/load_from_app" method="POST" enctype="multipart/form-data">            
-              <div class="form-group">
+              <div>
                 <label class="form-label">Select MTGO-Tracker Save Files</label>
                 <input type="file" class="form-input" name="folder" multiple required id="importAppFileInput" onchange="validateImportAppFiles()">
-                <small id="importAppHelpText" style="color: var(--fg-muted);">Select the ALL_DATA, DRAFTS_TABLE, and PICKS_TABLE files from your MTGO-Tracker save folder.</small>
+                <small id="importAppHelpText" >Select the ALL_DATA, DRAFTS_TABLE, and PICKS_TABLE files from your MTGO-Tracker save folder.</small>
               </div>
               
-              <div class="info-box">
-                <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
-                  <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
-                  <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">How to Select Files</h4>
-                </div>
-                <ol style="margin: 0; padding-left: var(--spacing-lg); color: var(--fg-body); line-height: 1.6;">
-                  <li style="margin-bottom: var(--spacing-sm);">Navigate to your <code style="background: var(--bg-subtle); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-sm); font-family: monospace;">MTGO-Tracker/save/</code> folder</li>
-                  <li style="margin-bottom: var(--spacing-sm);">Hold <kbd style="background: var(--bg-subtle); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-sm); font-family: monospace; border: 1px solid var(--border);">Ctrl</kbd> (or <kbd style="background: var(--bg-subtle); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-sm); font-family: monospace; border: 1px solid var(--border);">Cmd</kbd> on Mac) and select these files:</li>
-                  <ul style="margin: var(--spacing-sm) 0 0 var(--spacing-lg); padding-left: var(--spacing-lg);">
-                    <li style="margin-bottom: var(--spacing-xs);"><code style="background: var(--bg-subtle); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-sm); font-family: monospace;">ALL_DATA</code></li>
-                    <li style="margin-bottom: var(--spacing-xs);"><code style="background: var(--bg-subtle); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-sm); font-family: monospace;">DRAFTS_TABLE</code></li>
-                    <li><code style="background: var(--bg-subtle); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-sm); font-family: monospace;">PICKS_TABLE</code></li>
+              <div class="message-box standard">
+                <h4><i class="fas fa-info-circle"></i> How to Select Files</h4>
+                <ol>
+                  <li>Navigate to your <code >MTGO-Tracker/save/</code> folder</li>
+                  <li>Hold <kbd >Ctrl</kbd> (or <kbd >Cmd</kbd> on Mac) and select these files:</li>
+                  <ul>
+                    <li><code >ALL_DATA</code></li>
+                    <li><code >DRAFTS_TABLE</code></li>
+                    <li><code >PICKS_TABLE</code></li>
                   </ul>
                 </ol>
               </div>
 
-              <div class="info-box" style="background: rgba(239, 68, 68, 0.1); border-left-color: #ef4444;">
-                <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
-                  <i class="fas fa-exclamation-triangle" style="color: #ef4444; font-size: 1.125rem;"></i>
-                  <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Warning</h4>
-                </div>
-                <ul style="margin: 0; padding-left: var(--spacing-lg); color: var(--fg-body); line-height: 1.6;">
-                  <li style="margin-bottom: var(--spacing-sm);">Records added <strong>will not</strong> have an associated raw file archived and will not be able to be re-processed.</li>
+              <div class="message-box warning">
+                <h4><i class="fas fa-exclamation-triangle"></i> Warning</h4>
+                <ul>
+                  <li>Records added <strong>will not</strong> have an associated raw file archived and will not be able to be re-processed.</li>
                   <li>This will overwrite any manual revisions and is <strong>not reversible</strong>.</li>
                 </ul>
               </div>
@@ -628,144 +590,125 @@
             </form>
           </div>
           <div class="modal-footer">
-            <div class="d-flex gap-3 justify-content-end">
-              <button type="button" class="button secondary" onclick="hideImportAppModal()">
-                <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
-                Cancel
-              </button>
-              <button type="submit" class="button primary" form="importAppForm" id="importAppSubmitBtn" disabled>
-                <i class="fas fa-check" style="margin-right: var(--spacing-xs);"></i>
-                Import Data
-              </button>
-            </div>
+            <button type="button" class="button secondary" onclick="hideImportAppModal()">
+              <i class="fas fa-times"></i>
+              Cancel
+            </button>
+            <button type="submit" class="button primary" form="importAppForm" id="importAppSubmitBtn" disabled>
+              <i class="fas fa-check"></i>
+              Import Data
+            </button>
           </div>
         </div>
       </div>
 
       <!-- Load Revisions Modal -->
-      <div id="LoadRevisionsModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 700px; width: 90%;">
+      <div id="LoadRevisionsModal" class="modal">
+        <div class="modal-content">
           <div class="modal-header">
-            <div style="display: flex; align-items: center; gap: var(--spacing-md);">
-              <div>
-                <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Load Revisions</h3>
-                <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Upload user-input revisions from your MTGO-Tracker desktop application</p>
-              </div>
+            <div>
+              <h3>Load Revisions</h3>
+              <p>Upload user-input revisions from your MTGO-Tracker desktop application</p>
             </div>
             <button type="button" class="modal-close" onclick="hideLoadRevisionsModal()">
               <i class="fas fa-times"></i>
             </button>
           </div>
+
           <div class="modal-body">
             <form id="loadRevisionsForm" action="/load_revisions_from_app" method="POST" enctype="multipart/form-data">            
-              <div class="form-group">
+              <div>
                 <label class="form-label">Select ALL_DATA File</label>
                 <input type="file" class="form-input" name="folder" required id="loadRevisionsFileInput" onchange="validateLoadRevisionsFiles()">
-                <small id="loadRevisionsHelpText" style="color: var(--fg-muted);">Select the ALL_DATA file from your MTGO-Tracker save folder.</small>
+                <small id="loadRevisionsHelpText" >Select the ALL_DATA file from your MTGO-Tracker save folder.</small>
               </div>
               
-              <div class="info-box">
-                <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
-                  <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
-                  <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">How to Select File</h4>
-                </div>
-                <ol style="margin: 0; padding-left: var(--spacing-lg); color: var(--fg-body); line-height: 1.6;">
-                  <li style="margin-bottom: var(--spacing-sm);">Navigate to your <code style="background: var(--bg-subtle); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-sm); font-family: monospace;">MTGO-Tracker/save/</code> folder</li>
-                  <li style="margin-bottom: var(--spacing-sm);">Select this file: <code style="background: var(--bg-subtle); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-sm); font-family: monospace;">ALL_DATA</code></li>
+              <div class="message-box standard">
+                <h4><i class="fas fa-info-circle"></i> How to Select File</h4>
+                <ol>
+                  <li>Navigate to your <code >MTGO-Tracker/save/</code> folder</li>
+                  <li>Select this file: <code >ALL_DATA</code></li>
                 </ol>
               </div>
 
-              <div class="info-box" style="background: rgba(239, 68, 68, 0.1); border-left-color: #ef4444;">
-                <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
-                  <i class="fas fa-exclamation-triangle" style="color: #ef4444; font-size: 1.125rem;"></i>
-                  <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Warning</h4>
-                </div>
-                <ul style="margin: 0; padding-left: var(--spacing-lg); color: var(--fg-body); line-height: 1.6;">
-                  <li style="margin-bottom: var(--spacing-sm);">This will load user-input revisions from your MTGO-Tracker save file.</li>
+              <div class="message-box warning">
+                <h4><i class="fas fa-exclamation-triangle"></i> Warning</h4>
+                <ul >
+                  <li>This will load user-input revisions from your MTGO-Tracker save file.</li>
                   <li>This process will overwrite existing revisions and is <strong><u>not reversible</u></strong>.</li>
                 </ul>
               </div>
 
             </form>
           </div>
+
           <div class="modal-footer">
-            <div class="d-flex gap-3 justify-content-end">
-              <button type="button" class="button secondary" onclick="hideLoadRevisionsModal()">
-                <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
-                Cancel
-              </button>
-              <button type="submit" class="button primary" form="loadRevisionsForm" id="loadRevisionsSubmitBtn" disabled>
-                <i class="fas fa-check" style="margin-right: var(--spacing-xs);"></i>
-                Load Revisions
-              </button>
-            </div>
+            <button type="button" class="button secondary" onclick="hideLoadRevisionsModal()">
+              <i class="fas fa-times"></i>
+              Cancel
+            </button>
+            <button type="submit" class="button primary" form="loadRevisionsForm" id="loadRevisionsSubmitBtn" disabled>
+              <i class="fas fa-check"></i>
+              Load Revisions
+            </button>
           </div>
         </div>
       </div>
 
       <!-- Reprocess Modal -->
-      <div id="ReprocessModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 600px; width: 90%;">
+      <div id="ReprocessModal" class="modal">
+        <div class="modal-content">
           <div class="modal-header">
-            <div style="display: flex; align-items: center; gap: var(--spacing-md);">
-              <div>
-                <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Re-Process Data</h3>
-                <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Delete existing data and re-process your archived files.</p>
-              </div>
+            <div>
+              <h3>Re-Process Data</h3>
+              <p>Delete existing data and re-process your archived files.</p>
             </div>
             <button type="button" class="modal-close" onclick="hideReprocessModal()">
               <i class="fas fa-times"></i>
             </button>
           </div>
+
           <div class="modal-body">
             <form id="reprocessForm" action="/reprocess" method="POST">
-              <div class="info-box">
-                <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
-                  <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
-                  <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">When to use this feature</h4>
-                </div>
-                <ul style="margin: 0; padding-left: var(--spacing-lg); color: var(--fg-body); line-height: 1.6;">
+              <div class="message-box standard">
+                <h4><i class="fas fa-info-circle"></i>When to use this feature</h4>
+                <ul>
                   <li><strong>Re-parse</strong> your archived GameLog and DraftLog files if MTGO-Tracker parsing rules have changed.</li>
                   <li><strong>Manual revisions</strong> you have made (such as deck names) <strong><u>will not</u></strong> be lost.</li>
                 </ul>
               </div>
-              <div class="info-box">
-                <div style="display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-sm);">
-                  <i class="fas fa-info-circle" style="color: var(--sky-blue); font-size: 1.125rem;"></i>
-                  <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Processing Details</h4>
-                </div>
-                <ul style="margin: 0; padding-left: var(--spacing-lg); color: var(--fg-body); line-height: 1.6;">
-                  <li style="margin-bottom: var(--spacing-sm);">This may take several minutes depending on how many archived files you have to reprocess.</li>
+              <div class="message-box standard">
+                <h4><i class="fas fa-info-circle"></i>Processing Details</h4>
+                <ul >
+                  <li>This may take several minutes depending on how many archived files you have to reprocess.</li>
                   <li>A load report will be emailed upon completion.</li>
                 </ul>
               </div>
             </form>
           </div>
           <div class="modal-footer">
-            <div class="d-flex gap-3 justify-content-end">
-              <button type="button" class="button secondary" onclick="hideReprocessModal()">
-                <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
-                Cancel
-              </button>
-              <button type="submit" class="button primary" form="reprocessForm">
-                <i class="fas fa-check" style="margin-right: var(--spacing-xs);"></i>
-                Re-Process
-              </button>
-            </div>
+            <button type="button" class="button secondary" onclick="hideReprocessModal()">
+              <i class="fas fa-times"></i>
+              Cancel
+            </button>
+            <button type="submit" class="button primary" form="reprocessForm">
+              <i class="fas fa-check"></i>
+              Re-Process
+            </button>
           </div>
         </div>
       </div>
 
       <!-- Processing Modal -->
-      <div id="processingModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 400px; width: 90%;">
-          <div class="modal-body text-center">
-            <div class="spinner" style="width: 40px; height: 40px; margin: 0 auto 20px;"></div>
+      <div id="processingModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-body">
+            <div class="spinner"></div>
             <h4>Processing...</h4>
             <p id="processingMessage">Please wait while we process your request.</p>
-            <div id="processingButtons" style="margin-top: 20px; display: none;">
+            <div id="processingButtons">
               <button type="button" class="button secondary" onclick="hideProcessingModal()">
-                <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
+                <i class="fas fa-times"></i>
                 Cancel
               </button>
             </div>
@@ -774,59 +717,42 @@
       </div>
 
       <!-- Zip Logs Modal -->
-      <div id="ZipLogsModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 650px; width: 90%;">
+      <div id="ZipLogsModal" class="modal">
+        <div class="modal-content">
           <div class="modal-header">
-            <div style="display: flex; align-items: center; gap: var(--spacing-md);">
-              <div>
-                <h3 style="margin: 0; color: var(--fg-default); font-size: 1.5rem; font-weight: 700;">Zip-MTGO-Logs Script</h3>
-                <p style="margin: 0; color: var(--fg-muted); font-size: 0.875rem;">Prepare your GameLogs for import</p>
-              </div>
+            <div>
+              <h3>Zip-MTGO-Logs Script</h3>
+              <p>Prepare your GameLogs for import</p>
             </div>
             <button type="button" class="modal-close" onclick="hideZipLogsModal()">
               <i class="fas fa-times"></i>
             </button>
           </div>
           <div class="modal-body">           
-            <div class="steps-container">
-              <div class="link-card">
-                <div class="link-icon">
-                  <i class="fab fa-github"></i>
-                </div>
-                <div class="link-content">
-                  <h4><a href="https://github.com/cderickson/Scripts/raw/main/Zip-MTGO-Logs.exe" target="_blank">Download and run the Zip-MTGO-Logs script</a></h4>
-                  <p>The script code is open source and available on GitHub</p>
-                </div>
-              </div>
-              <div class="step-card">
-                <div class="step-number">2</div>
-                <div class="step-content">
-                  <h4>Create a .zip file</h4>
-                  <p>Use the <strong>Zip-MTGO-Logs</strong> script to create a .zip file of your GameLog and DraftLog files.</p>
-                </div>
-              </div>
-              <div class="step-card">
-                <div class="step-number">3</div>
-                <div class="step-content">
-                  <h4>Ready for import</h4>
-                  <p>Upload the generated file using <strong>Processing → Import GameLogs</strong>.</p>
-                </div>
-              </div>
+            <div class="message-box standard">
+              <h4><i class="fab fa-github"></i><a href="https://github.com/cderickson/Scripts/raw/main/Zip-MTGO-Logs.exe" target="_blank">Download and run the Zip-MTGO-Logs script</a></h4>
+              <p>The script code is open source and available on GitHub</p>
+            </div>
+            <div class="message-box standard">
+              <h4><div>2</div>Create a .zip file</h4>
+              <p>Use the <strong>Zip-MTGO-Logs</strong> script to create a .zip file of your GameLog and DraftLog files.</p>
+            </div>
+            <div class="message-box standard">
+              <h4><div>3</div>Ready for import</h4>
+              <p>Upload the generated file using <strong>Processing → Import GameLogs</strong>.</p>
             </div>
           </div>
           <div class="modal-footer">
-            <div class="d-flex gap-3 justify-content-end">
-              <button type="button" class="button secondary" onclick="hideZipLogsModal()">
-                <i class="fas fa-times" style="margin-right: var(--spacing-xs);"></i>
-                Close
+            <button type="button" class="button secondary" onclick="hideZipLogsModal()">
+              <i class="fas fa-times"></i>
+              Close
+            </button>
+            <a href="https://github.com/cderickson/Scripts/raw/main/Zip-MTGO-Logs.exe" target="_blank" rel="noopener noreferrer">
+              <button type="button" class="button primary">
+                <i class="fas fa-download"></i>
+                Download
               </button>
-              <a href="https://github.com/cderickson/Scripts/raw/main/Zip-MTGO-Logs.exe" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">
-                <button type="button" class="button primary">
-                  <i class="fas fa-download" style="margin-right: var(--spacing-sm);"></i>
-                  Download
-                </button>
-              </a>
-            </div>
+            </a>
           </div>
         </div>
       </div>
@@ -835,9 +761,8 @@
       <div id="imageModal" class="image-modal" onclick="closeImageModal()">
         <div class="image-modal-content" onclick="event.stopPropagation()">
           <span class="image-modal-close" onclick="closeImageModal()">&times;</span>
-          <div class="image-modal-image-container">
-            <img id="modalImage" src="" alt="" class="modal-image">
-          </div>
+          <div class="image-modal-image-container"></div>
+          <img id="modalImage" src="" alt="" class="modal-image">
           <div class="image-modal-caption">
             <h3 id="modalTitle"></h3>
             <p id="modalDescription"></p>
@@ -846,696 +771,6 @@
       </div>
 
     </div>
-
-    <style>
-    /* Additional Redis.io Dropdown Styles */
-    .nav-link.dropdown-toggle {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    
-    .nav-link.dropdown-toggle i {
-      font-size: 0.75rem;
-      transition: transform var(--transition-fast);
-    }
-    
-    .nav-link.dropdown-toggle.active i {
-      transform: rotate(180deg);
-    }
-    
-    /* Modal Styles - Ensure these don't conflict with image-modal */
-    .modal:not(.image-modal) {
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
-      background: rgba(0, 0, 0, 0.5) !important;
-      z-index: 10000 !important;
-      backdrop-filter: blur(5px) !important;
-      display: none !important;
-      align-items: center !important;
-      justify-content: center !important;
-    }
-    
-    /* Show modal when explicitly displayed */
-    .modal:not(.image-modal)[style*="display: flex"] {
-      display: flex !important;
-    }
-    
-    .modal-content {
-      position: relative !important;
-      background: var(--bg-subtle) !important;
-      border: 1px solid var(--border) !important;
-      border-radius: var(--radius-lg) !important;
-      max-height: 90vh !important;
-      width: 90% !important;
-      max-width: 600px !important;
-      overflow: visible !important;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
-    }
-    
-    /* Specific modal widths */
-    #GameWinnerModal .modal-content {
-      max-width: 1000px !important;
-    }
-    
-    #DraftIdModal .modal-content {
-      max-width: 900px !important;
-    }
-    
-    #BestGuessModal .modal-content {
-      max-width: 800px !important;
-    }
-    
-    #ImportModal .modal-content {
-      max-width: 600px !important;
-    }
-    
-    #ImportAppModal .modal-content {
-      max-width: 700px !important;
-    }
-    
-    #ReprocessModal .modal-content {
-      max-width: 600px !important;
-    }
-    
-    #processingModal .modal-content {
-      max-width: 400px !important;
-      width: 90% !important;
-    }
-        
-    /* Mobile responsiveness for modals */
-    @media (max-width: 768px) {
-      .modal-content {
-        width: 95% !important;
-        max-width: none !important;
-      }
-      
-      #GameWinnerModal .modal-content,
-      #DraftIdModal .modal-content,
-      #BestGuessModal .modal-content,
-      #ImportModal .modal-content,
-      #ImportAppModal .modal-content,
-      #ReprocessModal .modal-content,
-      #processingModal .modal-content,
-      #ReviseModal .modal-content {
-        max-width: none !important;
-        width: 95% !important;
-      }
-    }
-    
-    .modal-header {
-      padding: var(--spacing-lg) !important;
-      border-bottom: 1px solid var(--stroke-divider) !important;
-      position: relative !important;
-    }
-    
-    .modal-header h3 {
-      margin: 0 !important;
-      color: var(--fg-default) !important;
-      font-size: 1.25rem !important;
-      font-weight: 600 !important;
-    }
-    
-    .modal-body {
-      padding: var(--spacing-lg) !important;
-      overflow: visible !important;
-      max-height: calc(90vh - 200px) !important;
-    }
-    
-    .modal-footer {
-      padding: var(--spacing-lg) !important;
-      border-top: 1px solid var(--stroke-divider) !important;
-    }
-    
-    .modal-close {
-      position: absolute !important;
-      right: var(--spacing-lg) !important;
-      top: 50% !important;
-      transform: translateY(-50%) !important;
-      background: none !important;
-      border: none !important;
-      color: var(--fg-muted) !important;
-      font-size: 1.25rem !important;
-      cursor: pointer !important;
-      padding: 0 !important;
-      width: 30px !important;
-      height: 30px !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      border-radius: var(--radius-sm) !important;
-      transition: all var(--transition-fast) !important;
-    }
-    
-    .modal-close:hover {
-      background: var(--bg-default-hover) !important;
-      color: var(--fg-default) !important;
-    }
-    
-    /* Button Styles for Modals */
-    .button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: var(--spacing-sm) var(--spacing-lg);
-      font-size: 0.875rem;
-      font-weight: 500;
-      border-radius: var(--radius-md);
-      text-decoration: none;
-      cursor: pointer;
-      transition: all var(--transition-fast);
-      border: 1px solid transparent;
-      font-family: inherit;
-      min-height: 36px;
-      gap: var(--spacing-sm);
-    }
-    
-    .button.primary {
-      background: var(--primary-button-bg);
-      color: var(--primary-button-fg);
-      border-color: var(--primary-button-border);
-    }
-    
-    .button.primary:hover {
-      background: var(--primary-button-bg-hover);
-      border-color: var(--primary-button-border-hover);
-    }
-    
-    .button.secondary {
-      background: var(--secondary-button-bg);
-      color: var(--secondary-button-fg);
-      border-color: var(--secondary-button-border);
-    }
-    
-    .button.secondary:hover {
-      background: var(--secondary-button-bg-hover);
-      border-color: var(--secondary-button-border-hover);
-    }
-    
-    .button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-    
-    /* Dropdown Styles */
-    .dropdown {
-      position: relative;
-      display: inline-block;
-    }
-    
-    .dropdown-toggle {
-      background: var(--secondary-button-bg);
-      color: var(--secondary-button-fg);
-      border: 1px solid var(--secondary-button-border);
-      padding: var(--spacing-sm) var(--spacing-lg);
-      border-radius: var(--radius-md);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: var(--spacing-sm);
-    }
-    
-    .dropdown-menu {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      background: var(--dropdown-bg);
-      border: 1px solid var(--dropdown-border);
-      border-radius: var(--radius-md);
-      box-shadow: var(--shadow-lg);
-      min-width: 200px;
-      z-index: 1000;
-      max-height: 200px;
-      overflow-y: auto;
-      display: none;
-    }
-    
-    .dropdown-menu.show {
-      display: block;
-    }
-    
-    .dropdown-menu li {
-      list-style: none;
-      padding: var(--spacing-sm) var(--spacing-md);
-      cursor: pointer;
-      transition: background var(--transition-fast);
-    }
-    
-    .dropdown-menu li:hover {
-      background: var(--dropdown-item-hover);
-    }
-    
-    /* Utility Classes */
-    .d-flex { display: flex !important; }
-    .gap-3 { gap: var(--spacing-md) !important; }
-    .justify-content-center { justify-content: center !important; }
-    .justify-content-end { justify-content: flex-end !important; }
-    .text-center { text-align: center !important; }
-    .mb-3 { margin-bottom: var(--spacing-md) !important; }
-    .d-grid { display: grid !important; }
-    .grid-3 { grid-template-columns: repeat(3, 1fr) !important; }
-    .gap-4 { gap: var(--spacing-lg) !important; }
-    
-    /* Centered grid columns for Draft ID modal */
-    #DraftIdModal .d-grid.grid-3 { 
-      grid-template-columns: repeat(3, 200px) !important;
-      justify-content: center !important;
-      gap: var(--spacing-lg) !important;
-      width: 100% !important;
-    }
-    
-    /* Center column headers in Draft ID modal */
-    #DraftIdModal .d-grid.grid-3 h5 {
-      justify-content: center !important;
-    }
-    
-    /* Draft pool container height and scroll */
-    #DraftIdModal .draft-pool-container {
-      min-height: 300px !important;
-      max-height: 400px !important;
-      overflow-y: auto !important;
-    }
-    
-    /* Form Styles for Modals */
-    .form-group {
-      margin-bottom: var(--spacing-lg);
-    }
-    
-    .form-label {
-      display: block;
-      font-weight: 500;
-      color: var(--fg-default);
-      margin-bottom: var(--spacing-sm);
-      font-size: 0.875rem;
-    }
-    
-    .form-input {
-      width: 100%;
-      padding: var(--spacing-sm) var(--spacing-md);
-      font-size: 0.875rem;
-      background: var(--form-input-bg);
-      border: 1px solid var(--form-input-border);
-      border-radius: var(--radius-md);
-      color: var(--form-input-fg);
-      transition: all var(--transition-fast);
-    }
-    
-    .form-input:focus {
-      outline: none;
-      border-color: var(--form-input-focused-border);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-    
-    /* Spinner Animation */
-    .spinner {
-      border: 3px solid var(--border);
-      border-top: 3px solid var(--sky-blue);
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-       
-    /* Flash message styles moved to base.css */
-    
-    /* Header Auth Styles */
-    .header-right {
-      position: relative;
-    }
-    
-    .header-right .user-menu {
-      position: relative;
-      width: max-content;
-    }
-    
-    .header-right .user-info {
-      display: flex;
-      align-items: center;
-      gap: var(--spacing-xs);
-      padding: var(--spacing-xs) var(--spacing-md);
-      border-radius: var(--radius-md);
-      cursor: pointer;
-      transition: all var(--transition-fast);
-      background: transparent;
-      border: 1px solid transparent;
-      color: var(--fg-default);
-      width: max-content;
-      min-width: max-content;
-    }
-    
-    .header-right .user-info:hover {
-      background: var(--bg-default-hover);
-      border-color: var(--border);
-    }
-    
-    .header-right .user-avatar {
-      font-size: 1.125rem;
-      color: var(--fg-muted);
-    }
-    
-    .header-right .user-details {
-      display: flex;
-      align-items: center;
-      gap: var(--spacing-xs);
-    }
-    
-    .header-right .user-email {
-      font-size: 0.75rem;
-      color: var(--fg-default);
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: visible;
-      text-overflow: unset;
-      max-width: none;
-    }
-    
-    .header-right .user-chevron {
-      font-size: 0.7rem;
-      color: var(--fg-muted);
-      transition: transform var(--transition-fast);
-    }
-    
-    .header-right .auth-buttons {
-      display: flex;
-      align-items: center;
-      gap: var(--spacing-xs);
-    }
-    
-    .header-right .auth-btn {
-      display: flex;
-      align-items: center;
-      gap: var(--spacing-xs);
-      padding: var(--spacing-xs) var(--spacing-md);
-      border-radius: var(--radius-md);
-      text-decoration: none;
-      font-size: 0.75rem;
-      font-weight: 500;
-      transition: all var(--transition-fast);
-      border: 1px solid transparent;
-      white-space: nowrap;
-    }
-    
-    .header-right .login-btn {
-      color: var(--fg-default);
-      border-color: var(--border);
-      background: transparent;
-    }
-    
-    .header-right .login-btn:hover {
-      background: var(--bg-default-hover);
-      border-color: var(--border-hover);
-      color: var(--fg-default);
-    }
-    
-    .header-right .register-btn {
-      color: var(--primary-button-fg);
-      background: var(--primary-button-bg);
-      border-color: var(--primary-button-border);
-    }
-    
-    .header-right .register-btn:hover {
-      background: var(--primary-button-bg-hover);
-      border-color: var(--primary-button-border-hover);
-      color: var(--primary-button-fg);
-    }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-      .nav-menu {
-        display: none;
-      }
-      
-      .dropdown-menu {
-        position: static;
-        box-shadow: none;
-        border: none;
-        background: transparent;
-      }
-      
-      .header-right .user-details {
-        display: none;
-      }
-      
-      .header-right .auth-btn .nav-text {
-        display: none;
-      }
-      
-      .header-right .auth-btn {
-        padding: var(--spacing-xs) var(--spacing-md);
-      }
-    }
-    
-    /* FAQ/Changelog Component Styles for Modals */
-
-    .modal p {
-      margin: var(--spacing-md) 0 var(--spacing-md) 0;
-      font-size: 0.75rem;
-      line-height: 1.5;
-    }
-
-    .modal ul {
-      margin: var(--spacing-md) 0 var(--spacing-md) 0;
-      padding-left: var(--spacing-md);
-    }
-
-    .modal h4 {
-      margin: var(--spacing-md) 0 var(--spacing-md) 0;
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: var(--fg-default);
-    }
-
-    .modal li {
-      margin-bottom: var(--spacing-xs);
-      font-size: 0.75rem;
-    }
-
-    .modal a {
-      color: var(--fg-brand);
-      text-decoration: none;
-      font-weight: 500;
-      transition: color var(--transition-fast);
-    }
-
-    .modal a:hover {
-      color: var(--hyper-04);
-      text-decoration: underline;
-    }
-
-    /* Info Box Styles */
-    .modal .info-box {
-      background: rgba(128, 219, 255, 0.1);
-      border-left: 4px solid var(--sky-blue);
-      border-radius: var(--radius-sm);
-      padding: var(--spacing-md);
-      margin: 0 0 var(--spacing-sm) 0 !important;
-    }
-
-    .modal .info-box:last-child {
-      margin-bottom: 0 !important;
-    }
-
-    .modal .info-box h4 {
-      margin: 0 0 var(--spacing-sm) 0 !important;
-      color: var(--fg-default);
-      font-size: 0.875rem;
-      font-weight: 600;
-    }
-
-    .modal .info-box p {
-      margin: 0;
-      color: var(--fg-body);
-      font-size: 0.75rem;
-      line-height: 1.5;
-    }
-
-    /* Step Container & Card Styles */
-    .modal .steps-container {
-      display: flex;
-      flex-direction: column;
-      gap: var(--spacing-sm);
-    }
-
-    .modal .step-card {
-      display: flex;
-      align-items: flex-start;
-      gap: var(--spacing-sm);
-      padding: var(--spacing-md);
-      background: var(--bg-default);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      transition: all var(--transition-fast);
-    }
-
-    .modal .step-card:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-md);
-    }
-
-    .modal .step-number {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 28px;
-      background: var(--fg-brand);
-      color: var(--base-white);
-      border-radius: 50%;
-      font-weight: 700;
-      font-size: 0.75rem;
-      flex-shrink: 0;
-    }
-
-    .modal .step-content h4 {
-      margin: 0 0 var(--spacing-xs) 0;
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: var(--fg-default);
-    }
-
-    .modal .step-content p {
-      margin: 0;
-      color: var(--fg-body);
-      font-size: 0.75rem;
-      line-height: 1.4;
-    }
-
-    .modal .step-content code {
-      background: var(--bg-code);
-      color: var(--fg-code);
-      padding: 0.2rem 0.4rem;
-      border-radius: var(--radius-sm);
-      font-size: 0.7rem;
-      font-family: 'Courier New', monospace;
-    }
-
-    /* Link Card Styles */
-    .modal .link-card {
-      display: flex;
-      align-items: flex-start;
-      gap: var(--spacing-sm);
-      padding: var(--spacing-md);
-      background: var(--bg-default);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      transition: all var(--transition-fast);
-    }
-
-    .modal .link-card:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-md);
-    }
-
-    .modal .link-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 28px;
-      background: var(--fg-brand);
-      color: var(--base-white);
-      border-radius: 50%;
-      font-size: 0.75rem;
-      flex-shrink: 0;
-      font-weight: 700;
-    }
-
-    .modal .link-content h4 {
-      margin: 0 0 var(--spacing-xs) 0;
-      font-size: 0.875rem;
-      font-weight: 600;
-    }
-
-    .modal .link-content h4 a {
-      color: var(--fg-default);
-      text-decoration: none;
-    }
-
-    .modal .link-content h4 a:hover {
-      color: var(--fg-brand);
-    }
-
-    .modal .link-content p {
-      margin: 0;
-      color: var(--fg-body);
-      font-size: 0.75rem;
-      line-height: 1.4;
-    }
-
-    /* Feature Grid & Item Styles */
-    .modal .feature-grid {
-      margin: 0 0 var(--spacing-sm) 0 !important;
-    }
-
-    .modal .feature-grid:last-child {
-      margin-bottom: 0 !important;
-    }
-
-    .modal .feature-item {
-      text-align: center;
-      padding: var(--spacing-sm);
-      background: var(--bg-default);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      transition: all var(--transition-fast);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .modal .feature-item:hover {
-      transform: translateY(-1px);
-      box-shadow: var(--shadow-md);
-    }
-
-    .modal .feature-item i {
-      font-size: 1rem;
-      margin-bottom: var(--spacing-xs);
-      display: block;
-    }
-
-    .modal .feature-item h5 {
-      margin: 0 0 var(--spacing-xs) 0;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--fg-default);
-    }
-
-    .modal .feature-item p {
-      margin: 0;
-      font-size: 0.7rem;
-      color: var(--fg-body);
-      line-height: 1.3;
-    }
-
-    .modal .info-box div[style*="display: flex"] h4 {
-      margin: 0 !important;
-    }
-    
-    /* Responsive Styles for Modal Components */
-    @media (max-width: 768px) {
-      .modal .step-card {
-        flex-direction: column;
-        text-align: center;
-      }
-      
-      .modal .link-card {
-        flex-direction: column;
-        text-align: center;
-      }
-      
-      .modal .feature-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-    </style>
 
     <script>
     // Modal Dropdown functionality
@@ -1548,10 +783,6 @@
       // Close all dropdowns and reset toggles
       document.querySelectorAll('.dropdown-menu').forEach(menu => {
         menu.classList.remove('show');
-        // Reset positioning styles
-        menu.style.left = '';
-        menu.style.top = '';
-        menu.style.position = '';
       });
       document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
         toggle.classList.remove('active');
@@ -1566,10 +797,6 @@
         const isInModal = toggle.closest('.modal');
         if (isInModal && dropdown.classList.contains('dropdown-menu')) {
           const rect = toggle.getBoundingClientRect();
-          dropdown.style.position = 'fixed';
-          dropdown.style.left = rect.left + 'px';
-          dropdown.style.top = (rect.bottom + 2) + 'px';
-          dropdown.style.zIndex = '20000';
           
           // Adjust if dropdown would go off-screen
           const dropdownHeight = 200; // Approximate dropdown height
@@ -1695,7 +922,6 @@
       document.getElementById('importForm').reset();
       const helpText = document.getElementById('importFileHelpText');
       helpText.innerHTML = 'Select the .zip file created by the Zip-MTGO-Logs script';
-      helpText.style.color = 'var(--fg-muted)';
     }
     
     function showImportAppModal() {
@@ -1717,7 +943,6 @@
       document.getElementById('importAppForm').reset();
       const helpText = document.getElementById('importAppHelpText');
       helpText.innerHTML = 'Select the ALL_DATA, DRAFTS_TABLE, and PICKS_TABLE files from your MTGO-Tracker save folder.';
-      helpText.style.color = 'var(--fg-muted)';
     }
     
     function showLoadRevisionsModal() {
@@ -1739,7 +964,6 @@
       document.getElementById('loadRevisionsForm').reset();
       const helpText = document.getElementById('loadRevisionsHelpText');
       helpText.innerHTML = 'Select the ALL_DATA file from your MTGO-Tracker save folder.';
-      helpText.style.color = 'var(--fg-muted)';
     }
     
     function showReprocessModal() {
@@ -2024,7 +1248,6 @@
       
       if (selectedFiles.length === 0) {
         helpText.innerHTML = 'Select the ALL_DATA, DRAFTS_TABLE, and PICKS_TABLE files from your MTGO-Tracker save folder.';
-        helpText.style.color = 'var(--fg-muted)';
         submitBtn.disabled = true;
         return;
       }
@@ -2068,7 +1291,6 @@
       
       if (fileInput.files.length === 0) {
         helpText.innerHTML = 'Select the .zip file created by the Zip-MTGO-Logs script';
-        helpText.style.color = 'var(--fg-muted)';
         submitBtn.disabled = true;
         return;
       }
@@ -2096,7 +1318,6 @@
       
       if (fileInput.files.length === 0) {
         helpText.innerHTML = 'Select the ALL_DATA file from your MTGO-Tracker save folder.';
-        helpText.style.color = 'var(--fg-muted)';
         submitBtn.disabled = true;
         return;
       }

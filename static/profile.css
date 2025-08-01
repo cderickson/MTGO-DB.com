@@ -1,450 +1,301 @@
-/* Profile Page Styles */
-
-/* Override global layout min-heights to prevent unwanted scrolling */
-.app-layout {
-  min-height: auto !important;
-}
-
-.main-content {
-  min-height: auto !important;
-}
-
-.content-wrapper {
-  flex: none !important;
-  padding: var(--spacing-md) !important;
-}
+/* Profile Page Specific Styles */
 
 .profile-container {
-  width: 900px !important;
-  max-width: 900px !important;
-  min-width: 900px !important;
-  margin: 0 auto;
-  padding: 0;
-  /* Ensure proper centering in the main content area */
-  position: relative;
-  flex: none !important;
-  /* Create grid layout */
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  grid-template-rows: auto auto;
-  gap: var(--spacing-sm);
-  grid-template-areas: 
-    "user-info lifetime-stats"
-    "match-history lifetime-stats";
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-.profile-section {
-  margin-bottom: var(--spacing-sm);
-  /* Ensure consistent padding for all sections */
-  padding: 0;
-}
-
-
-
-.profile-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  transition: all var(--transition-fast);
-}
-
-
-
-.profile-card-header {
-  background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
-  border-bottom: 1px solid var(--border);
-  padding: var(--spacing-md) var(--spacing-lg);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.profile-card-title {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  margin: 0;
-  /* font-size removed - will use h3 default size */
-  font-weight: 600;
-  color: var(--fg-default);
+.profile-left-column,
+.profile-right-column {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
 .profile-icon {
-  color: var(--sky-blue);
-  font-size: 1.25rem;
+    color: #0039A6;
+    font-size: 24px;
 }
 
-.profile-card-body {
-  padding: var(--spacing-lg);
+.profile-edit-controls-header {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
 }
 
-/* Profile Info Grid */
 .profile-info-grid {
-  display: grid;
-  gap: var(--spacing-md);
+    display: grid;
+    gap: 20px;
 }
 
 .profile-info-item {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .profile-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--fg-body);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .profile-value {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--fg-default);
-  padding: var(--spacing-sm);
-  background: var(--bg-subtle);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  min-height: 36px;
-  display: flex;
-  align-items: center;
+    color: #333;
+    font-size: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid transparent;
 }
 
-.profile-input {
-  /* When shown, match profile-value exactly */
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--fg-default);
-  padding: var(--spacing-sm);
-  background: var(--bg-subtle);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  min-height: 36px;
-  display: flex;
-  align-items: center;
-}
-
-.profile-input[style*="display:none"],
-.profile-input[style*="display: none"] {
-  display: none !important;
-}
-
-.profile-input .form-input {
-  font-size: inherit !important;
-  font-weight: inherit !important;
-  color: inherit !important;
-  background: white !important;
-  border: none !important;
-  border-radius: 0 !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  width: 100% !important;
-  height: auto !important;
-  min-height: auto !important;
-  outline: none !important;
-  font-family: inherit !important;
-  line-height: inherit !important;
-  box-sizing: border-box !important;
-}
-
-/* Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--spacing-sm);
-}
-
-.stat-item {
-  padding: var(--spacing-sm);
-  background: var(--bg-subtle);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
-}
-
-.stat-item:hover {
-  background: var(--bg-default-hover);
-  border-color: var(--sky-blue);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-.stat-highlight {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0.1) 100%);
-  border-color: rgba(59, 130, 246, 0.2);
-}
-
-.stat-highlight:hover {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.15) 100%);
-  border-color: var(--sky-blue);
-}
-
-.stat-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--fg-body);
-  margin-bottom: var(--spacing-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.stat-label small {
-  font-size: 0.7rem;
-  font-weight: 400;
-  color: var(--fg-muted);
-  text-transform: none;
-  letter-spacing: normal;
-}
-
-.stat-value {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--fg-default);
-  line-height: 1.2;
-}
-
-.stat-subtext {
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: var(--fg-muted);
-  margin-top: var(--spacing-xs);
-  line-height: 1.3;
-}
-
-/* Profile Edit Controls Container */
-.profile-edit-controls-header {
-  display: flex;
-  gap: var(--spacing-sm);
-  align-items: center;
-  flex-wrap: nowrap;
-}
-
-/* Individual Button Styling */
-#EditProfileButton,
-#SaveProfileButton,
-#CancelProfileButton {
-  width: 140px !important;
-  min-width: 140px !important;
-  max-width: 140px !important;
-  padding: 0.4rem 0.6rem !important;
-  font-size: 0.75rem !important;
-}
-
-/* Match History Table Styles */
-.table-responsive {
-  margin: 0;
-  padding: 0;
-}
-
-/* Make match history card consistent regardless of content */
-.match-history-card {
-  width: fit-content !important;
-  margin: 0 auto !important;
-  min-width: 600px; /* Ensure consistent minimum width */
-}
-
-/* When there's a table, let it expand naturally */
-.profile-section:has(.match-history-table) .profile-card {
-  width: fit-content;
-  margin: 0 auto;
-  min-width: 600px;
-}
-
-/* Empty state styling to match table spacing */
-.match-history-empty-state {
-  text-align: center;
-  color: var(--fg-muted);
-  padding: 0; /* Remove extra padding - card-body already has padding */
-  margin: 0;
-}
-
+/* Match History Specific Styles */
 .match-history-table {
-  font-size: 0.75rem;
-  border-radius: 6px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border: #5f5c5c 1px solid;
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    background: white;
 }
 
-.match-history-table thead th {
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
-  color: white !important;
-  font-weight: 600;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border: none !important;
-  position: relative;
+.match-history-table th {
+    background-color: #f8f9fa;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 2px solid #e9ecef;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-/* Consistent column widths - Updated for 5 columns */
-.match-history-table th:nth-child(1),
-.match-history-table td:nth-child(1) { /* Date */
-  width: 100px;
-  min-width: 100px;
-  max-width: 100px;
-}
-
-.match-history-table th:nth-child(2),
-.match-history-table td:nth-child(2) { /* Players (stacked) */
-  width: 120px;
-  min-width: 120px;
-  max-width: 120px;
-}
-
-.match-history-table th:nth-child(3),
-.match-history-table td:nth-child(3) { /* Decks (stacked) */
-  width: 140px;
-  min-width: 140px;
-  max-width: 140px;
-}
-
-.match-history-table th:nth-child(4),
-.match-history-table td:nth-child(4) { /* Match Result */
-  width: 100px;
-  min-width: 100px;
-  max-width: 100px;
-}
-
-.match-history-table th:nth-child(5),
-.match-history-table td:nth-child(5) { /* Match Format */
-  width: 140px;
-  min-width: 140px;
-  max-width: 140px;
-}
-
-.match-history-table th,
 .match-history-table td {
-  padding: 0.5rem 0.5rem;
-  vertical-align: middle;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  border: none !important;
-  transition: all 0.3s ease;
-}
-
-/* Stacked Players and Decks Styling */
-.stacked-players, .stacked-decks {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  align-items: center;
-}
-
-.player-top, .deck-top {
-  font-weight: 600;
-  font-size: 0.7rem;
-}
-
-.player-bottom, .deck-bottom {
-  font-weight: 600;
-  font-size: 0.7rem;
-}
-
-.stacked-players > div, .stacked-decks > div {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
-  text-align: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 14px;
+    vertical-align: middle;
 }
 
 .match-history-table tbody tr {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
+    transition: background-color 0.2s ease;
 }
 
-.match-history-table tbody tr:last-child {
-  border-bottom: none;
-}
-
-/* Enhanced Match result row coloring with gradients */
-.match-win {
-  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
-  border-left: 4px solid #16a34a !important;
-}
-
-.match-loss {
-  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%) !important;
-  border-left: 4px solid #dc2626 !important;
-}
-
-.match-na {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
-  border-left: 4px solid #6c757d !important;
-}
-
-.match-win:hover {
-  background: linear-gradient(135deg, #c3e6cb 0%, #b5d7c0 100%) !important;
-  box-shadow: 0 4px 8px rgba(22, 163, 74, 0.2);
-}
-
-.match-loss:hover {
-  background: linear-gradient(135deg, #f5c6cb 0%, #f0b2b8 100%) !important;
-  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.2);
-}
-
-.match-na:hover {
-  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%) !important;
-  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.2);
+.match-history-table tbody tr:hover {
+    background-color: #f8f9fa;
 }
 
 /* Match result styling */
+.match-win {
+    background-color: rgba(40, 167, 69, 0.05);
+}
+
+.match-win:hover {
+    background-color: rgba(40, 167, 69, 0.1);
+}
+
+.match-loss {
+    background-color: rgba(220, 53, 69, 0.05);
+}
+
+.match-loss:hover {
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.match-na {
+    background-color: rgba(108, 117, 125, 0.05);
+}
+
+.match-na:hover {
+    background-color: rgba(108, 117, 125, 0.1);
+}
+
+.stacked-players,
+.stacked-decks {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.player-top,
+.deck-top {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.player-bottom,
+.deck-bottom {
+    color: #666;
+    font-size: 13px;
+}
+
+.deck-name {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    background-color: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid #e9ecef;
+}
+
 .match-result {
-  font-weight: 700;
-  font-size: 0.9rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  display: inline-block;
-  min-width: 80px;
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .match-result.win {
-  background: rgba(22, 163, 74, 0.1);
-  border: 1px solid rgba(22, 163, 74, 0.2);
-  border-left: 3px solid #16a34a;
+    background-color: #28a745;
+    color: white;
 }
 
 .match-result.loss {
-  background: rgba(220, 38, 38, 0.1);
-  border: 1px solid rgba(220, 38, 38, 0.2);
-  border-left: 3px solid #dc2626;
+    background-color: #dc3545;
+    color: white;
 }
 
 .match-result.na {
-  background: rgba(108, 117, 125, 0.1);
-  border: 1px solid rgba(108, 117, 125, 0.2);
+    background-color: #6c757d;
+    color: white;
 }
 
-/* Deck name styling */
-.deck-name {
-  font-weight: 600;
+/* Statistics Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
 }
 
-/* Add subtle glow to match results */
-.match-result.win {
-  box-shadow: 0 0 8px rgba(22, 163, 74, 0.3);
+.stat-item {
+    background-color: #f8f9fa;
+    padding: 16px;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    text-align: center;
 }
 
-.match-result.loss {
-  box-shadow: 0 0 8px rgba(220, 38, 38, 0.3);
+.stat-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    line-height: 1.3;
 }
 
-.match-result:hover {
-  transform: scale(1.1);
+.stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #0039A6;
+    margin-bottom: 4px;
+    line-height: 1.2;
 }
 
-/* Format column styling */
-.match-history-table td:nth-child(5) {
-  font-style: italic;
-  font-weight: 500;
+.stat-subtext {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+    line-height: 1.3;
 }
 
-/* Date column styling */
-.match-history-table td:nth-child(1) {
-  font-weight: 600;
+/* Empty state styling */
+.no-data {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.no-data i {
+    font-size: 48px;
+    color: #ddd;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.no-data h5 {
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.no-data p {
+    color: #999;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+    .profile-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .profile-edit-controls-header {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .match-history-table th,
+    .match-history-table td {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+    
+    .stat-item {
+        padding: 12px;
+    }
+    
+    .stat-value {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-edit-controls-header {
+        flex-direction: column;
+        gap: 6px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .match-history-table {
+        font-size: 12px;
+    }
+    
+    .match-history-table th,
+    .match-history-table td {
+        padding: 6px 8px;
+    }
+    
+    .stacked-players,
+    .stacked-decks {
+        gap: 1px;
+    }
+    
+    .player-top,
+    .deck-top {
+        font-size: 13px;
+    }
+    
+    .player-bottom,
+    .deck-bottom {
+        font-size: 12px;
+    }
 }

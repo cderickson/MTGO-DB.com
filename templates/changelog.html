@@ -6,171 +6,119 @@
 
 <div class="content-wrapper">
   <div class="changelog-container">
-    <div class="accordion-container">
+    <div >
       
       <!-- Version 1.0.0 - Initial Release -->
-      <div class="accordion-item" data-target="v1-0-0">
-        <div class="accordion-header">
-          <h3 class="accordion-title">
+      <div class="card" data-target="v1-0-0">
+            <div class="card-header">
+      <h3 class="card-title">
             Version 1.0.0 - Initial Release
             <span class="version-date">November 1, 2023</span>
           </h3>
-          <i class="fas fa-chevron-down accordion-arrow"></i>
+          <i class="fas fa-chevron-down"></i>
         </div>
-        <div class="accordion-content" id="v1-0-0">
-          <div class="accordion-body">
-            <div class="info-box" style="background: rgba(220, 255, 30, 0.1); border-left-color: var(--yellow);">
-              <p><strong>Welcome to MTGO-DB!</strong> The first public release of the web-based MTGO data analytics platform.</p>
-            </div>
+        <div class="card-content" id="v1-0-0">
+          <p><strong>Welcome to MTGO-DB!</strong> The first public release of the web-based MTGO data analytics platform.</p>
             
-            <h4>Core Features</h4>
-            <div class="feature-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-sm);">
-              <div class="feature-item">
-                <i class="fas fa-upload" style="color: var(--fg-brand);"></i>
-                <h5>Data Import</h5>
-                <p>Upload and process MTGO GameLog and DraftLog files</p>
-              </div>
-              <div class="feature-item">
-                <i class="fas fa-chart-line" style="color: var(--fg-brand);"></i>
-                <h5>Analytics Dashboard</h5>
-                <p>View match statistics and performance metrics</p>
-              </div>
-              <div class="feature-item">
-                <i class="fas fa-table" style="color: var(--fg-brand);"></i>
-                <h5>Data Tables</h5>
-                <p>Browse matches, games, drafts, and plays</p>
-              </div>
-              <div class="feature-item">
-                <i class="fas fa-download" style="color: var(--fg-brand);"></i>
-                <h5>Data Export</h5>
-                <p>Export your data as CSV files</p>
-              </div>
-            </div>
+          <h4>Core Features</h4>
+          <div class="message-box standard">
+            <h4><i class="fas fa-upload" ></i>Data Import</h4>
+            <p>Upload and process MTGO GameLog and DraftLog files</p>
+          </div>
+          <div class="message-box standard">
+            <h4><i class="fas fa-chart-line" ></i>Analytics Dashboard</h4>
+            <p>View match statistics and performance metrics</p>
+          </div>
+          <div class="message-box standard">
+            <h4><i class="fas fa-table" ></i>Data Tables</h4>
+            <p>Browse matches, games, drafts, and plays</p>
+          </div>
+          <div class="message-box standard">
+            <h4><i class="fas fa-download" ></i>Data Export</h4>
+            <p>Export your data as CSV files</p>
+          </div>
             
-            <h4>Key Capabilities</h4>
-            <ul>
-              <li><strong>User Registration:</strong> Secure account creation and email verification</li>
-              <li><strong>GameLog Processing:</strong> Automated parsing of MTGO game files</li>
-              <li><strong>Draft Analysis:</strong> Track draft picks and performance</li>
-              <li><strong>Match History:</strong> Detailed match and game statistics</li>
-              <li><strong>Data Cleaning:</strong> Tools to improve and organize your data</li>
-              <li><strong>MTGO-Tracker Import:</strong> Migrate data from the desktop application</li>
-            </ul>
+          <h4>Key Capabilities</h4>
+          <ul>
+            <li><strong>User Registration:</strong> Secure account creation and email verification</li>
+            <li><strong>GameLog Processing:</strong> Automated parsing of MTGO game files</li>
+            <li><strong>Draft Analysis:</strong> Track draft picks and performance</li>
+            <li><strong>Match History:</strong> Detailed match and game statistics</li>
+            <li><strong>Data Cleaning:</strong> Tools to improve and organize your data</li>
+            <li><strong>MTGO-Tracker Import:</strong> Migrate data from the desktop application</li>
+          </ul>
             
-            <div class="link-card">
-              <div class="link-icon">
-                <i class="fas fa-play"></i>
-              </div>
-              <div class="link-content">
-                <h4><a href="/getting_started">Get Started</a></h4>
-                <p>Learn how to set up your account and import your first data</p>
-              </div>
-            </div>
+          <div class="message-box standard">
+            <h4><i class="fas fa-play"></i><a href="/getting_started">Get Started</a></h4>
+            <p>Learn how to set up your account and import your first data</p>
           </div>
         </div>
       </div>
 
       <!-- Future Updates Section -->
-      <div class="accordion-item" data-target="future">
-        <div class="accordion-header">
-          <h3 class="accordion-title">
+      <div class="card" data-target="future">
+        <div class="card-header">
+          <h3 class="card-title">
             Planned Features & Roadmap
           </h3>
-          <i class="fas fa-chevron-down accordion-arrow"></i>
+          <i class="fas fa-chevron-down"></i>
         </div>
-        <div class="accordion-content" id="future">
-          <div class="accordion-body">
-            <div class="info-box">
-              <p><strong>Coming Soon:</strong> We're constantly working on new features and improvements based on user feedback.</p>
-            </div>
+        <div class="card-content" id="future">
+          <div class="message-box standard">
+            <h4><strong>Coming Soon:</strong> We're constantly working on new features and improvements based on user feedback.</h4>
+          </div>
             
-            <h4>Potential Future Enhancements</h4>
-            <div class="steps-container">
-              <div class="step-card">
-                <div class="step-icon">
-                  <i class="fas fa-mobile-alt"></i>
-                </div>
-                <div class="step-content">
-                  <h4>Mobile Optimization</h4>
-                  <p>Enhanced mobile experience for viewing data on the go</p>
-                </div>
-              </div>
-              <div class="step-card">
-                <div class="step-icon">
-                  <i class="fas fa-chart-pie"></i>
-                </div>
-                <div class="step-content">
-                  <h4>Advanced Analytics</h4>
-                  <p>More detailed statistics and performance insights</p>
-                </div>
-              </div>
-              <div class="step-card">
-                <div class="step-icon">
-                  <i class="fas fa-users"></i>
-                </div>
-                <div class="step-content">
-                  <h4>Community Features</h4>
-                  <p>Share decks and compare performance with other players</p>
-                </div>
-              </div>
-              <div class="link-card">
-                <div class="link-icon">
-                  <i class="fas fa-lightbulb"></i>
-                </div>
-                <div class="link-content">
-                  <h4><a href="/contact">Submit Feature Requests</a></h4>
-                  <p>Have an idea for a new feature? Let us know!</p>
-                </div>
-              </div>
+          <h4>Potential Future Enhancements</h4>
+            <div class="message-box standard">
+              <h4><i class="fas fa-mobile-alt"></i>Mobile Optimization</h4>
+              <p>Enhanced mobile experience for viewing data on the go</p>
+            </div>
+            <div class="message-box standard">
+              <h4><i class="fas fa-chart-pie"></i>Advanced Analytics</h4>
+              <p>More detailed statistics and performance insights</p>
+            </div>
+            <div class="message-box standard">
+              <h4><i class="fas fa-users"></i>Community Features</h4>
+              <p>Share decks and compare performance with other players</p>
+            </div>
+            <div class="message-box standard">
+              <h4><i class="fas fa-lightbulb"></i><a href="/contact">Submit Feature Requests</a></h4>
+              <p>Have an idea for a new feature? Let us know!</p>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Version 1.1.0 - Bug Fixes -->
-      <div class="accordion-item" data-target="v1-1-0">
-        <div class="accordion-header">
-          <h3 class="accordion-title">
+      <div class="card" data-target="v1-1-0">
+        <div class="card-header">
+      <h3 class="card-title">
             Version 1.1.0 - Bug Fixes & Improvements
             <span class="version-date">December 2023</span>
           </h3>
-          <i class="fas fa-chevron-down accordion-arrow"></i>
+          <i class="fas fa-chevron-down"></i>
         </div>
-        <div class="accordion-content" id="v1-1-0">
-          <div class="accordion-body">
-            <h4>What's New</h4>
-            <div class="feature-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-sm);">
-              <div class="feature-item">
-                <i class="fas fa-bug" style="color: var(--redis-red);"></i>
-                <h5>Bug Fixes</h5>
-                <p>Resolved critical issues with data parsing</p>
-              </div>
-              <div class="feature-item">
-                <i class="fas fa-code" style="color: var(--fg-brand);"></i>
-                <h5>Code Improvements</h5>
-                <p>Enhanced performance and reliability</p>
-              </div>
-              <div class="feature-item">
-                <i class="fas fa-comments" style="color: var(--sky-blue);"></i>
-                <h5>User Feedback</h5>
-                <p>Implemented suggestions from the community</p>
-              </div>
-              <div class="feature-item">
-                <i class="fas fa-share" style="color: var(--yellow);"></i>
-                <h5>Better Sharing</h5>
-                <p>Improved data export and sharing options</p>
-              </div>
-            </div>
-            
-            <div class="link-card">
-              <div class="link-icon">
-                <i class="fas fa-code-branch"></i>
-              </div>
-              <div class="link-content">
-                <h4><a href="https://github.com/cderickson/MTGO-DB" target="_blank">View on GitHub</a></h4>
-                <p>Check out the source code and contribute to the project</p>
-              </div>
-            </div>
+        <div class="card-content" id="v1-1-0">
+          <h4>What's New</h4>
+          <div class="message-box standard">
+            <h4><i class="fas fa-bug" ></i>Bug Fixes</h4>
+            <p>Resolved critical issues with data parsing</p>
+          </div>
+          <div class="message-box standard">
+            <h4><i class="fas fa-code" ></i>Code Improvements</h4>
+            <p>Enhanced performance and reliability</p>
+          </div>
+          <div class="message-box standard">
+            <h4><i class="fas fa-comments" ></i>User Feedback</h4>
+            <p>Implemented suggestions from the community</p>
+          </div>
+          <div class="message-box standard">
+            <h4><i class="fas fa-share" ></i>Better Sharing</h4>
+            <p>Improved data export and sharing options</p>
+          </div>
+          <div class="message-box standard">
+            <h4><i class="fas fa-code-branch"></i><a href="https://github.com/cderickson/MTGO-DB" target="_blank">View on GitHub</a></h4>
+            <p>Check out the source code and contribute to the project</p>
           </div>
         </div>
       </div>
@@ -179,365 +127,6 @@
   </div>
 </div>
 
-<style>
-/* Override global layout min-heights to prevent unwanted scrolling */
-.app-layout {
-  min-height: auto !important;
-}
 
-.main-content {
-  min-height: auto !important;
-}
-
-.content-wrapper {
-  flex: none !important;
-  padding: var(--spacing-md) !important;
-}
-
-/* Changelog Container - Fixed Width like Profile/Dashboard */
-.changelog-container {
-  width: 1000px !important;
-  max-width: 1000px !important;
-  min-width: 1000px !important;
-  margin: 0 auto;
-  padding: 0;
-  position: relative;
-  flex: none !important;
-}
-
-/* Responsive Design */
-@media (max-width: 1100px) {
-  .changelog-container {
-    width: 95% !important;
-    max-width: 95% !important;
-    min-width: 95% !important;
-  }
-}
-/* Compact Accordion Styles */
-.accordion-container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.accordion-item {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  transition: all var(--transition-normal);
-  box-shadow: var(--shadow-sm);
-}
-
-.accordion-item:hover {
-  box-shadow: var(--shadow-md);
-}
-
-.accordion-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--spacing-md);
-  background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
-  border-bottom: 1px solid var(--border);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  user-select: none;
-}
-
-.accordion-header:hover {
-  background: var(--bg-default-hover);
-}
-
-.accordion-title {
-  display: flex;
-  align-items: center;
-  margin: 0;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--fg-default);
-  flex-wrap: wrap;
-  gap: var(--spacing-xs);
-}
-
-.version-date {
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: var(--fg-muted);
-  background: var(--bg-default);
-  padding: 0.2rem 0.4rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-}
-
-.accordion-arrow {
-  color: var(--fg-muted);
-  transition: transform var(--transition-fast);
-  font-size: 0.75rem;
-  flex-shrink: 0;
-}
-
-.accordion-item.active .accordion-arrow {
-  transform: rotate(180deg);
-}
-
-.accordion-content {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height var(--transition-normal) ease-out;
-}
-
-.accordion-item.active .accordion-content {
-  max-height: 2500px;
-}
-
-.accordion-body {
-  padding: var(--spacing-md);
-  color: var(--fg-body);
-  line-height: 1.5;
-  font-size: 0.75rem;
-}
-
-.accordion-body p {
-  margin: var(--spacing-md) 0 var(--spacing-md) 0;
-  font-size: 0.75rem;
-  line-height: 1.5;
-}
-
-.accordion-body ul {
-  margin: var(--spacing-md) 0 var(--spacing-md) 0;
-  padding-left: var(--spacing-md);
-}
-
-.accordion-body h4 {
-  margin: var(--spacing-md) 0 var(--spacing-md) 0;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--fg-default);
-}
-
-.accordion-body li {
-  margin-bottom: var(--spacing-xs);
-  font-size: 0.75rem;
-}
-
-.accordion-body a {
-  color: var(--fg-brand);
-  text-decoration: none;
-  font-weight: 500;
-  transition: color var(--transition-fast);
-}
-
-.accordion-body a:hover {
-  color: var(--hyper-04);
-  text-decoration: underline;
-}
-
-/* Step Cards */
-.steps-container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.step-card {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md);
-  background: var(--bg-default);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
-}
-
-.step-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.step-number {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: var(--fg-brand);
-  color: var(--base-white);
-  border-radius: 50%;
-  font-weight: 700;
-  font-size: 0.75rem;
-  flex-shrink: 0;
-}
-
-.step-content h4 {
-  margin: 0 0 var(--spacing-xs) 0;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--fg-default);
-}
-
-.step-content p {
-  margin: 0;
-  color: var(--fg-body);
-  font-size: 0.75rem;
-  line-height: 1.4;
-}
-
-/* Link Cards - Styled to match Step Cards */
-.link-card {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md);
-  background: var(--bg-default);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
-}
-
-.link-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.link-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: var(--fg-brand);
-  color: var(--base-white);
-  border-radius: 50%;
-  font-size: 0.75rem;
-  flex-shrink: 0;
-  font-weight: 700;
-}
-
-.link-content h4 {
-  margin: 0 0 var(--spacing-xs) 0;
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.link-content h4 a {
-  color: var(--fg-default);
-  text-decoration: none;
-}
-
-.link-content h4 a:hover {
-  color: var(--fg-brand);
-}
-
-.link-content p {
-  margin: 0;
-  color: var(--fg-body);
-  font-size: 0.75rem;
-  line-height: 1.4;
-}
-
-/* Info Boxes */
-.info-box {
-  background: rgba(128, 219, 255, 0.1);
-  border-left: 4px solid var(--sky-blue);
-  border-radius: var(--radius-sm);
-  padding: var(--spacing-md);
-  margin: 0 0 var(--spacing-sm) 0 !important;
-}
-
-.info-box:last-child {
-  margin-bottom: 0 !important;
-}
-
-.info-box h4 {
-  margin: 0 0 var(--spacing-sm) 0 !important;
-  color: var(--fg-default);
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.info-box p {
-  margin: 0;
-  color: var(--fg-body);
-  font-size: 0.75rem;
-  line-height: 1.5;
-}
-
-/* Feature Grid - Compact Styling */
-.feature-item {
-  text-align: center;
-  padding: var(--spacing-sm);
-  background: var(--bg-default);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
-  box-shadow: var(--shadow-sm);
-}
-
-.feature-item:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-.feature-item i {
-  font-size: 1rem;
-  margin-bottom: var(--spacing-xs);
-  display: block;
-}
-
-.feature-item h5 {
-  margin: 0 0 var(--spacing-xs) 0;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--fg-default);
-}
-
-.feature-item p {
-  margin: 0;
-  font-size: 0.7rem;
-  color: var(--fg-body);
-  line-height: 1.3;
-}
-
-/* Feature Grid Spacing */
-.feature-grid {
-  margin: 0 0 var(--spacing-sm) 0 !important;
-}
-
-.feature-grid:last-child {
-  margin-bottom: 0 !important;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .accordion-header {
-    padding: var(--spacing-sm);
-  }
-  
-  .accordion-body {
-    padding: var(--spacing-sm);
-  }
-  
-  .accordion-title {
-    font-size: 0.75rem;
-    line-height: 1.3;
-  }
-  
-  .step-card {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .feature-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .link-card {
-    flex-direction: column;
-    text-align: center;
-  }
-}
-</style>
 
 {% endblock %}

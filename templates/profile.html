@@ -15,118 +15,111 @@
     <div class="profile-left-column">
       
       <!-- User Information Section -->
-      <div class="profile-section">
-        <div class="profile-card">
-          <div class="profile-card-header">
-            <h2 class="profile-card-title">
-              <i class="fas fa-user-circle profile-icon"></i>
-              {{ user.username }}
-            </h2>
-            
-            <!-- Profile Edit Controls in Header -->
-            <div class="profile-edit-controls-header">
-              <button type="button" class="button primary" id="EditProfileButton" onclick="editProfile()">
-                <i class="fas fa-edit"></i>
-                Edit Profile
-              </button>
-              <button type="button" class="button secondary" id="CancelProfileButton" onclick="cancelEditProfile()" style="display:none;">
-                <i class="fas fa-times"></i>
-                Cancel
-              </button>
-              <button type="button" class="button primary" id="SaveProfileButton" onclick="editUserDB()" style="display:none;">
-                <i class="fas fa-save"></i>
-                Save Changes
-              </button>
-            </div>
-          </div>
+      <div class="section-card">
+        <div class="section-card-header">
+          <h2 class="section-card-title">
+            <i class="fas fa-user-circle profile-icon"></i>
+            {{ user.username }}
+          </h2>
           
-          <div class="profile-card-body">
-            <div class="profile-info-grid">
-              
-              <!-- Email -->
-              <div class="profile-info-item">
-                <label class="profile-label">Email</label>
-                <div class="profile-value" id="ProfileEmailDisplay">
-                  {{ user.email }}
-                </div>
-              </div>
-              
-              <!-- MTGO Username -->
-              <div class="profile-info-item">
-                <label class="profile-label">MTGO Username</label>
-                <div class="profile-value" id="ProfileUsernameDisplay">
-                  {{ user.username }}
-                </div>
-                <div class="profile-input" id="ProfileUsernameInput" style="display:none;">
-                  <input type="text" class="form-input" name="ProfileUsernameInputText" placeholder="Username" value="{{ user.username }}">
-                </div>
-              </div>
-              
-            </div> 
+          <!-- Profile Edit Controls in Header -->
+          <div class="profile-edit-controls-header">
+            <button type="button" class="button primary" id="EditProfileButton" onclick="editProfile()">
+              <i class="fas fa-edit"></i>
+              Edit Profile
+            </button>
+            <button type="button" class="button secondary" id="CancelProfileButton" onclick="cancelEditProfile()" style="display:none;">
+              <i class="fas fa-times"></i>
+              Cancel
+            </button>
+            <button type="button" class="button primary" id="SaveProfileButton" onclick="editUserDB()" style="display:none;">
+              <i class="fas fa-save"></i>
+              Save Changes
+            </button>
           </div>
+        </div>
+        
+        <div class="section-card-body">
+          <div class="profile-info-grid">
+            
+            <!-- Email -->
+            <div class="profile-info-item">
+              <label class="profile-label">Email</label>
+              <div class="profile-value" id="ProfileEmailDisplay">
+                {{ user.email }}
+              </div>
+            </div>
+            
+            <!-- MTGO Username -->
+            <div class="profile-info-item">
+              <label class="profile-label">MTGO Username</label>
+              <div class="profile-value" id="ProfileUsernameDisplay">
+                {{ user.username }}
+              </div>
+              <div class="profile-input" id="ProfileUsernameInput" style="display:none;">
+                <input type="text" class="form-input" name="ProfileUsernameInputText" placeholder="Username" value="{{ user.username }}">
+              </div>
+            </div>
+            
+          </div> 
         </div>
       </div>
       
       <!-- Match History Section -->
-      <div class="profile-section">
-        <div class="profile-card match-history-card">
-          <div class="profile-card-header">
-            <h4 class="profile-card-title">
-              <i class="fas fa-history profile-icon"></i>
-              Recent Match History
-            </h4>
+      <div class="section-card">
+        <div class="section-card-header">
+          <h2 class="section-card-title"><i class="fas fa-history profile-icon"></i>Recent Match History</h2>
+        </div>
+        
+        <div class="section-card-body">
+          {% if match_history %}
+          <div >
+            <table class="match-history-table">
+              <thead >
+                  <tr>
+                    <th >Date</th>
+                    <th >Players</th>
+                    <th >Decks</th>
+                    <th >Result</th>
+                    <th >Match Format</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for match in match_history %}
+                  <tr class="{% if 'Win' in match.Match_Result %}match-win{% elif 'Loss' in match.Match_Result %}match-loss{% else %}match-na{% endif %}">
+                    <td ><nobr>{{ match.Date }}</nobr></td>
+                    <td >
+                      <div class="stacked-players">
+                        <div class="player-top">{{ user.username }}</div>
+                        <div class="player-bottom">{{ match.Opponent }}</div>
+                      </div>
+                    </td>
+                    <td >
+                      <div class="stacked-decks">
+                        <div class="deck-top"><span class="deck-name">{{ match.Deck }}</span></div>
+                        <div class="deck-bottom"><span class="deck-name">{{ match.Opp_Deck }}</span></div>
+                      </div>
+                    </td>
+                    <td >
+                      <span class="match-result {% if 'Win' in match.Match_Result %}win{% elif 'Loss' in match.Match_Result %}loss{% else %}na{% endif %}">
+                        {{ match.Match_Result }}
+                      </span>
+                    </td>
+                    <td >{{ match.Match_Format }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+            </table>
           </div>
-          
-          <div class="profile-card-body">
-            {% if match_history %}
-            <div class="table-responsive">
-              <table class="table table-sm table-bordered match-history-table">
-                <thead class="table-dark">
-                   <tr>
-                     <th class="text-center">Date</th>
-                     <th class="text-center">Players</th>
-                     <th class="text-center">Decks</th>
-                     <th class="text-center">Result</th>
-                     <th class="text-center">Match Format</th>
-                   </tr>
-                  </thead>
-                  <tbody>
-                   {% for match in match_history %}
-                   <tr class="{% if 'Win' in match.Match_Result %}match-win{% elif 'Loss' in match.Match_Result %}match-loss{% else %}match-na{% endif %}">
-                     <td class="text-center"><nobr>{{ match.Date }}</nobr></td>
-                     <td class="text-center">
-                       <div class="stacked-players">
-                         <div class="player-top">{{ user.username }}</div>
-                         <div class="player-bottom">{{ match.Opponent }}</div>
-                       </div>
-                     </td>
-                     <td class="text-center">
-                       <div class="stacked-decks">
-                         <div class="deck-top"><span class="deck-name">{{ match.Deck }}</span></div>
-                         <div class="deck-bottom"><span class="deck-name">{{ match.Opp_Deck }}</span></div>
-                       </div>
-                     </td>
-                     <td class="text-center">
-                       <span class="match-result {% if 'Win' in match.Match_Result %}win{% elif 'Loss' in match.Match_Result %}loss{% else %}na{% endif %}">
-                         {{ match.Match_Result }}
-                       </span>
-                     </td>
-                     <td class="text-center">{{ match.Match_Format }}</td>
-                   </tr>
-                   {% endfor %}
-                 </tbody>
-              </table>
-            </div>
-            {% else %}
-            <div style="text-align: center; color: var(--fg-muted);">
-              <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: var(--spacing-md); opacity: 0.5;"></i>
-              <h5 style="margin-bottom: var(--spacing-sm); color: var(--fg-default);">No Match History Yet</h5>
-              <p style="margin: 0; font-size: 0.875rem;">
-                Your recent matches will appear here once you start importing GameLogs.
-              </p>
-            </div>
-            {% endif %}
+          {% else %}
+          <div>
+            <i class="fas fa-inbox"></i>
+            <h5>No Match History Yet</h5>
+            <p>
+              Your recent matches will appear here once you start importing GameLogs.
+            </p>
           </div>
+          {% endif %}
         </div>
       </div>
 
@@ -136,106 +129,103 @@
     <div class="profile-right-column">
       
       <!-- Lifetime Stats Section -->
-      <div class="profile-section">
-        <div class="profile-card">
-          <div class="profile-card-header">
-            <h4 class="profile-card-title">
-              <i class="fas fa-chart-line profile-icon"></i>
-              Lifetime Statistics
-            </h4>
-          </div>
-          
-          <div class="profile-card-body">
-            <div class="stats-grid">
-              
-              <!-- Matches Played -->
-              <div class="stat-item">
-                <div class="stat-label">Matches Played</div>
-                <div class="stat-value">{{ stats['matches_played'] }}</div>
-              </div>
-              
-              <!-- Favorite Format -->
-              <div class="stat-item">
-                <div class="stat-label">Favorite Format</div>
-                <div class="stat-value">
-                  {{ stats['fave_format'].0 }}
-                  <div class="stat-subtext">({{ stats['fave_format'].1 }} Matches)</div>
-                </div>
-              </div>
-              
-              <!-- Favorite Deck -->
-              <div class="stat-item">
-                <div class="stat-label">Favorite Deck</div>
-                <div class="stat-value">
-                  {{ stats['fave_deck'].0 }}<br>
-                  {{ stats['fave_deck'].1 }}
-                  <div class="stat-subtext">({{ stats['fave_deck'].2 }} Matches)</div>
-                </div>
-              </div>
-              
-              <!-- Best Format -->
-              <div class="stat-item">
-                <div class="stat-label">Best Format<br><small>(Min. 25 Matches)</small></div>
-                <div class="stat-value">
-                  {{ stats['best_format'].0 }}
-                  <div class="stat-subtext">({{ stats['best_format'].1 }} Win Rate)</div>
-                </div>
-              </div>
-              
-              <!-- Best Win Streak -->
-              <div class="stat-item">
-                <div class="stat-label">Best Win Streak</div>
-                <div class="stat-value">
-                  {{ stats['max_win_streak'].0 }} Matches
-                  {% if stats['max_win_streak'].0 > 0 %}
-                  <div class="stat-subtext">
-                    {% if (stats['max_win_streak'].1 == '/') %}
-                      {{ stats['max_win_streak'].2 }}
-                    {% else %}
-                      {{ stats['max_win_streak'].1 }} - {{ stats['max_win_streak'].2 }}
-                    {% endif %}
-                  </div>
-                  {% endif %}
-                </div>
-              </div>
-              
-              <!-- Worst Loss Streak -->
-              <div class="stat-item">
-                <div class="stat-label">Worst Loss Streak</div>
-                <div class="stat-value">
-                  {{ stats['max_lose_streak'].0 }} Matches
-                  {% if stats['max_lose_streak'].0 > 0 %}
-                  <div class="stat-subtext">
-                    {% if (stats['max_lose_streak'].1 == '/') %}
-                      {{ stats['max_lose_streak'].2 }}
-                    {% else %}
-                      {{ stats['max_lose_streak'].1 }} - {{ stats['max_lose_streak'].2 }}
-                    {% endif %}
-                  </div>
-                  {% endif %}
-                </div>
-              </div>
-              
-              <!-- Longest Game -->
-              <div class="stat-item">
-                <div class="stat-label">Longest Game</div>
-                <div class="stat-value">
-                  {{ stats['longest_game'].0 }} Turns
-                  <div class="stat-subtext">
-                    {{ stats['longest_game'].1 }}<br>
-                    {{ stats['longest_game'].2 }} vs.<br>
-                    {{ stats['longest_game'].3 }}
-                  </div>
-                </div>
-              </div>
-              
+      <div class="section-card">
+        <div class="section-card-header">
+          <h2 class="section-card-title">
+            <i class="fas fa-chart-line profile-icon"></i>
+            Lifetime Statistics
+          </h2>
+        </div>
+        
+        <div class="section-card-body">
+          <div class="stats-grid">
+            
+            <!-- Matches Played -->
+            <div class="stat-item">
+              <div class="stat-label">Matches Played</div>
+              <div class="stat-value">{{ stats['matches_played'] }}</div>
             </div>
+            
+            <!-- Favorite Format -->
+            <div class="stat-item">
+              <div class="stat-label">Favorite Format</div>
+              <div class="stat-value">
+                {{ stats['fave_format'].0 }}
+                <div class="stat-subtext">({{ stats['fave_format'].1 }} Matches)</div>
+              </div>
+            </div>
+            
+            <!-- Favorite Deck -->
+            <div class="stat-item">
+              <div class="stat-label">Favorite Deck</div>
+              <div class="stat-value">
+                {{ stats['fave_deck'].0 }}<br>
+                {{ stats['fave_deck'].1 }}
+                <div class="stat-subtext">({{ stats['fave_deck'].2 }} Matches)</div>
+              </div>
+            </div>
+            
+            <!-- Best Format -->
+            <div class="stat-item">
+              <div class="stat-label">Best Format<br><small>(Min. 25 Matches)</small></div>
+              <div class="stat-value">
+                {{ stats['best_format'].0 }}
+                <div class="stat-subtext">({{ stats['best_format'].1 }} Win Rate)</div>
+              </div>
+            </div>
+            
+            <!-- Best Win Streak -->
+            <div class="stat-item">
+              <div class="stat-label">Best Win Streak</div>
+              <div class="stat-value">
+                {{ stats['max_win_streak'].0 }} Matches
+                {% if stats['max_win_streak'].0 > 0 %}
+                <div class="stat-subtext">
+                  {% if (stats['max_win_streak'].1 == '/') %}
+                    {{ stats['max_win_streak'].2 }}
+                  {% else %}
+                    {{ stats['max_win_streak'].1 }} - {{ stats['max_win_streak'].2 }}
+                  {% endif %}
+                </div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <!-- Worst Loss Streak -->
+            <div class="stat-item">
+              <div class="stat-label">Worst Loss Streak</div>
+              <div class="stat-value">
+                {{ stats['max_lose_streak'].0 }} Matches
+                {% if stats['max_lose_streak'].0 > 0 %}
+                <div class="stat-subtext">
+                  {% if (stats['max_lose_streak'].1 == '/') %}
+                    {{ stats['max_lose_streak'].2 }}
+                  {% else %}
+                    {{ stats['max_lose_streak'].1 }} - {{ stats['max_lose_streak'].2 }}
+                  {% endif %}
+                </div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <!-- Longest Game -->
+            <div class="stat-item">
+              <div class="stat-label">Longest Game</div>
+              <div class="stat-value">
+                {{ stats['longest_game'].0 }} Turns
+                <div class="stat-subtext">
+                  {{ stats['longest_game'].1 }}<br>
+                  {{ stats['longest_game'].2 }} vs.<br>
+                  {{ stats['longest_game'].3 }}
+                </div>
+              </div>
+            </div>
+            
           </div>
         </div>
       </div>
       
     </div>
-    
   </div>
 </div>
 

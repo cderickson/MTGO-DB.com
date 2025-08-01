@@ -3,353 +3,7 @@
 {% block page_title %}{% endblock %}
 
 {% block extra_css %}
-<style>
-/* Override global layout min-heights to prevent unwanted scrolling */
-.app-layout {
-  min-height: auto !important;
-}
-
-.main-content {
-  min-height: auto !important;
-}
-
-.content-wrapper {
-  flex: none !important;
-  padding: var(--spacing-md) !important;
-}
-
-/* Dashboard Container - Fixed Width like Profile */
-.dashboard-container {
-  width: 1200px !important;
-  max-width: 1200px !important;
-  min-width: 1200px !important;
-  margin: 0 auto;
-  padding: 0;
-  position: relative;
-  flex: none !important;
-}
-
-/* Dashboard Layout */
-.dashboard-layout {
-  display: flex;
-  gap: var(--spacing-md);
-  margin-top: var(--spacing-md);
-  min-height: calc(100vh - 200px);
-}
-
-/* Filters Sidebar */
-.filters-sidebar {
-  width: 260px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-md);
-  height: fit-content;
-  position: sticky;
-  top: var(--spacing-md);
-  box-shadow: var(--shadow-sm);
-}
-
-.filters-header {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-md);
-  padding-bottom: var(--spacing-sm);
-  border-bottom: 1px solid var(--border);
-}
-
-.filters-header h3 {
-  margin: 0;
-  color: var(--fg-default);
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.filter-group {
-  margin-bottom: var(--spacing-md);
-}
-
-.filter-label {
-  display: block;
-  font-weight: 600;
-  color: var(--fg-body);
-  margin-bottom: var(--spacing-xs);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.filter-select {
-  width: 100%;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  font-size: 0.75rem;
-  background: var(--form-input-bg);
-  border: 1px solid var(--form-input-border);
-  border-radius: var(--radius-md);
-  color: var(--form-input-fg);
-  transition: all var(--transition-fast);
-  min-height: 32px;
-}
-
-.filter-select:focus {
-  outline: none;
-  border-color: var(--form-input-focused-border);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.date-inputs {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-.filters-actions {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-  margin-top: var(--spacing-md);
-  padding-top: var(--spacing-sm);
-  border-top: 1px solid var(--border);
-}
-
-/* Main Dashboard Content */
-.dashboard-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.dashboard-header {
-  background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
-  box-shadow: var(--shadow-sm);
-}
-
-.dashboard-controls {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  justify-content: space-between;
-}
-
-.dashboard-selector {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.dashboard-selector label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--fg-body);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.dashboard-type-select {
-  min-width: 220px;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  font-size: 0.75rem;
-  background: var(--form-input-bg);
-  border: 1px solid var(--form-input-border);
-  border-radius: var(--radius-md);
-  color: var(--form-input-fg);
-  transition: all var(--transition-fast);
-  min-height: 32px;
-}
-
-.dashboard-type-select:focus {
-  outline: none;
-  border-color: var(--form-input-focused-border);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.generate-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-xs) var(--spacing-md);
-  background: var(--primary-button-bg);
-  color: var(--primary-button-fg);
-  border: 1px solid var(--primary-button-border);
-  border-radius: var(--radius-md);
-  font-size: 0.75rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  min-height: 32px;
-}
-
-.generate-btn:hover {
-  background: var(--primary-button-bg-hover);
-  border-color: var(--primary-button-border-hover);
-}
-
-/* Dashboard Content Area */
-.dashboard-content {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-md);
-  min-height: 400px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: var(--shadow-sm);
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 300px;
-  text-align: center;
-  color: var(--fg-muted);
-}
-
-.empty-state i {
-  font-size: 2rem;
-  margin-bottom: var(--spacing-sm);
-  opacity: 0.5;
-}
-
-.empty-state h3 {
-  margin: 0 0 var(--spacing-xs) 0;
-  color: var(--fg-default);
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.empty-state p {
-  margin: 0;
-  font-size: 0.75rem;
-  line-height: 1.4;
-}
-
-/* Loading State */
-.loading-state {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 300px;
-  text-align: center;
-}
-
-.loading-state h3 {
-  margin: 0;
-  color: var(--fg-default);
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.loading-state p {
-  margin: var(--spacing-xs) 0 0 0;
-  color: var(--fg-muted);
-  font-size: 0.75rem;
-}
-
-.spinner {
-  border: 2px solid var(--border);
-  border-top: 2px solid var(--sky-blue);
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  animation: spin 1s linear infinite;
-  margin-bottom: var(--spacing-sm);
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Filter Action Buttons */
-.filters-actions .button {
-  padding: var(--spacing-xs) var(--spacing-sm);
-  font-size: 0.75rem;
-  font-weight: 500;
-  min-height: 28px;
-  gap: var(--spacing-xs);
-  border-radius: var(--radius-md);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.button.secondary {
-  background: var(--secondary-button-bg);
-  color: var(--secondary-button-fg);
-  border: 1px solid var(--secondary-button-border);
-}
-
-.button.secondary:hover {
-  background: var(--secondary-button-bg-hover);
-  border-color: var(--secondary-button-border-hover);
-}
-
-.button.primary {
-  background: var(--primary-button-bg);
-  color: var(--primary-button-fg);
-  border: 1px solid var(--primary-button-border);
-}
-
-.button.primary:hover {
-  background: var(--primary-button-bg-hover);
-  border-color: var(--primary-button-border-hover);
-}
-
-/* Responsive Design */
-@media (max-width: 1300px) {
-  .dashboard-container {
-    width: 95% !important;
-    max-width: 95% !important;
-    min-width: 95% !important;
-  }
-}
-
-@media (max-width: 1024px) {
-  .dashboard-layout {
-    flex-direction: column;
-  }
-  
-  .filters-sidebar {
-    width: 100%;
-    position: static;
-  }
-  
-  .dashboard-controls {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--spacing-sm);
-  }
-  
-  .dashboard-selector {
-    justify-content: space-between;
-  }
-  
-  .dashboard-type-select {
-    min-width: auto;
-    flex: 1;
-  }
-}
-
-@media (max-width: 768px) {
-  .dashboard-selector {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .generate-btn {
-    justify-content: center;
-  }
-}
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='dashboards.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -360,7 +14,7 @@
       <!-- Filters Sidebar -->
       <div class="filters-sidebar">
         <div class="filters-header">
-          <i class="fas fa-filter" style="color: var(--fg-muted);"></i>
+          <i class="fas fa-filter" ></i>
           <h3>Filters</h3>
         </div>
         
@@ -434,7 +88,7 @@
         <div class="dashboard-header">
           <div class="dashboard-controls">
             <div class="dashboard-selector">
-              <label for="dashboardType" style="font-weight: 500; color: var(--fg-default); font-size: 0.875rem;"><strong>Dashboard Type:</strong></label>
+              <label for="dashboardType"><strong>Dashboard Type:</strong></label>
               <select class="dashboard-type-select" id="dashboardType" name="dashboardType">
                 <option value="match-performance" selected>Match Performance</option>
                 <option value="card-analysis">Card Analysis</option>
@@ -462,12 +116,12 @@
           <!-- Loading State -->
           <div class="loading-state" id="loadingState">
             <div class="spinner"></div>
-            <h3 style="margin: 0; color: var(--fg-default);">Generating Dashboard...</h3>
-            <p style="margin: var(--spacing-sm) 0 0 0; color: var(--fg-muted);">Please wait while we process your data.</p>
+            <h3>Generating Dashboard...</h3>
+            <p>Please wait while we process your data.</p>
           </div>
           
           <!-- Dashboard Results -->
-          <div id="dashboardResults" style="display: none;">
+          <div id="dashboardResults" >
             <!-- Dashboard content will be loaded here -->
           </div>
         </div>
@@ -788,11 +442,11 @@ async function generateDashboard() {
     // Hide loading state and show error
     document.getElementById('loadingState').style.display = 'none';
     document.getElementById('dashboardResults').innerHTML = `
-      <div style="text-align: center; padding: var(--spacing-md); color: var(--fg-muted);">
-        <i class="fas fa-exclamation-triangle" style="font-size: 1.5rem; margin-bottom: var(--spacing-sm); color: #ef4444;"></i>
-        <h3 style="margin: 0 0 var(--spacing-xs) 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">Error Generating Dashboard</h3>
-        <p style="margin: 0 0 var(--spacing-sm) 0; font-size: 0.75rem;">Failed to load dashboard data: ${error.message}</p>
-        <button type="button" class="button secondary" onclick="generateDashboard()" style="margin-top: var(--spacing-sm); padding: var(--spacing-xs) var(--spacing-sm); font-size: 0.75rem;">
+      <div>
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>Error Generating Dashboard</h3>
+        <p>Failed to load dashboard data: ${error.message}</p>
+        <button type="button" class="button secondary" onclick="generateDashboard()">
           <i class="fas fa-redo"></i>
           Try Again
         </button>
@@ -824,35 +478,11 @@ function renderDashboardContent(dashboardData, dashboardType) {
     const opponentsActive = currentPerspective === 'opponents';
     
     titleContent = `
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md);">
-        <h3 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">${titles[dashboardType] || 'Dashboard'}</h3>
-        <div style="display: flex; gap: var(--spacing-xs);">
-          <button type="button" id="perspective-hero" onclick="console.log('Hero button clicked'); setPerspective('hero'); return false;" style="
-            padding: var(--spacing-xs) var(--spacing-sm); 
-            border: 1px solid var(--border); 
-            border-radius: var(--radius-sm); 
-            font-size: 0.75rem; 
-            font-weight: 600;
-            cursor: pointer;
-            transition: all var(--transition-fast);
-            background: ${heroActive ? 'var(--sky-blue)' : 'var(--bg-default)'};
-            color: ${heroActive ? 'white' : 'var(--fg-default)'};
-            border-color: ${heroActive ? 'var(--sky-blue)' : 'var(--border)'};
-            box-shadow: ${heroActive ? 'inset 0 2px 4px rgba(0,0,0,0.2)' : 'none'};
-          " ${heroActive ? '' : `onmouseover="this.style.background = 'var(--gray-100)'" onmouseout="this.style.background = 'var(--bg-default)'"`}>Hero</button>
-          <button type="button" id="perspective-opponents" onclick="console.log('Opponents button clicked'); setPerspective('opponents'); return false;" style="
-            padding: var(--spacing-xs) var(--spacing-sm); 
-            border: 1px solid var(--border); 
-            border-radius: var(--radius-sm); 
-            font-size: 0.75rem; 
-            font-weight: 600;
-            cursor: pointer;
-            transition: all var(--transition-fast);
-            background: ${opponentsActive ? 'var(--sky-blue)' : 'var(--bg-default)'};
-            color: ${opponentsActive ? 'white' : 'var(--fg-default)'};
-            border-color: ${opponentsActive ? 'var(--sky-blue)' : 'var(--border)'};
-            box-shadow: ${opponentsActive ? 'inset 0 2px 4px rgba(0,0,0,0.2)' : 'none'};
-          " ${opponentsActive ? '' : `onmouseover="this.style.background = 'var(--gray-100)'" onmouseout="this.style.background = 'var(--bg-default)'"`}>Opponents</button>
+      <div>
+        <h3>${titles[dashboardType] || 'Dashboard'}</h3>
+        <div>
+          <button type="button" id="perspective-hero" onclick="console.log('Hero button clicked'); setPerspective('hero'); return false;">Hero</button>
+          <button type="button" id="perspective-opponents" onclick="console.log('Opponents button clicked'); setPerspective('opponents'); return false;">Opponents</button>
         </div>
       </div>
     `;
@@ -860,27 +490,12 @@ function renderDashboardContent(dashboardData, dashboardType) {
     const currentThreshold = getCurrentFilterValues().opponentThreshold || '1';
     
     titleContent = `
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md);">
-        <h3 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">${titles[dashboardType] || 'Dashboard'}</h3>
-        <div style="display: flex; align-items: center; gap: var(--spacing-xs);">
-          <label for="opponentThresholdFilter" style="font-size: 0.75rem; font-weight: 600; color: var(--fg-body);">Min Matches:</label>
+      <div>
+        <h3>${titles[dashboardType] || 'Dashboard'}</h3>
+        <div>
+          <label for="opponentThresholdFilter">Min Matches:</label>
           <input type="number" id="opponentThresholdFilter" value="${currentThreshold}" min="1" max="100" 
             onchange="generateDashboard();" 
-            style="
-              width: 60px;
-              padding: var(--spacing-xs);
-              border: 1px solid var(--border);
-              border-radius: var(--radius-sm);
-              font-size: 0.75rem;
-              background: var(--bg-default);
-              color: var(--fg-default);
-              text-align: center;
-              transition: all var(--transition-fast);
-            "
-            onmouseover="this.style.borderColor = 'var(--sky-blue)'"
-            onmouseout="this.style.borderColor = 'var(--border)'"
-            onfocus="this.style.borderColor = 'var(--sky-blue)'; this.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.1)'"
-            onblur="this.style.borderColor = 'var(--border)'; this.style.boxShadow = 'none'"
           />
         </div>
       </div>
@@ -890,67 +505,36 @@ function renderDashboardContent(dashboardData, dashboardType) {
     const currentOppMulls = getCurrentFilterValues().oppMulls || '0';
     
     titleContent = `
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md);">
-        <h3 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">${titles[dashboardType] || 'Dashboard'}</h3>
-        <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
-          <label for="heroMullsFilter" style="font-size: 0.75rem; font-weight: 600; color: var(--fg-body);">Hero Mulls:</label>
+      <div>
+        <h3>${titles[dashboardType] || 'Dashboard'}</h3>
+        <div>
+          <label for="heroMullsFilter">Hero Mulls:</label>
           <input type="number" id="heroMullsFilter" value="${currentHeroMulls}" min="0" max="10" 
             onchange="generateDashboard();" 
-            style="
-              width: 50px;
-              padding: var(--spacing-xs);
-              border: 1px solid var(--border);
-              border-radius: var(--radius-sm);
-              font-size: 0.75rem;
-              background: var(--bg-default);
-              color: var(--fg-default);
-              text-align: center;
-              transition: all var(--transition-fast);
-            "
-            onmouseover="this.style.borderColor = 'var(--sky-blue)'"
-            onmouseout="this.style.borderColor = 'var(--border)'"
-            onfocus="this.style.borderColor = 'var(--sky-blue)'; this.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.1)'"
-            onblur="this.style.borderColor = 'var(--border)'; this.style.boxShadow = 'none'"
           />
-          <label for="oppMullsFilter" style="font-size: 0.75rem; font-weight: 600; color: var(--fg-body);">Opp. Mulls:</label>
+          <label for="oppMullsFilter">Opp. Mulls:</label>
           <input type="number" id="oppMullsFilter" value="${currentOppMulls}" min="0" max="10" 
             onchange="generateDashboard();" 
-            style="
-              width: 50px;
-              padding: var(--spacing-xs);
-              border: 1px solid var(--border);
-              border-radius: var(--radius-sm);
-              font-size: 0.75rem;
-              background: var(--bg-default);
-              color: var(--fg-default);
-              text-align: center;
-              transition: all var(--transition-fast);
-            "
-            onmouseover="this.style.borderColor = 'var(--sky-blue)'"
-            onmouseout="this.style.borderColor = 'var(--border)'"
-            onfocus="this.style.borderColor = 'var(--sky-blue)'; this.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.1)'"
-            onblur="this.style.borderColor = 'var(--border)'; this.style.boxShadow = 'none'"
           />
         </div>
       </div>
     `;
   } else {
-    titleContent = `<h3 style="margin: 0 0 var(--spacing-md) 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">${titles[dashboardType] || 'Dashboard'}</h3>`;
+    titleContent = `<h3>${titles[dashboardType] || 'Dashboard'}</h3>`;
   }
   
   let content = titleContent;
   
   // Render metrics
   if (dashboardData.metrics && dashboardData.metrics.length > 0) {
-    content += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--spacing-sm); margin-bottom: var(--spacing-md);">';
+    content += '<div>';
     
     dashboardData.metrics.forEach(metric => {
-      const color = metric.type === 'percentage' ? 'var(--sky-blue)' : 'var(--fg-default)';
       content += `
-        <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--spacing-sm); transition: all var(--transition-fast);">
-          <div style="font-size: 0.75rem; font-weight: 600; color: var(--fg-body); margin-bottom: var(--spacing-xs); text-transform: uppercase; letter-spacing: 0.05em;">${metric.title}</div>
-          <div style="font-size: 1.5rem; font-weight: 700; color: ${color}; line-height: 1.2;">${metric.value}</div>
-          <div style="color: var(--fg-muted); font-size: 0.7rem; margin-top: var(--spacing-xs); line-height: 1.3;">${metric.subtitle}</div>
+        <div>
+          <div>${metric.title}</div>
+          <div>${metric.value}</div>
+          <div>${metric.subtitle}</div>
         </div>
       `;
     });
@@ -962,16 +546,16 @@ function renderDashboardContent(dashboardData, dashboardType) {
   if (dashboardData.charts && dashboardData.charts.length > 0) {
     dashboardData.charts.forEach(chart => {
       content += `
-        <div style="margin-bottom: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
-          <h4 style="margin: 0 0 var(--spacing-sm) 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">${chart.title}</h4>
-          <div style="height: 250px; display: flex; align-items: center; justify-content: center; background: var(--bg-default); border-radius: var(--radius-md); color: var(--fg-muted); border: 1px solid var(--border);">
-            <div style="text-align: center;">
-              <i class="fas fa-chart-${chart.type === 'line' ? 'line' : chart.type === 'bar' ? 'bar' : 'pie-chart'}" style="font-size: 1.5rem; margin-bottom: var(--spacing-sm);"></i>
-              <div style="font-size: 0.875rem; font-weight: 600;"><strong>${chart.title}</strong></div>
-              <div style="font-size: 0.75rem; margin-top: var(--spacing-xs);">
+        <div>
+          <h4>${chart.title}</h4>
+          <div>
+            <div>
+              <i class="fas fa-chart-${chart.type === 'line' ? 'line' : chart.type === 'bar' ? 'bar' : 'pie-chart'}"></i>
+              <div><strong>${chart.title}</strong></div>
+              <div>
                 ${chart.data.labels ? `Labels: ${chart.data.labels.length}` : 'No data available'}
               </div>
-              <div style="margin-top: var(--spacing-xs); font-size: 0.7rem; color: var(--fg-muted);">
+              <div>
                 Chart visualization will be implemented here
               </div>
             </div>
@@ -986,7 +570,7 @@ function renderDashboardContent(dashboardData, dashboardType) {
     dashboardData.table_grids.forEach(grid => {
       if (grid.type === '2x2') {
         content += `
-          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md); margin-bottom: var(--spacing-md);">
+          <div>
         `;
         // Flatten the grid structure - iterate through all tables directly
         grid.grid.forEach(row => {
@@ -994,16 +578,16 @@ function renderDashboardContent(dashboardData, dashboardType) {
             const tableHeight = table.height || '214px';
             
             content += `
-              <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); height: ${tableHeight}; display: flex; flex-direction: column;">
-                <div style="padding: var(--spacing-sm) var(--spacing-md); border-bottom: 1px solid var(--border); background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%); flex-shrink: 0;">
-                  <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">${table.title}</h4>
+              <div>
+                <div>
+                  <h4>${table.title}</h4>
                 </div>
-                <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
-                  <div style="overflow-x: auto; overflow-y: auto; flex: 1;">
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.75rem;">
-                      <thead style="position: sticky; top: 0; z-index: 1;">
-                        <tr style="background: var(--bg-default);">
-                          ${table.headers.map(header => `<th style="padding: var(--spacing-xs) var(--spacing-sm); text-align: left; font-weight: 600; color: var(--fg-default); border-bottom: 1px solid var(--border); font-size: 0.75rem;">${header}</th>`).join('')}
+                <div>
+                  <div>
+                    <table>
+                      <thead>
+                        <tr>
+                          ${table.headers.map(header => `<th>${header}</th>`).join('')}
                         </tr>
                       </thead>
                       <tbody>
@@ -1011,14 +595,14 @@ function renderDashboardContent(dashboardData, dashboardType) {
                           // Check if row has custom styling (last element is a CSS style string)
                           const hasCustomStyle = row.length > table.headers.length && typeof row[row.length - 1] === 'string' && row[row.length - 1].includes('background-color');
                           const customStyle = hasCustomStyle ? row[row.length - 1] : '';
-                          const defaultStyle = `border-bottom: 1px solid var(--border); ${hasCustomStyle ? customStyle : `background: ${index % 2 === 0 ? 'var(--bg-default)' : 'var(--bg-subtle)'};`}`;
+                          const defaultStyle = '';
                           
                           // Get data cells (exclude the style element if present)
                           const dataCells = hasCustomStyle ? row.slice(0, -1) : row;
                           
                           return `
-                            <tr style="${defaultStyle}">
-                              ${dataCells.map(cell => `<td style="padding: var(--spacing-xs) var(--spacing-sm); color: var(--fg-body); font-size: 0.75rem;">${cell}</td>`).join('')}
+                            <tr>
+                              ${dataCells.map(cell => `<td>${cell}</td>`).join('')}
                             </tr>
                           `;
                         }).join('')}
@@ -1042,16 +626,16 @@ function renderDashboardContent(dashboardData, dashboardType) {
       const useFixedHeight = tableHeight !== 'auto';
       
       content += `
-        <div style="margin-bottom: var(--spacing-md); background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); ${useFixedHeight ? `height: ${tableHeight}; display: flex; flex-direction: column;` : ''}">
-          <div style="padding: var(--spacing-sm) var(--spacing-md); border-bottom: 1px solid var(--border); background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%); ${useFixedHeight ? 'flex-shrink: 0;' : ''}">
-            <h4 style="margin: 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">${table.title}</h4>
+        <div>
+          <div>
+            <h4>${table.title}</h4>
           </div>
-          <div style="${useFixedHeight ? 'flex: 1; overflow: hidden; display: flex; flex-direction: column;' : ''}">
-            <div style="overflow-x: auto; ${useFixedHeight ? 'overflow-y: auto; flex: 1;' : ''}">
-              <table style="width: 100%; border-collapse: collapse; font-size: 0.75rem;">
-                <thead ${useFixedHeight ? 'style="position: sticky; top: 0; z-index: 1;"' : ''}>
-                  <tr style="background: var(--bg-default);">
-                    ${table.headers.map(header => `<th style="padding: var(--spacing-xs) var(--spacing-sm); text-align: left; font-weight: 600; color: var(--fg-default); border-bottom: 1px solid var(--border); font-size: 0.75rem;">${header}</th>`).join('')}
+          <div>
+            <div>
+              <table>
+                <thead>
+                  <tr>
+                    ${table.headers.map(header => `<th>${header}</th>`).join('')}
                   </tr>
                 </thead>
                 <tbody>
@@ -1059,14 +643,14 @@ function renderDashboardContent(dashboardData, dashboardType) {
                     // Check if row has custom styling (last element is a CSS style string)
                     const hasCustomStyle = row.length > table.headers.length && typeof row[row.length - 1] === 'string' && row[row.length - 1].includes('background-color');
                     const customStyle = hasCustomStyle ? row[row.length - 1] : '';
-                    const defaultStyle = `border-bottom: 1px solid var(--border); ${hasCustomStyle ? customStyle : `background: ${index % 2 === 0 ? 'var(--bg-default)' : 'var(--bg-subtle)'};`}`;
+                    const defaultStyle = '';
                     
                     // Get data cells (exclude the style element if present)
                     const dataCells = hasCustomStyle ? row.slice(0, -1) : row;
                     
                     return `
-                      <tr style="${defaultStyle}">
-                        ${dataCells.map(cell => `<td style="padding: var(--spacing-xs) var(--spacing-sm); color: var(--fg-body); font-size: 0.75rem;">${cell}</td>`).join('')}
+                      <tr >
+                        ${dataCells.map(cell => `<td>${cell}</td>`).join('')}
                       </tr>
                     `;
                   }).join('')}
@@ -1082,16 +666,16 @@ function renderDashboardContent(dashboardData, dashboardType) {
   // If no data sections, show message
   if (!dashboardData.metrics?.length && !dashboardData.charts?.length && !dashboardData.tables?.length && !dashboardData.table_grids?.length) {
     content += `
-      <div style="text-align: center; padding: var(--spacing-md); color: var(--fg-muted);">
-        <i class="fas fa-info-circle" style="font-size: 1.5rem; margin-bottom: var(--spacing-sm);"></i>
-        <h3 style="margin: 0 0 var(--spacing-xs) 0; color: var(--fg-default); font-size: 1rem; font-weight: 600;">No Data Available</h3>
-        <p style="margin: 0; font-size: 0.75rem;">No data matches your current filters. Try adjusting your filter criteria.</p>
+      <div>
+        <i class="fas fa-info-circle"></i>
+        <h3>No Data Available</h3>
+        <p>No data matches your current filters. Try adjusting your filter criteria.</p>
       </div>
     `;
   }
   
   resultsDiv.innerHTML = content;
-  resultsDiv.style.display = 'block';
+  // resultsDiv.style.display = 'block';
 }
 
 // Function to set perspective and regenerate dashboard

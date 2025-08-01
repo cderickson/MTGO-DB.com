@@ -11,52 +11,52 @@
       <p class="section-subtitle">Join MTGO-DB and start analyzing your Magic: The Gathering Online data today</p>
     </div>
 
-    <div class="auth-container" style="max-width: 500px; margin: 0 auto;">
-      <div class="card">
+    <div class="auth-container">
+      <div >
         <div class="card-content">
           <form action="/email" method="POST">
             <div class="form-group">
               <label for="reg_email" class="form-label">Email Address</label>
               <input type="email" class="form-input" id="reg_email" name="email" placeholder="Enter your email address" value="{{ inputs.0 if inputs else '' }}" required>
-              <small style="color: var(--fg-muted); font-size: 0.875rem;">We'll never share your email with anyone else.</small>
+              <small>We'll never share your email with anyone else.</small>
             </div>
             
             <div class="form-group">
               <label for="reg_pwd" class="form-label">Password</label>
-              <div style="position: relative;">
+              <div>
                 <input type="password" class="form-input" id="reg_pwd" name="pwd" placeholder="Create a strong password" value="{{ inputs.1 if inputs else '' }}" required>
-                <button type="button" class="password-toggle" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--fg-muted); cursor: pointer;">
+                <button type="button" class="password-toggle">
                   <i class="fas fa-eye"></i>
                 </button>
               </div>
-              <!-- <div class="password-strength" style="font-size: 0.875rem; margin-top: 0.5rem; font-weight: 500;"></div> -->
+              <!-- <div class="password-strength"></div> -->
             </div>
             
             <div class="form-group">
               <label for="reg_pwd_confirm" class="form-label">Confirm Password</label>
-              <div style="position: relative;">
+              <div>
                 <input type="password" class="form-input" id="reg_pwd_confirm" name="pwd_confirm" placeholder="Confirm your password" value="{{ inputs.2 if inputs else '' }}" required>
-                <button type="button" class="password-toggle" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--fg-muted); cursor: pointer;">
+                <button type="button" class="password-toggle">
                   <i class="fas fa-eye"></i>
                 </button>
               </div>
-              <div id="password-match-indicator" style="font-size: 0.875rem; margin-top: 0.5rem; font-weight: 500;"></div>
+              <div id="password-match-indicator"></div>
             </div>
             
             <div class="form-group">
               <label for="reg_hero" class="form-label">MTGO Username</label>
               <input type="text" class="form-input" id="reg_hero" name="hero" placeholder="Enter your MTGO username" value="{{ inputs.3 if inputs else '' }}" required>
-              <small style="color: var(--fg-muted); font-size: 0.875rem;">This helps us identify your game logs and match data.</small>
+              <small>This helps us identify your game logs and match data.</small>
             </div>
 
-            <button type="submit" class="btn btn-primary large" style="width: 100%; margin-top: var(--spacing-md);">
-              <i class="fas fa-check" style="margin-right: var(--spacing-xs);"></i>
+            <button type="submit" class="large">
+              <i class="fas fa-check"></i>
               Create Account
             </button>
             
-            <div class="text-center" style="margin-top: var(--spacing-lg);">
-              <p style="color: var(--fg-muted); margin-bottom: var(--spacing-sm);">Already have an account?</p>
-              <a href="/login" class="btn btn-tertiary">Sign In Instead</a>
+            <div >
+              <p>Already have an account?</p>
+              <a href="/login" >Sign In Instead</a>
             </div>
           </form>
         </div>
@@ -65,77 +65,7 @@
   </div>
 </div>
 
-<style>
-/* Register page specific styles */
-.auth-container .card {
-  background: var(--bg-subtle);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-2xl);
-  box-shadow: var(--shadow-lg);
-}
 
-.form-group {
-  margin-bottom: var(--spacing-lg);
-}
-
-.form-label {
-  display: block;
-  font-weight: 500;
-  color: var(--fg-default);
-  margin-bottom: var(--spacing-sm);
-  font-size: 0.9rem;
-}
-
-.form-input {
-  width: 100%;
-  padding: 12px 16px;
-  background: var(--form-input-bg, var(--dusk));
-  border: 1px solid var(--form-input-border, var(--dusk-90));
-  border-radius: var(--radius-sm);
-  color: var(--form-input-fg, var(--dusk-10));
-  font-family: var(--primary-font);
-  font-size: 16px;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: var(--form-input-focused-border, var(--dusk-70));
-  box-shadow: 0 0 0 3px rgba(255, 68, 56, 0.1);
-}
-
-.form-input::placeholder {
-  color: var(--form-input-placeholder, var(--dusk-50));
-}
-
-.password-toggle {
-  transition: color var(--transition-fast);
-}
-
-.password-toggle:hover {
-  color: var(--fg-default) !important;
-}
-
-/* .password-strength {
-  font-weight: 500;
-} */
-
-.password-match {
-  font-weight: 500;
-}
-
-/* Responsive */
-@media (max-width: 480px) {
-  .auth-container .card {
-    padding: var(--spacing-lg);
-  }
-  
-  .section-title {
-    font-size: 2rem;
-  }
-}
-</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -263,7 +193,7 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // If we get here, form is valid
       const submitBtn = form.querySelector('button[type="submit"]');
-      submitBtn.innerHTML = '<span class="spinner" style="width: 16px; height: 16px; margin-right: 8px;"></span> Creating Account...';
+      submitBtn.innerHTML = '<span class="spinner"></span> Creating Account...';
       submitBtn.disabled = true;
     });
   }
