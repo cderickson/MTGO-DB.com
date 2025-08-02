@@ -424,6 +424,50 @@ p {
     color: #999;
 }
 
+/* Form Groups and Input Containers */
+.form-group,
+.input-group,
+.form-div {
+    margin-bottom: 16px;
+}
+
+/* Add spacing to direct children divs in modal body that contain form elements */
+.modal-body > div {
+    margin-bottom: 16px;
+}
+
+/* Override for specific elements that shouldn't have bottom margin */
+.modal-body > div:last-child {
+    margin-bottom: 0;
+}
+
+/* Message boxes and alerts should retain their existing spacing */
+.modal-body > .message-box {
+    margin-bottom: 16px;
+}
+
+.modal-body > .alert {
+    margin-bottom: 16px;
+}
+
+/* Remove bottom margin from last form element in modal */
+.modal-body > .form-group:last-child,
+.modal-body > .input-group:last-child,
+.modal-body > .form-div:last-child {
+    margin-bottom: 0;
+}
+
+/* Small messages/help text under form inputs */
+.form-help,
+.help-text,
+.form-text,
+.small-message {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+    margin-bottom: 0;
+}
+
 /* Button Styles */
 .button,
 .btn-primary,
@@ -574,11 +618,11 @@ table tbody tr:last-child td {
 .modal-content.modal-min-1000 { min-height: 1000px; }
 
 .modal-header {
-    padding: 24px 24px 16px 24px;
+    padding: 24px 24px 8px 24px; /* Reduced bottom padding for 8px gap to horizontal rule */
     border-bottom: 1px solid #e9ecef;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start; /* Changed to flex-start to handle multi-line headers */
     flex-shrink: 0;
 }
 
@@ -586,6 +630,17 @@ table tbody tr:last-child td {
     margin: 0;
     color: #0039A6;
     font-size: 20px;
+}
+
+/* Modal subheader/subtitle styling */
+.modal-header .modal-subtitle,
+.modal-header .modal-subheader,
+.modal-header p,
+.modal-header .subtitle {
+    margin: 4px 0 0 0; /* 4px top margin for spacing from title */
+    color: #666;
+    font-size: 14px;
+    font-weight: normal;
 }
 
 .modal-close {
@@ -601,6 +656,7 @@ table tbody tr:last-child td {
     align-items: center;
     justify-content: center;
     border-radius: 4px;
+    margin-top: -4px; /* Offset to align with title when using flex-start */
 }
 
 .modal-close:hover {
@@ -609,7 +665,7 @@ table tbody tr:last-child td {
 }
 
 .modal-body {
-    padding: 24px;
+    padding: 16px 24px 24px 24px; /* 16px top padding for 24px total gap from header (8px header + 16px body) */
     flex: 0 1 auto; /* Don't force expansion, but allow shrinking */
 }
 
@@ -636,7 +692,7 @@ table tbody tr:last-child td {
 }
 
 .modal-footer {
-    padding: 16px 24px 24px 24px;
+    padding: 8px 24px 8px 24px; /* Balanced top and bottom padding */
     display: flex;
     gap: 12px;
     justify-content: flex-end;
@@ -1060,4 +1116,235 @@ table tbody tr:last-child td {
         padding: 10px 16px;
         font-size: 13px;
     }
+}
+
+/* Collapsible Tab Styles */
+
+.collapsible-tab {
+    margin-bottom: 16px;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    background: white;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.collapsible-tab:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Collapsible header - clickable area */
+.collapsible-tab .section-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+    border-bottom: 1px solid transparent;
+    width: 100%;
+    margin: 0;
+}
+
+/* Hover background removed */
+
+.collapsible-tab.expanded .section-card-header {
+    border-bottom-color: #e9ecef;
+    background: white;
+}
+
+/* Expanded hover background removed */
+
+/* Card title styling */
+.collapsible-tab .section-card-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #0039A6;
+    flex: 1;
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Chevron icon styling */
+.collapsible-tab .section-card-header i {
+    font-size: 16px;
+    color: #6b7280;
+    transition: all 0.3s ease;
+    margin-left: 12px;
+    flex-shrink: 0;
+}
+
+/* Icon hover color removed */
+
+/* Rotate chevron when expanded */
+.collapsible-tab.expanded .section-card-header i {
+    transform: rotate(180deg);
+    color: #0039A6;
+}
+
+/* Content area */
+.collapsible-tab .section-card-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    opacity: 0;
+}
+
+.collapsible-tab.expanded .section-card-content {
+    max-height: none;
+    opacity: 1;
+    padding: 16px 20px;
+}
+
+/* Content body styling */
+.collapsible-tab .section-card-body {
+    padding: 0;
+}
+
+/* Minimize margins on first and last elements inside content */
+.collapsible-tab .section-card-content > *:first-child,
+.collapsible-tab .section-card-body > *:first-child {
+    margin-top: 0;
+}
+
+.collapsible-tab .section-card-content > *:last-child,
+.collapsible-tab .section-card-body > *:last-child {
+    margin-bottom: 0;
+}
+
+/* Badge styling in headers */
+.collapsible-tab .section-card-title .table-badge,
+.collapsible-tab .section-card-title .version-date {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+    display: inline-block;
+}
+
+.collapsible-tab .section-card-title .table-badge {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.collapsible-tab .section-card-title .version-date {
+    background: #e0e7ff;
+    color: #3730a3;
+    font-weight: 400;
+}
+
+/* Smooth animation for content reveal */
+.collapsible-tab .section-card-content {
+    transition: max-height 0.4s ease, opacity 0.3s ease, padding 0.4s ease;
+}
+
+.collapsible-tab.expanded .section-card-content {
+    animation: expandContent 0.4s ease forwards;
+}
+
+@keyframes expandContent {
+    0% {
+        max-height: 0;
+        opacity: 0;
+        padding: 0 20px;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        max-height: 100vh;
+        opacity: 1;
+        padding: 16px 20px;
+    }
+}
+
+/* Focus and accessibility */
+.collapsible-tab .section-card-header:focus {
+    outline: none;
+}
+
+.collapsible-tab .section-card-header:focus-visible {
+    outline: none;
+}
+
+/* Active state removed */
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .collapsible-tab .section-card-header {
+        padding: 10px 16px;
+    }
+    
+    .collapsible-tab .section-card-title {
+        font-size: 16px;
+    }
+    
+    .collapsible-tab.expanded .section-card-content {
+        padding: 12px 16px;
+    }
+    
+    .collapsible-tab .section-card-title .table-badge,
+    .collapsible-tab .section-card-title .version-date {
+        font-size: 11px;
+        padding: 2px 6px;
+        margin-left: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .collapsible-tab .section-card-header {
+        padding: 8px 12px;
+    }
+    
+    .collapsible-tab .section-card-title {
+        font-size: 15px;
+    }
+    
+    .collapsible-tab.expanded .section-card-content {
+        padding: 10px 12px;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .collapsible-tab {
+        border-width: 2px;
+    }
+    
+    .collapsible-tab .section-card-header {
+        border-bottom-width: 2px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .collapsible-tab,
+    .collapsible-tab .section-card-header,
+    .collapsible-tab .section-card-header i,
+    .collapsible-tab .section-card-content {
+        transition: none;
+    }
+    
+    .collapsible-tab.expanded .section-card-content {
+        animation: none;
+    }
+    
+    .collapsible-tab.expanded .section-card-header i {
+        transform: rotate(180deg);
+    }
+}
+
+/* Section Thin Card Styles - For cards that need less vertical padding */
+.section-thin-card .section-card-header {
+    padding: 12px 20px 8px 20px;
+}
+
+.section-thin-body {
+    padding: 8px 20px 12px 20px;
 }

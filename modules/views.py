@@ -52,7 +52,7 @@ def debug_log(message):
 	except Exception as e:
 		debug_log(f"Warning: Could not write to log file: {e}")
 
-page_size = 20
+page_size = 15
 
 # Initialize Azure clients only if connection string is available
 try:
@@ -4340,7 +4340,7 @@ def generate_game_data_dashboard(filtered_query, filters):
 		game_performance_table = {
 			'title': 'Game Performance Statistics',
 			'headers': ['<center></center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Win%</center>', '<center>Mulls/Game</center>', '<center>Opp Mulls/Game</center>', '<center>Turns/Game</center>'],
-			'height': '423px',
+			'height': '416px',
 			'rows': table_rows
 		}
 

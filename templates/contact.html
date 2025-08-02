@@ -8,14 +8,14 @@
   <div class="contact-container">
 	
     <!-- Questions/Info Section -->
-    <div class="card" data-target="questions">
-      <div class="card-header">
-        <h3 class="card-title">
+    <div class="card collapsible-tab" data-target="questions">
+      <div class="section-card-header">
+        <h3 class="section-card-title">
         Questions/Info
         </h3>
         <i class="fas fa-chevron-down"></i>
       </div>
-      <div class="card-content" id="questions">
+      <div class="section-card-content" id="questions">
         <p>Message me on <a href="https://twitter.com/Sundodger04" target="_blank">Twitter</a> or <a href="https://www.reddit.com/user/Sundodger04/" target="_blank">Reddit</a> if you have any questions or critiques (even feature requests). I'm happy to respond when I have time.</p>
         <div class="message-box standard">
           <h4><i class="fab fa-github"></i><a href="https://github.com/cderickson/MTGO-DB" target="_blank">MTGO-DB GitHub Repository</a></h4>
@@ -25,14 +25,14 @@
     </div>
 
     <!-- Bug Reports Section -->
-    <div class="card" data-target="bugs">
-      <div class="card-header">
-        <h3 class="card-title">
+    <div class="card collapsible-tab" data-target="bugs">
+      <div class="section-card-header">
+        <h3 class="section-card-title">
         Bug Reports
         </h3>
         <i class="fas fa-chevron-down"></i>
       </div>
-      <div class="card-content" id="bugs">
+      <div class="section-card-content" id="bugs">
         <p>Please open a <a href="https://github.com/cderickson/MTGO-DB/issues" target="_blank">New Issue on GitHub</a> if you happen to have an account. Otherwise, messaging me on any social media is okay.</p>
         <div class="message-box standard">
           <h4><strong>Helpful Information to Include:</strong></h4>
@@ -47,14 +47,14 @@
     </div>
 
     <!-- MTGO-Tracker Section -->
-    <div class="card" data-target="tracker">
-      <div class="card-header">
-        <h3 class="card-title">
+    <div class="card collapsible-tab" data-target="tracker">
+      <div class="section-card-header">
+        <h3 class="section-card-title">
         MTGO-Tracker
         </h3>
         <i class="fas fa-chevron-down"></i>
       </div>
-      <div class="card-content" id="tracker">
+      <div class="section-card-content" id="tracker">
         <p><strong>MTGO-Tracker</strong> is a local, offline Windows application with much of the same functionality as this web application.</p>
           
         <div class="message-box standard">
@@ -78,14 +78,14 @@
     </div>
 
     <!-- Crossposting Section -->
-    <div class="card" data-target="crosspost">
-      <div class="card-header">
-        <h3 class="card-title">
+    <div class="card collapsible-tab" data-target="crosspost">
+      <div class="section-card-header">
+        <h3 class="section-card-title">
         Crossposting
         </h3>
         <i class="fas fa-chevron-down"></i>
       </div>
-      <div class="card-content" id="crosspost">
+      <div class="section-card-content" id="crosspost">
         <div >
           <p>If you want to cross-post this tool to other communities you think might be interested, feel free!</p>
           
@@ -98,6 +98,8 @@
 
   </div>
 </div>
+
+<script src="{{ url_for('static', filename='collapsible.js') }}" defer></script>
 
 
 

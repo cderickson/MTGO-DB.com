@@ -4,6 +4,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='dashboards.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -13,11 +14,14 @@
     <div class="dashboard-layout">
       <!-- Filters Sidebar -->
       <div class="filters-sidebar">
-        <div class="filters-header">
-          <i class="fas fa-filter" ></i>
-          <h3>Filters</h3>
-        </div>
-        
+        <div class="section-card section-thin-card">
+          <div class="section-card-header">
+            <h2 class="section-card-title">
+              <i class="fas fa-filter"></i>
+              Filters
+            </h2>
+          </div>
+          <div class="section-card-body section-thin-body">
         <form id="dashboardFilters">
           <div class="filter-group">
             <label class="filter-label" for="cardFilter">Card</label>
@@ -80,13 +84,29 @@
             </button>
           </div>
         </form>
+          </div>
+        </div>
       </div>
   
       <!-- Main Dashboard Content -->
       <div class="dashboard-main">
-        <!-- Dashboard Header with Controls -->
-        <div class="dashboard-header">
-          <div class="dashboard-controls">
+        <!-- Dashboard Controls -->
+        <div class="section-card section-thin-card">
+          <div class="section-card-header">
+            <div class="dashboard-controls-header">
+              <h2 class="section-card-title">
+                <i class="fas fa-tachometer-alt"></i>
+                Dashboard Controls
+              </h2>
+              <div class="dashboard-edit-controls-header">
+                <button type="button" class="button primary" onclick="generateDashboard()">
+                  <i class="fas fa-chart-bar"></i>
+                  Generate Dashboard
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="section-card-body section-thin-body">
             <div class="dashboard-selector">
               <label for="dashboardType"><strong>Dashboard Type:</strong></label>
               <select class="dashboard-type-select" id="dashboardType" name="dashboardType">
@@ -96,33 +116,48 @@
                 <option value="game-data">Game Statistics</option>
               </select>
             </div>
-            
-            <button type="button" class="generate-btn" onclick="generateDashboard()">
-              <i class="fas fa-chart-bar"></i>
-              Generate Dashboard
-            </button>
           </div>
         </div>
         
         <!-- Dashboard Content Area -->
         <div class="dashboard-content" id="dashboardContent">
           <!-- Empty State -->
-          <div class="empty-state" id="emptyState">
-            <i class="fas fa-chart-line"></i>
-            <h3>No Dashboard Selected</h3>
-            <p>Choose a dashboard type from the dropdown above and click "Generate Dashboard" to view your data visualizations.</p>
+          <div class="section-card section-thin-card" id="emptyState">
+            <div class="section-card-header">
+              <h2 class="section-card-title">
+                <i class="fas fa-chart-line"></i>
+                Dashboard
+              </h2>
+            </div>
+            <div class="section-card-body section-thin-body">
+              <div class="empty-state-content">
+                <i class="fas fa-chart-line"></i>
+                <h3>No Dashboard Selected</h3>
+                <p>Choose a dashboard type from the dropdown above and click "Generate Dashboard" to view your data visualizations.</p>
+              </div>
+            </div>
           </div>
           
           <!-- Loading State -->
-          <div class="loading-state" id="loadingState">
-            <div class="spinner"></div>
-            <h3>Generating Dashboard...</h3>
-            <p>Please wait while we process your data.</p>
+          <div class="section-card section-thin-card" id="loadingState" style="display: none;">
+            <div class="section-card-header">
+              <h2 class="section-card-title">
+                <i class="fas fa-spinner"></i>
+                Generating Dashboard
+              </h2>
+            </div>
+            <div class="section-card-body section-thin-body">
+              <div class="loading-state-content">
+                <div class="spinner"></div>
+                <h3>Generating Dashboard...</h3>
+                <p>Please wait while we process your data.</p>
+              </div>
+            </div>
           </div>
           
-          <!-- Dashboard Results -->
-          <div id="dashboardResults" >
-            <!-- Dashboard content will be loaded here -->
+          <!-- Dashboard Results Container -->
+          <div id="dashboardResults">
+            <!-- Dashboard content containers will be loaded here -->
           </div>
         </div>
       </div>
@@ -405,7 +440,7 @@ async function generateDashboard() {
   // Show loading state
   document.getElementById('emptyState').style.display = 'none';
   document.getElementById('dashboardResults').style.display = 'none';
-  document.getElementById('loadingState').style.display = 'flex';
+  document.getElementById('loadingState').style.display = 'block';
   
   // Collect filter values using the centralized function
   const filters = getCurrentFilterValues();
@@ -425,7 +460,7 @@ async function generateDashboard() {
     });
     
     if (!response.ok) {
-      throw new Error('Failed to generate dashboard');
+      throw new Error(`Failed to generate dashboard: ${response.status} ${response.statusText}`);
     }
     
     const result = await response.json();
@@ -478,23 +513,33 @@ function renderDashboardContent(dashboardData, dashboardType) {
     const opponentsActive = currentPerspective === 'opponents';
     
     titleContent = `
-      <div>
-        <h3>${titles[dashboardType] || 'Dashboard'}</h3>
-        <div>
-          <button type="button" id="perspective-hero" onclick="console.log('Hero button clicked'); setPerspective('hero'); return false;">Hero</button>
-          <button type="button" id="perspective-opponents" onclick="console.log('Opponents button clicked'); setPerspective('opponents'); return false;">Opponents</button>
-        </div>
+      <h2 class="section-card-title">
+        <i class="fas fa-chart-bar"></i>
+        ${titles[dashboardType] || 'Dashboard'}
+      </h2>
+      <div class="dashboard-edit-controls-header">
+        <button type="button" class="perspective-button ${heroActive ? 'active' : ''}" id="perspective-hero" onclick="setPerspective('hero')">
+          <i class="fas fa-user"></i>
+          Hero
+        </button>
+        <button type="button" class="perspective-button ${opponentsActive ? 'active' : ''}" id="perspective-opponents" onclick="setPerspective('opponents')">
+          <i class="fas fa-users"></i>
+          Opponents
+        </button>
       </div>
     `;
   } else if (dashboardType === 'opponent-analysis') {
     const currentThreshold = getCurrentFilterValues().opponentThreshold || '1';
     
     titleContent = `
-      <div>
-        <h3>${titles[dashboardType] || 'Dashboard'}</h3>
-        <div>
-          <label for="opponentThresholdFilter">Min Matches:</label>
-          <input type="number" id="opponentThresholdFilter" value="${currentThreshold}" min="1" max="100" 
+      <h2 class="section-card-title">
+        <i class="fas fa-chart-bar"></i>
+        ${titles[dashboardType] || 'Dashboard'}
+      </h2>
+      <div class="dashboard-edit-controls-header">
+        <div class="dashboard-selector">
+          <label for="opponentThresholdFilter"><strong>Min Matches:</strong></label>
+          <input type="number" class="dashboard-type-select" id="opponentThresholdFilter" value="${currentThreshold}" min="1" max="100" 
             onchange="generateDashboard();" 
           />
         </div>
@@ -505,58 +550,84 @@ function renderDashboardContent(dashboardData, dashboardType) {
     const currentOppMulls = getCurrentFilterValues().oppMulls || '0';
     
     titleContent = `
-      <div>
-        <h3>${titles[dashboardType] || 'Dashboard'}</h3>
-        <div>
-          <label for="heroMullsFilter">Hero Mulls:</label>
-          <input type="number" id="heroMullsFilter" value="${currentHeroMulls}" min="0" max="10" 
+      <h2 class="section-card-title">
+        <i class="fas fa-chart-bar"></i>
+        ${titles[dashboardType] || 'Dashboard'}
+      </h2>
+      <div class="dashboard-edit-controls-header">
+        <div class="dashboard-selector">
+          <label for="heroMullsFilter"><strong>Hero Mulls:</strong></label>
+          <input type="number" class="dashboard-type-select" id="heroMullsFilter" value="${currentHeroMulls}" min="0" max="10" 
             onchange="generateDashboard();" 
           />
-          <label for="oppMullsFilter">Opp. Mulls:</label>
-          <input type="number" id="oppMullsFilter" value="${currentOppMulls}" min="0" max="10" 
+          <label for="oppMullsFilter"><strong>Opp. Mulls:</strong></label>
+          <input type="number" class="dashboard-type-select" id="oppMullsFilter" value="${currentOppMulls}" min="0" max="10" 
             onchange="generateDashboard();" 
           />
         </div>
       </div>
     `;
   } else {
-    titleContent = `<h3>${titles[dashboardType] || 'Dashboard'}</h3>`;
+    titleContent = '';
   }
   
-  let content = titleContent;
+  let content = '';
   
-  // Render metrics
+  // Render metrics in their own section-thin-card
   if (dashboardData.metrics && dashboardData.metrics.length > 0) {
-    content += '<div>';
+    content += `
+      <div class="section-card section-thin-card">
+        <div class="section-card-header">
+          ${titleContent || `
+          <h2 class="section-card-title">
+            <i class="fas fa-chart-bar"></i>
+            ${titles[dashboardType] || 'Dashboard'}
+          </h2>
+          `}
+        </div>
+        <div class="section-card-body section-thin-body">
+          <div class="dashboard-metrics-grid">
+    `;
     
     dashboardData.metrics.forEach(metric => {
       content += `
-        <div>
-          <div>${metric.title}</div>
-          <div>${metric.value}</div>
-          <div>${metric.subtitle}</div>
+        <div class="dashboard-kpi-card">
+          <div class="kpi-title">${metric.title}</div>
+          <div class="kpi-value">${metric.value}</div>
+          <div class="kpi-subtitle">${metric.subtitle}</div>
         </div>
       `;
     });
     
-    content += '</div>';
+    content += `
+          </div>
+        </div>
+      </div>
+    `;
   }
   
-  // Render charts
+  // Render each chart in its own individual section-thin-card
   if (dashboardData.charts && dashboardData.charts.length > 0) {
     dashboardData.charts.forEach(chart => {
       content += `
-        <div>
-          <h4>${chart.title}</h4>
-          <div>
-            <div>
+        <div class="section-card section-thin-card">
+          <div class="section-card-header">
+            <h2 class="section-card-title">
               <i class="fas fa-chart-${chart.type === 'line' ? 'line' : chart.type === 'bar' ? 'bar' : 'pie-chart'}"></i>
-              <div><strong>${chart.title}</strong></div>
-              <div>
-                ${chart.data.labels ? `Labels: ${chart.data.labels.length}` : 'No data available'}
-              </div>
-              <div>
-                Chart visualization will be implemented here
+              ${chart.title}
+            </h2>
+          </div>
+          <div class="section-card-body section-thin-body">
+            <div class="chart-placeholder">
+              <i class="fas fa-chart-${chart.type === 'line' ? 'line' : chart.type === 'bar' ? 'bar' : 'pie-chart'} chart-icon"></i>
+              <div class="chart-info">
+                <div class="chart-type"><strong>${chart.title}</strong></div>
+                <div class="chart-meta">
+                  ${chart.data.labels ? `Labels: ${chart.data.labels.length}` : 'No data available'}
+                </div>
+                <div class="chart-status">
+                  Chart visualization will be implemented here
+                </div>
               </div>
             </div>
           </div>
@@ -565,26 +636,28 @@ function renderDashboardContent(dashboardData, dashboardType) {
     });
   }
   
-  // Render table grids
+  // Render each table from grids in a grid layout with individual section-thin-cards
   if (dashboardData.table_grids && dashboardData.table_grids.length > 0) {
     dashboardData.table_grids.forEach(grid => {
       if (grid.type === '2x2') {
-        content += `
-          <div>
-        `;
-        // Flatten the grid structure - iterate through all tables directly
+        content += `<div class="dashboard-table-grid">`;
+        
+        // Flatten the grid structure - each table gets its own section-thin-card
         grid.grid.forEach(row => {
           row.forEach(table => {
             const tableHeight = table.height || '214px';
             
             content += `
-              <div>
-                <div>
-                  <h4>${table.title}</h4>
+              <div class="section-card section-thin-card">
+                <div class="section-card-header">
+                  <h2 class="section-card-title">
+                    <i class="fas fa-table"></i>
+                    ${table.title}
+                  </h2>
                 </div>
-                <div>
-                  <div>
-                    <table>
+                <div class="section-card-body section-thin-body table-body-no-padding">
+                  <div class="table-wrapper" style="height: ${tableHeight}">
+                    <table class="modern-table">
                       <thead>
                         <tr>
                           ${table.headers.map(header => `<th>${header}</th>`).join('')}
@@ -595,13 +668,12 @@ function renderDashboardContent(dashboardData, dashboardType) {
                           // Check if row has custom styling (last element is a CSS style string)
                           const hasCustomStyle = row.length > table.headers.length && typeof row[row.length - 1] === 'string' && row[row.length - 1].includes('background-color');
                           const customStyle = hasCustomStyle ? row[row.length - 1] : '';
-                          const defaultStyle = '';
                           
                           // Get data cells (exclude the style element if present)
                           const dataCells = hasCustomStyle ? row.slice(0, -1) : row;
                           
                           return `
-                            <tr>
+                            <tr${customStyle ? ` style="${customStyle}"` : ''}>
                               ${dataCells.map(cell => `<td>${cell}</td>`).join('')}
                             </tr>
                           `;
@@ -614,6 +686,7 @@ function renderDashboardContent(dashboardData, dashboardType) {
             `;
           });
         });
+        
         content += `</div>`; // Close grid div
       }
     });
@@ -626,13 +699,16 @@ function renderDashboardContent(dashboardData, dashboardType) {
       const useFixedHeight = tableHeight !== 'auto';
       
       content += `
-        <div>
-          <div>
-            <h4>${table.title}</h4>
+        <div class="section-card section-thin-card">
+          <div class="section-card-header">
+            <h2 class="section-card-title">
+              <i class="fas fa-list"></i>
+              ${table.title}
+            </h2>
           </div>
-          <div>
-            <div>
-              <table>
+          <div class="section-card-body section-thin-body table-body-no-padding">
+            <div class="table-wrapper" ${useFixedHeight ? `style="height: ${tableHeight}"` : ''}>
+              <table class="modern-table">
                 <thead>
                   <tr>
                     ${table.headers.map(header => `<th>${header}</th>`).join('')}
@@ -643,13 +719,12 @@ function renderDashboardContent(dashboardData, dashboardType) {
                     // Check if row has custom styling (last element is a CSS style string)
                     const hasCustomStyle = row.length > table.headers.length && typeof row[row.length - 1] === 'string' && row[row.length - 1].includes('background-color');
                     const customStyle = hasCustomStyle ? row[row.length - 1] : '';
-                    const defaultStyle = '';
                     
                     // Get data cells (exclude the style element if present)
                     const dataCells = hasCustomStyle ? row.slice(0, -1) : row;
                     
                     return `
-                      <tr >
+                      <tr${customStyle ? ` style="${customStyle}"` : ''}>
                         ${dataCells.map(cell => `<td>${cell}</td>`).join('')}
                       </tr>
                     `;
@@ -666,16 +741,26 @@ function renderDashboardContent(dashboardData, dashboardType) {
   // If no data sections, show message
   if (!dashboardData.metrics?.length && !dashboardData.charts?.length && !dashboardData.tables?.length && !dashboardData.table_grids?.length) {
     content += `
-      <div>
-        <i class="fas fa-info-circle"></i>
-        <h3>No Data Available</h3>
-        <p>No data matches your current filters. Try adjusting your filter criteria.</p>
+      <div class="section-card section-thin-card">
+        <div class="section-card-header">
+          <h2 class="section-card-title">
+            <i class="fas fa-info-circle"></i>
+            No Data Available
+          </h2>
+        </div>
+        <div class="section-card-body section-thin-body">
+          <div class="empty-state-content">
+            <i class="fas fa-info-circle"></i>
+            <h3>No Data Available</h3>
+            <p>No data matches your current filters. Try adjusting your filter criteria.</p>
+          </div>
+        </div>
       </div>
     `;
   }
   
   resultsDiv.innerHTML = content;
-  // resultsDiv.style.display = 'block';
+  resultsDiv.style.display = 'block';
 }
 
 // Function to set perspective and regenerate dashboard

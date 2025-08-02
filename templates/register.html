@@ -1,20 +1,24 @@
 {% extends 'base.html' %}
 
-{% block page_title %}Create Your Account{% endblock %}
+{% block page_title %}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='auth.css') }}">
+{% endblock %}
 
 {% block content %}
 
-<div class="container">
-  <div class="section">
-    <div class="section-header">
-      <h1 class="section-title">Create Your Account</h1>
-      <p class="section-subtitle">Join MTGO-DB and start analyzing your Magic: The Gathering Online data today</p>
-    </div>
+
+
 
     <div class="auth-container">
-      <div >
+      <div>
         <div class="card-content">
+          <div class="section-header">
+            <h2 class="section-title">Create Your Account</h2>
+          </div>
           <form action="/email" method="POST">
+            
             <div class="form-group">
               <label for="reg_email" class="form-label">Email Address</label>
               <input type="email" class="form-input" id="reg_email" name="email" placeholder="Enter your email address" value="{{ inputs.0 if inputs else '' }}" required>
@@ -49,21 +53,22 @@
               <small>This helps us identify your game logs and match data.</small>
             </div>
 
-            <button type="submit" class="large">
+            <button type="submit" class="auth-button">
               <i class="fas fa-check"></i>
               Create Account
             </button>
             
-            <div >
+            <div class="auth-links">
               <p>Already have an account?</p>
-              <a href="/login" >Sign In Instead</a>
+              <a href="/login">Sign In Instead</a>
             </div>
+            
           </form>
         </div>
       </div>
     </div>
-  </div>
-</div>
+
+
 
 
 

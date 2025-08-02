@@ -9,15 +9,15 @@
     <div >
       
       <!-- Version 1.0.0 - Initial Release -->
-      <div class="card" data-target="v1-0-0">
-            <div class="card-header">
-      <h3 class="card-title">
+      <div class="card collapsible-tab" data-target="v1-0-0">
+            <div class="section-card-header">
+      <h3 class="section-card-title">
             Version 1.0.0 - Initial Release
             <span class="version-date">November 1, 2023</span>
           </h3>
           <i class="fas fa-chevron-down"></i>
         </div>
-        <div class="card-content" id="v1-0-0">
+        <div class="section-card-content" id="v1-0-0">
           <p><strong>Welcome to MTGO-DB!</strong> The first public release of the web-based MTGO data analytics platform.</p>
             
           <h4>Core Features</h4>
@@ -56,14 +56,14 @@
       </div>
 
       <!-- Future Updates Section -->
-      <div class="card" data-target="future">
-        <div class="card-header">
-          <h3 class="card-title">
+      <div class="card collapsible-tab" data-target="future">
+        <div class="section-card-header">
+          <h3 class="section-card-title">
             Planned Features & Roadmap
           </h3>
           <i class="fas fa-chevron-down"></i>
         </div>
-        <div class="card-content" id="future">
+        <div class="section-card-content" id="future">
           <div class="message-box standard">
             <h4><strong>Coming Soon:</strong> We're constantly working on new features and improvements based on user feedback.</h4>
           </div>
@@ -85,20 +85,19 @@
               <h4><i class="fas fa-lightbulb"></i><a href="/contact">Submit Feature Requests</a></h4>
               <p>Have an idea for a new feature? Let us know!</p>
             </div>
-          </div>
         </div>
       </div>
 
       <!-- Version 1.1.0 - Bug Fixes -->
-      <div class="card" data-target="v1-1-0">
-        <div class="card-header">
-      <h3 class="card-title">
+      <div class="card collapsible-tab" data-target="v1-1-0">
+        <div class="section-card-header">
+          <h3 class="section-card-title">
             Version 1.1.0 - Bug Fixes & Improvements
             <span class="version-date">December 2023</span>
           </h3>
           <i class="fas fa-chevron-down"></i>
         </div>
-        <div class="card-content" id="v1-1-0">
+        <div class="section-card-content" id="v1-1-0">
           <h4>What's New</h4>
           <div class="message-box standard">
             <h4><i class="fas fa-bug" ></i>Bug Fixes</h4>
@@ -126,6 +125,8 @@
     </div>
   </div>
 </div>
+
+<script src="{{ url_for('static', filename='collapsible.js') }}" defer></script>
 
 
 

@@ -1,5 +1,10 @@
 /* Tables Page Specific Styles */
 
+/* Fix scrollbar issue - override base.css min-height */
+.app-layout {
+    min-height: auto !important;
+}
+
 .tables-container {
     max-width: 1400px;
     margin: 0 auto;
@@ -15,9 +20,15 @@
 }
 
 .table-header {
-    padding: 20px 24px;
+    padding: 16px 20px;
     border-bottom: 1px solid #e9ecef;
     background-color: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.table-header-top {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -48,14 +59,16 @@
     display: flex;
     align-items: flex-start;
     gap: 8px;
-    margin-bottom: 8px;
-    padding: 8px 12px;
+    padding: 10px 14px;
     background-color: #e8f4fd;
     border: 1px solid #b8daff;
     border-radius: 6px;
     font-size: 13px;
     color: #0c5460;
     line-height: 1.4;
+    width: 100%; /* Span full width */
+    box-sizing: border-box;
+    margin: 0; /* Remove margin since it's now separate */
 }
 
 .table-hint i {
@@ -79,7 +92,14 @@
 /* Table Wrapper */
 .table-wrapper {
     overflow-x: auto;
-    max-height: 70vh;
+    /* Remove fixed max-height that was causing unnecessary scrolling */
+    max-height: none;
+    overflow-y: visible;
+}
+
+/* Only add scrolling when table actually has many rows */
+.table-wrapper.scrollable {
+    max-height: calc(100vh - 250px);
     overflow-y: auto;
 }
 
@@ -92,14 +112,109 @@
     box-shadow: none;
 }
 
+/* Fixed table layout - can be added to specific table containers when needed */
+.fixed-table-width .modern-table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+/* Matches Table Column Widths */
+.fixed-table-width.matches-table .modern-table th:nth-child(1),
+.fixed-table-width.matches-table .modern-table td:nth-child(1) { width: 10%; } /* Draft ID */
+.fixed-table-width.matches-table .modern-table th:nth-child(2),
+.fixed-table-width.matches-table .modern-table td:nth-child(2) { width: 12%; } /* Player 1 */
+.fixed-table-width.matches-table .modern-table th:nth-child(3),
+.fixed-table-width.matches-table .modern-table td:nth-child(3) { width: 10%; } /* P1 Deck */
+.fixed-table-width.matches-table .modern-table th:nth-child(4),
+.fixed-table-width.matches-table .modern-table td:nth-child(4) { width: 8%; }  /* P1 Subdeck */
+.fixed-table-width.matches-table .modern-table th:nth-child(5),
+.fixed-table-width.matches-table .modern-table td:nth-child(5) { width: 12%; } /* Player 2 */
+.fixed-table-width.matches-table .modern-table th:nth-child(6),
+.fixed-table-width.matches-table .modern-table td:nth-child(6) { width: 10%; } /* P2 Deck */
+.fixed-table-width.matches-table .modern-table th:nth-child(7),
+.fixed-table-width.matches-table .modern-table td:nth-child(7) { width: 8%; }  /* P2 Subdeck */
+.fixed-table-width.matches-table .modern-table th:nth-child(8),
+.fixed-table-width.matches-table .modern-table td:nth-child(8) { width: 6%; }  /* P1 Wins */
+.fixed-table-width.matches-table .modern-table th:nth-child(9),
+.fixed-table-width.matches-table .modern-table td:nth-child(9) { width: 6%; }  /* P2 Wins */
+.fixed-table-width.matches-table .modern-table th:nth-child(10),
+.fixed-table-width.matches-table .modern-table td:nth-child(10) { width: 8%; } /* Winner */
+.fixed-table-width.matches-table .modern-table th:nth-child(11),
+.fixed-table-width.matches-table .modern-table td:nth-child(11) { width: 10%; } /* Format/Date */
+
+/* Games Table Column Widths */
+.fixed-table-width.games-table .modern-table th:nth-child(1),
+.fixed-table-width.games-table .modern-table td:nth-child(1) { width: 15%; } /* Match ID */
+.fixed-table-width.games-table .modern-table th:nth-child(2),
+.fixed-table-width.games-table .modern-table td:nth-child(2) { width: 15%; } /* Player 1 */
+.fixed-table-width.games-table .modern-table th:nth-child(3),
+.fixed-table-width.games-table .modern-table td:nth-child(3) { width: 15%; } /* Player 2 */
+.fixed-table-width.games-table .modern-table th:nth-child(4),
+.fixed-table-width.games-table .modern-table td:nth-child(4) { width: 8%; }  /* Game # */
+.fixed-table-width.games-table .modern-table th:nth-child(5),
+.fixed-table-width.games-table .modern-table td:nth-child(5) { width: 10%; } /* PD Selector */
+.fixed-table-width.games-table .modern-table th:nth-child(6),
+.fixed-table-width.games-table .modern-table td:nth-child(6) { width: 8%; }  /* PD Choice */
+.fixed-table-width.games-table .modern-table th:nth-child(7),
+.fixed-table-width.games-table .modern-table td:nth-child(7) { width: 8%; }  /* On Play */
+.fixed-table-width.games-table .modern-table th:nth-child(8),
+.fixed-table-width.games-table .modern-table td:nth-child(8) { width: 8%; }  /* On Draw */
+.fixed-table-width.games-table .modern-table th:nth-child(9),
+.fixed-table-width.games-table .modern-table td:nth-child(9) { width: 6%; }  /* P1 Mulls */
+.fixed-table-width.games-table .modern-table th:nth-child(10),
+.fixed-table-width.games-table .modern-table td:nth-child(10) { width: 6%; } /* P2 Mulls */
+.fixed-table-width.games-table .modern-table th:nth-child(11),
+.fixed-table-width.games-table .modern-table td:nth-child(11) { width: 8%; } /* Winner */
+
+/* Plays Table Column Widths */
+.fixed-table-width.plays-table .modern-table th:nth-child(1),
+.fixed-table-width.plays-table .modern-table td:nth-child(1) { width: 12%; } /* Match ID */
+.fixed-table-width.plays-table .modern-table th:nth-child(2),
+.fixed-table-width.plays-table .modern-table td:nth-child(2) { width: 6%; }  /* Game # */
+.fixed-table-width.plays-table .modern-table th:nth-child(3),
+.fixed-table-width.plays-table .modern-table td:nth-child(3) { width: 6%; }  /* Play # */
+.fixed-table-width.plays-table .modern-table th:nth-child(4),
+.fixed-table-width.plays-table .modern-table td:nth-child(4) { width: 6%; }  /* Turn # */
+.fixed-table-width.plays-table .modern-table th:nth-child(5),
+.fixed-table-width.plays-table .modern-table td:nth-child(5) { width: 12%; } /* Casting Player */
+.fixed-table-width.plays-table .modern-table th:nth-child(6),
+.fixed-table-width.plays-table .modern-table td:nth-child(6) { width: 10%; } /* Action */
+.fixed-table-width.plays-table .modern-table th:nth-child(7),
+.fixed-table-width.plays-table .modern-table td:nth-child(7) { width: 15%; } /* Primary Card */
+.fixed-table-width.plays-table .modern-table th:nth-child(8),
+.fixed-table-width.plays-table .modern-table td:nth-child(8) { width: 10%; } /* Target1 */
+.fixed-table-width.plays-table .modern-table th:nth-child(9),
+.fixed-table-width.plays-table .modern-table td:nth-child(9) { width: 8%; }  /* Target2 */
+.fixed-table-width.plays-table .modern-table th:nth-child(10),
+.fixed-table-width.plays-table .modern-table td:nth-child(10) { width: 8%; } /* Target3 */
+.fixed-table-width.plays-table .modern-table th:nth-child(11),
+.fixed-table-width.plays-table .modern-table td:nth-child(11) { width: 7%; } /* Remaining columns */
+
+/* Generic Column Width Classes */
+.col-width-5 { width: 5% !important; }
+.col-width-8 { width: 8% !important; }
+.col-width-10 { width: 10% !important; }
+.col-width-12 { width: 12% !important; }
+.col-width-15 { width: 15% !important; }
+.col-width-20 { width: 20% !important; }
+.col-width-25 { width: 25% !important; }
+.col-width-30 { width: 30% !important; }
+
+/* Pixel-based widths for precise control */
+.col-width-80px { width: 80px !important; }
+.col-width-100px { width: 100px !important; }
+.col-width-120px { width: 120px !important; }
+.col-width-150px { width: 150px !important; }
+.col-width-200px { width: 200px !important; }
+
 .modern-table th {
     background-color: #f8f9fa;
-    padding: 12px 16px;
-    text-align: left;
+    padding: 8px 12px;
+    text-align: center;
     font-weight: 600;
     color: #333;
     border-bottom: 2px solid #e9ecef;
-    font-size: 13px;
+    font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     position: sticky;
@@ -108,15 +223,53 @@
 }
 
 .modern-table td {
-    padding: 10px 16px;
+    padding: 6px 12px;
     border-bottom: 1px solid #e9ecef;
-    font-size: 14px;
+    font-size: 12px;
     vertical-align: middle;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 0;
+    cursor: help; /* Show help cursor for all cells (all have tooltips) */
+}
+
+/* Override help cursor for cells being actively selected */
+.modern-table td:active {
+    cursor: pointer;
+}
+
+/* Left-align specific data columns only (headers stay centered) */
+.modern-table td.left-align {
+    text-align: left;
+}
+
+/* Ensure all headers are always centered */
+.modern-table th {
+    text-align: center !important;
 }
 
 .modern-table tbody tr {
     transition: background-color 0.2s ease;
     cursor: pointer;
+    user-select: none; /* Prevent text selection when multi-selecting */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Remove focus outline from table cells */
+.modern-table td:focus,
+.modern-table th:focus,
+.modern-table tr:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Remove focus outline from any focused elements within table */
+.modern-table *:focus {
+    outline: none !important;
 }
 
 .modern-table tbody tr:hover {
@@ -124,16 +277,14 @@
 }
 
 .modern-table tbody tr.selected {
-    background-color: rgba(0, 57, 166, 0.1);
+    background-color: rgba(0, 57, 166, 0.15) !important;
+    border-left: 4px solid #0039A6;
+    box-shadow: inset 0 0 0 1px rgba(0, 57, 166, 0.2);
 }
 
 .modern-table tbody tr.selected:hover {
-    background-color: rgba(0, 57, 166, 0.15);
-}
-
-/* Table row styling */
-.jsTableRow {
-    /* Inherits hover and selection styles from modern-table */
+    background-color: rgba(0, 57, 166, 0.2) !important;
+    box-shadow: inset 0 0 0 1px rgba(0, 57, 166, 0.3);
 }
 
 /* Specific cell styling */
@@ -355,10 +506,10 @@
 
 /* Responsive Design */
 @media (max-width: 1200px) {
-    .table-header {
+    .table-header-top {
         flex-direction: column;
         align-items: stretch;
-        gap: 16px;
+        gap: 12px;
     }
     
     .table-header-right {
@@ -373,11 +524,13 @@
 
 @media (max-width: 768px) {
     .table-header {
-        padding: 16px 20px;
+        padding: 12px 16px;
+        gap: 12px;
     }
     
     .table-title {
-        font-size: 20px;
+        font-size: 18px;
+        margin-bottom: 8px;
     }
     
     .control-buttons {
@@ -392,8 +545,13 @@
     
     .modern-table th,
     .modern-table td {
+        padding: 5px 8px;
+        font-size: 11px;
+    }
+    
+    .table-hint {
         padding: 8px 12px;
-        font-size: 13px;
+        font-size: 12px;
     }
     
     .pagination-container {
@@ -412,25 +570,27 @@
 
 @media (max-width: 480px) {
     .table-header {
-        padding: 12px 16px;
+        padding: 10px 12px;
+        gap: 10px;
     }
     
     .table-title {
-        font-size: 18px;
+        font-size: 16px;
         flex-direction: column;
         align-items: flex-start;
-        gap: 8px;
+        gap: 6px;
+        margin-bottom: 6px;
     }
     
     .table-hint {
-        font-size: 12px;
+        font-size: 11px;
         padding: 6px 10px;
     }
     
     .modern-table th,
     .modern-table td {
-        padding: 6px 8px;
-        font-size: 12px;
+        padding: 4px 6px;
+        font-size: 10px;
     }
     
     .card-lists {

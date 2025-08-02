@@ -2,8 +2,8 @@
 
 .profile-container {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
+    grid-template-columns: 650px 1fr;
+    gap: 16px;
     max-width: 1200px;
     margin: 0 auto;
 }
@@ -12,7 +12,45 @@
 .profile-right-column {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 16px; /* Reduced from 24px to fix double gap */
+}
+
+/* Remove default margins from section cards on profile page */
+.profile-container .section-card {
+    margin-bottom: 0;
+}
+
+/* User Information Card Height Control */
+.profile-left-column .section-card:nth-child(1) {
+    /* Set explicit height for user information card */
+    min-height: 200px; /* Minimum height */
+    height: auto; /* Allow natural height by default */
+}
+
+/* Fixed height options for user information card */
+.profile-left-column .section-card:nth-child(1).fixed-height-275 {
+    height: 275px;
+}
+
+.profile-left-column .section-card:nth-child(1).fixed-height-250 {
+    height: 250px;
+}
+
+.profile-left-column .section-card:nth-child(1).fixed-height-300 {
+    height: 300px;
+}
+
+.profile-left-column .section-card:nth-child(1).fixed-height-350 {
+    height: 350px;
+}
+
+.profile-left-column .section-card:nth-child(1).fixed-height-400 {
+    height: 400px;
+}
+
+/* Custom height class for any value */
+.custom-height {
+    height: var(--custom-height, auto) !important;
 }
 
 .profile-icon {
@@ -50,20 +88,48 @@
     font-size: 16px;
     padding: 8px 0;
     border-bottom: 1px solid transparent;
+    min-height: 40px; /* Ensure consistent height */
+    display: flex;
+    align-items: center;
+}
+
+/* Match form-input height exactly to profile-value */
+.profile-info-item .form-input {
+    font-size: 16px !important;
+    padding: 8px 12px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 6px !important;
+    background: #f8f9fa !important;
+    min-height: 40px;
+    box-sizing: border-box;
+    transition: all 0.2s ease !important;
+}
+
+.profile-info-item .form-input:focus {
+    border-color: #0039A6 !important;
+    background: white !important;
+    box-shadow: 0 0 0 3px rgba(0, 57, 166, 0.1) !important;
 }
 
 /* Match History Specific Styles */
+
+/* Remove padding from match history section body so table goes to edges */
+.profile-left-column .section-card:nth-child(2) .section-card-body {
+    padding: 0;
+}
+
 .match-history-table {
     width: 100%;
     border-collapse: collapse;
     margin: 0;
     background: white;
+    border-radius: 0;
 }
 
 .match-history-table th {
     background-color: #f8f9fa;
     padding: 12px 16px;
-    text-align: left;
+    text-align: center;
     font-weight: 600;
     color: #333;
     border-bottom: 2px solid #e9ecef;
@@ -77,6 +143,7 @@
     border-bottom: 1px solid #e9ecef;
     font-size: 14px;
     vertical-align: middle;
+    text-align: center;
 }
 
 .match-history-table tbody tr {
@@ -169,16 +236,24 @@
 /* Statistics Grid */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
 }
 
 .stat-item {
-    background-color: #f8f9fa;
-    padding: 16px;
-    border-radius: 6px;
-    border: 1px solid #e9ecef;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
     text-align: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+    border-color: #d1d5db;
 }
 
 .stat-label {
@@ -232,10 +307,21 @@
 }
 
 /* Responsive Design */
+@media (max-width: 1100px) {
+    .profile-container {
+        grid-template-columns: 550px 1fr;
+    }
+}
+
 @media (max-width: 968px) {
     .profile-container {
         grid-template-columns: 1fr;
-        gap: 20px;
+        gap: 16px;
+    }
+    
+    .profile-left-column,
+    .profile-right-column {
+        gap: 16px;
     }
     
     .stats-grid {
@@ -257,7 +343,11 @@
     }
     
     .stat-item {
-        padding: 12px;
+        padding: 16px;
+    }
+    
+    .stat-item:hover {
+        transform: translateY(-1px); /* Reduced hover effect on mobile */
     }
     
     .stat-value {

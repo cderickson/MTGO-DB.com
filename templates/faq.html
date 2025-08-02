@@ -8,15 +8,15 @@
   <div class="faq-container">
   
     <!-- MTGO-Tracker Import FAQ -->
-    <div class="card" data-target="tracker-import">
-      <div class="card-header">
-        <h3 class="card-title">
+    <div class="card collapsible-tab" data-target="tracker-import">
+      <div class="section-card-header">
+        <h3 class="section-card-title">
         I already use MTGO-Tracker Desktop. Do I have to re-do all my manual revisions?
         </h3>
         <i class="fas fa-chevron-down"></i>
       </div>
-      <div class="card-content" id="tracker-import">
-        <div class="card-body">
+      <div class="section-card-content" id="tracker-import">
+        <div class="section-card-body">
           <div class="message-box standard">
             <h4><strong>No!</strong> You can import your saved data from MTGO-Tracker.</h4>
           </div>
@@ -35,15 +35,15 @@
     </div>
 
     <!-- Zip File FAQ -->
-    <div class="card" data-target="zip-files">
-      <div class="card-header">
-        <h3 class="card-title">
+    <div class="card collapsible-tab" data-target="zip-files">
+      <div class="section-card-header">
+        <h3 class="section-card-title">
         Why do I need to upload logs as a .zip file? Can I upload individual files?
         </h3>
         <i class="fas fa-chevron-down"></i>
       </div>
-      <div class="card-content" id="zip-files">
-        <div class="card-body">
+      <div class="section-card-content" id="zip-files">
+        <div class="section-card-body">
           <div class="message-box standard">
             <h4><strong>File timestamps are crucial:</strong> GameLog files don't include timestamp data in their contents.</h4>
           </div>
@@ -60,14 +60,14 @@
     </div>
 
     <!-- Zip Script FAQ -->
-    <div class="card" data-target="zip-script">
-      <div class="card-header">
-        <h3 class="card-title">
+    <div class="card collapsible-tab" data-target="zip-script">
+      <div class="section-card-header">
+        <h3 class="section-card-title">
         What is the Zip-MTGO-Files script doing?
         </h3>
         <i class="fas fa-chevron-down"></i>
       </div>
-      <div class="card-content" id="zip-script">
+      <div class="section-card-content" id="zip-script">
         <div >
           <p>The script performs these actions:</p>
           
@@ -92,14 +92,14 @@
     </div>
 
     <!-- Data Processing FAQ -->
-    <div class="card" data-target="data-processing">
-      <div class="card-header">
-        <h3 class="card-title">
+    <div class="card collapsible-tab" data-target="data-processing">
+      <div class="section-card-header">
+        <h3 class="section-card-title">
         How long does data processing take?
         </h3>
         <i class="fas fa-chevron-down"></i>
       </div>
-      <div class="card-content" id="data-processing">
+      <div class="section-card-content" id="data-processing">
         <div >
           <p>Processing time depends on several factors:</p>
           
@@ -116,22 +116,22 @@
             <p>Peak times may be slower</p>
           </div>
           <div class="message-box standard">
-            <h4><strong>Email notification:</strong> You'll receive a Load Report via email when processing is complete, so you don't need to wait around!</h4>
+            <strong>Email notification:</strong> You'll receive a Load Report via email when processing is complete, so you don't need to wait around!
           </div>
         </div>
       </div>
     </div>
 
     <!-- Data Privacy FAQ -->
-    <div class="card" data-target="privacy">
-      <div class="card-header">
-        <h3 class="card-title">
+    <div class="card collapsible-tab" data-target="privacy">
+      <div class="section-card-header">
+        <h3 class="section-card-title">
         Is my MTGO data secure and private?
         </h3>
         <i class="fas fa-chevron-down"></i>
       </div>
-      <div class="card-content" id="privacy">
-        <div class="card-body">
+      <div class="section-card-content" id="privacy">
+        <div class="section-card-body">
           <div  >
             <p><strong>Your data is private:</strong> Only you can access your uploaded MTGO data.</p>
           </div>
@@ -148,27 +148,27 @@
     </div>
 
     <!-- Troubleshooting FAQ -->
-    <div class="card" data-target="troubleshooting">
-      <div class="card-header">
-        <h3 class="card-title">
+    <div class="card collapsible-tab" data-target="troubleshooting">
+      <div class="section-card-header">
+        <h3 class="section-card-title">
         What should I do if I encounter errors?
         </h3>
         <i class="fas fa-chevron-down"></i>
       </div>
-      <div class="card-content" id="troubleshooting">
-        <div >
+      <div class="section-card-content" id="troubleshooting">
+        <div>
           <p>If you run into issues, try these steps:</p>
           
           <div class="message-box standard">
-            <h4><div >1</div>Check the FAQ</h4>
+            <h4><div>1</div>Check the FAQ</h4>
             <p>Many common issues are addressed in this FAQ section</p>
           </div>
           <div class="message-box standard">
-            <h4><div >2</div>Review error messages</h4>
+            <h4><div>2</div>Review error messages</h4>
             <p>Take note of any specific error messages or codes</p>
           </div>
           <div class="message-box standard">
-            <h4><div >3</div>Contact support</h4>
+            <h4><div>3</div>Contact support</h4>
             <p>Report bugs or get help via the contact page</p>
           </div>
           <div class="message-box standard">
@@ -181,5 +181,7 @@
 
   </div>
 </div>
+
+<script src="{{ url_for('static', filename='collapsible.js') }}" defer></script>
 
 {% endblock %}

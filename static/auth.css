@@ -1,0 +1,301 @@
+/* Authentication Form Styles */
+
+/* Main auth container */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: calc(100vh - 200px);
+    padding: 20px;
+}
+
+.auth-container > div {
+    width: 100%;
+    max-width: 480px;
+}
+
+.card-content {
+    background: white;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+}
+
+/* Form groups with enhanced spacing */
+.auth-container .form-group {
+    margin-bottom: 24px;
+}
+
+.auth-container .form-group:last-of-type {
+    margin-bottom: 32px;
+}
+
+/* Enhanced form labels */
+.auth-container .form-label {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 8px;
+    font-size: 15px;
+}
+
+/* Enhanced form inputs for auth forms */
+.auth-container .form-input {
+    padding: 14px 16px;
+    font-size: 15px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    background-color: #fafafa;
+}
+
+.auth-container .form-input:focus {
+    background-color: white;
+    border-color: #0039A6;
+    box-shadow: 0 0 0 4px rgba(0, 57, 166, 0.08);
+    transform: translateY(-1px);
+}
+
+.auth-container .form-input:hover:not(:focus) {
+    border-color: #d1d5db;
+    background-color: white;
+}
+
+/* Password input containers with toggle buttons */
+.auth-container .form-group > div {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #6b7280;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    z-index: 2;
+}
+
+.password-toggle:hover {
+    color: #0039A6;
+    background-color: rgba(0, 57, 166, 0.08);
+}
+
+.password-toggle:active {
+    transform: scale(0.95);
+}
+
+/* Password match indicator */
+#password-match-indicator {
+    margin-top: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    min-height: 18px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Small help text styling */
+.auth-container small {
+    display: block;
+    margin-top: 6px;
+    color: #6b7280;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+/* Large auth button */
+.auth-button {
+    width: 100%;
+    background: linear-gradient(135deg, #0039A6 0%, #004bb5 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 16px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 4px rgba(0, 57, 166, 0.2);
+}
+
+.auth-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #003494 0%, #0043a3 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 57, 166, 0.3);
+}
+
+.auth-button:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 57, 166, 0.2);
+}
+
+.auth-button:disabled {
+    background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.auth-button i {
+    font-size: 14px;
+}
+
+/* Auth link sections */
+.auth-links {
+    text-align: center;
+    padding-top: 16px;
+}
+
+.auth-links p {
+    margin: 0 0 8px 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.auth-links a {
+    color: #0039A6;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 15px;
+    transition: all 0.2s ease;
+}
+
+.auth-links a:hover {
+    color: #003494;
+    text-decoration: underline;
+}
+
+/* Secondary auth links (like reset password) */
+.auth-secondary-links {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.auth-secondary-links a {
+    color: #6b7280;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.auth-secondary-links a:hover {
+    color: #0039A6;
+    text-decoration: underline;
+}
+
+/* Loading spinner for submit button */
+.spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Alert styling for auth pages */
+.auth-container .alert {
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.auth-container .alert.info {
+    background-color: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+    .auth-container {
+        padding: 16px;
+        min-height: calc(100vh - 150px);
+    }
+    
+    .card-content {
+        padding: 24px;
+        border-radius: 8px;
+    }
+    
+    .auth-button {
+        padding: 14px 20px;
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-container {
+        padding: 12px;
+    }
+    
+    .card-content {
+        padding: 20px;
+    }
+    
+    .auth-container .form-group {
+        margin-bottom: 20px;
+    }
+}
+
+/* Focus and accessibility improvements */
+.auth-container .form-input:focus,
+.password-toggle:focus,
+.auth-button:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .card-content {
+        border: 2px solid #000;
+    }
+    
+    .auth-container .form-input {
+        border-width: 2px;
+    }
+    
+    .auth-button {
+        border: 2px solid transparent;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .auth-container .form-input,
+    .password-toggle,
+    .auth-button,
+    .auth-links a,
+    .auth-secondary-links a {
+        transition: none;
+    }
+    
+    .auth-button:hover:not(:disabled) {
+        transform: none;
+    }
+    
+    .spinner {
+        animation: none;
+    }
+}
