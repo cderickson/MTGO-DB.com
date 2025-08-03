@@ -29,11 +29,76 @@
     color: #000000 !important;
 }
 
+/* Add underline to section titles */
+.data-dict-container .section-card-title {
+    border-bottom: none !important;
+    padding-bottom: 8px !important;
+    width: 100% !important;
+    position: relative !important;
+}
+
+.data-dict-container .section-card-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #0039A6;
+}
+
+
+
+/* Remove card padding and make it behave like section-card */
+.data-dict-container .card {
+    padding: 0 !important;
+}
+
 /* Adjust header layout for description */
 .data-dict-container .section-card-header {
     flex-direction: column;
     align-items: flex-start;
     position: relative;
+    padding: 20px 24px 16px 24px;
+    border-bottom: none !important;
+}
+
+.data-dict-container .section-card-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #e9ecef;
+}
+
+/* Override collapsible tab styling */
+.data-dict-container .collapsible-tab .section-card-header {
+    padding: 20px 24px 16px 24px !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Ensure collapsible content can expand to full height */
+.data-dict-container .collapsible-tab.expanded .section-card-content {
+    max-height: none !important;
+    height: auto !important;
+}
+
+/* Override any table height constraints */
+.data-dict-container .table-container,
+.data-dict-container .table-wrapper,
+.data-dict-container .data-table {
+    max-height: none !important;
+    height: auto !important;
+}
+
+/* Fix spacing between header border and message-box */
+.data-dict-container .section-card-header .message-box {
+    margin-top: 0px !important;
 }
 
 .data-dict-container .section-card-header i {
@@ -82,23 +147,6 @@
     margin: 0 !important;
     border-collapse: collapse !important;
     border-spacing: 0 !important;
-}
-
-/* Fix header underline to extend full width */
-.data-dict-container .section-card-header {
-    border-bottom: 1px solid #dee2e6;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.data-dict-container .section-card-header::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: #dee2e6;
 }
 
 .data-table th {

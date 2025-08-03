@@ -509,13 +509,13 @@ p {
 
 .button.secondary,
 .btn-secondary {
-    background-color: #6c757d;
+    background-color: #000000;
     color: white;
 }
 
 .button.secondary:hover,
 .btn-secondary:hover {
-    background-color: #5a6268;
+    background-color: #333333;
     text-decoration: none;
     color: white;
 }
@@ -1347,4 +1347,154 @@ table tbody tr:last-child td {
 
 .section-thin-body {
     padding: 8px 20px 12px 20px;
+}
+
+/* FAQ Number Icons */
+.faq-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: #0039A6;
+    color: white;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: 600;
+    margin-right: 8px;
+    margin-left: -8px;
+    flex-shrink: 0;
+}
+
+/* Draft Pool Container - styled like EndGameActions */
+.draft-pool-container {
+    height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px 10px 10px 40px;
+    background-color: #f9f9f9;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    justify-content: center;
+}
+
+.draft-pool-container > div {
+    text-align: left;
+    margin-top: 12px;
+}
+
+.draft-pool-container h5 {
+    text-align: left;
+    margin-bottom: 8px;
+}
+
+.draft-pool-container h5 i {
+    margin-right: 8px;
+}
+
+/* GameWinnerModal specific styling */
+#GameWinnerModal .modal-content {
+    max-width: 800px;
+    width: 95%;
+}
+
+/* DraftIdModal specific styling */
+#DraftIdModal .modal-content {
+    max-width: 800px;
+    width: 95%;
+    overflow: visible !important;
+}
+
+/* ReviseModal specific styling */
+#ReviseModal .modal-content {
+    width: 900px;
+    max-width: 90vw;
+    min-height: 700px;
+}
+
+/* ReviseMultiModal specific styling */
+#ReviseMultiModal .modal-content {
+    width: 900px;
+    max-width: 90vw;
+    min-height: 600px;
+}
+
+/* Center dropdown in DraftIdModal */
+.dropdown-container-center {
+    display: flex;
+    justify-content: center;
+    position: relative;
+}
+
+.dropdown-container-center .dropdown {
+    position: relative;
+}
+
+/* Simple dropdown for DraftIdModal */
+#DraftIdModal .dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+#DraftIdModal .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 99999;
+    max-height: 250px;
+    overflow-y: auto;
+    display: none;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    padding: 0;
+    margin: 0;
+}
+
+#DraftIdModal .dropdown-menu.show {
+    display: block;
+}
+
+#DraftIdModal .dropdown-menu li {
+    list-style: none;
+    margin: 0;
+    padding: 6px 12px;
+    color: #333;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+    display: block;
+    text-align: center;
+}
+
+#DraftIdModal .dropdown-menu li:last-child {
+    border-bottom: none;
+}
+
+#DraftIdModal .dropdown-menu li:hover {
+    background-color: #0039A6 !important;
+    color: white !important;
+    font-weight: 500 !important;
+}
+
+#GameWinnerModal .modal-footer {
+    justify-content: center;
+}
+
+/* EndGameActions styling with fixed height and scrollbar */
+#EndGameActions {
+    height: 375px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    background-color: #f9f9f9;
 }

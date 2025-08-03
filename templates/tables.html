@@ -364,13 +364,14 @@
 
           <!-- Revision Form -->
           <form id="reviseForm">
-            <!-- Row 1: Player Fields -->
-            <div >
+            <!-- Row 1: Player Fields (4 equal columns) -->
+            <div class="revise-form-row revise-form-row-4">
               <div class="form-group">
                 <label class="form-label">P1 Archetype</label>
                 <div class="dropdown">
                   <button class="button secondary dropdown-toggle" type="button" id="P1ArchButton" onclick="toggleDropdown(event, 'P1ArchMenu')">
-                    Loading...
+                    <span>Loading...</span>
+                    <i class="fas fa-chevron-down"></i>
                   </button>
                   <ul class="dropdown-menu" id="P1ArchMenu"></ul>
                 </div>
@@ -385,7 +386,8 @@
                 <label class="form-label">P2 Archetype</label>
                 <div class="dropdown">
                   <button class="button secondary dropdown-toggle" type="button" id="P2ArchButton" onclick="toggleDropdown(event, 'P2ArchMenu')">
-                    Loading...
+                    <span>Loading...</span>
+                    <i class="fas fa-chevron-down"></i>
                   </button>
                   <ul class="dropdown-menu" id="P2ArchMenu"></ul>
                 </div>
@@ -397,14 +399,14 @@
               </div>
             </div>
             
-            <!-- Row 2: Match Fields (Centered) -->
-            <div >
-              <div></div> <!-- Empty spacer -->
+            <!-- Row 2: Match Fields (3 equal columns, centered) -->
+            <div class="revise-form-row revise-form-row-3-centered">
               <div class="form-group">
                 <label class="form-label">Format</label>
                 <div class="dropdown">
                   <button class="button secondary dropdown-toggle" type="button" id="FormatButton" onclick="toggleDropdown(event, 'FormatMenu')">
-                    Loading...
+                    <span>Loading...</span>
+                    <i class="fas fa-chevron-down"></i>
                   </button>
                   <ul class="dropdown-menu" id="FormatMenu"></ul>
                 </div>
@@ -414,7 +416,8 @@
                 <label class="form-label">Limited Format</label>
                 <div class="dropdown">
                   <button class="button secondary dropdown-toggle" type="button" id="LimitedFormatButton" onclick="toggleDropdown(event, 'LimitedFormatMenu')" disabled>
-                    Loading...
+                    <span>Loading...</span>
+                    <i class="fas fa-chevron-down"></i>
                   </button>
                   <ul class="dropdown-menu" id="LimitedFormatMenu"></ul>
                 </div>
@@ -424,12 +427,12 @@
                 <label class="form-label">Match Type</label>
                 <div class="dropdown">
                   <button class="button secondary dropdown-toggle" type="button" id="MatchTypeButton" onclick="toggleDropdown(event, 'MatchTypeMenu')">
-                    Loading...
+                    <span>Loading...</span>
+                    <i class="fas fa-chevron-down"></i>
                   </button>
                   <ul class="dropdown-menu" id="MatchTypeMenu"></ul>
                 </div>
               </div>
-              <div></div> <!-- Empty spacer -->
             </div>
           </form>
         </div>
@@ -782,18 +785,18 @@ function initializeIgnoredTable() {
 }
 
 function toggleRowSelection(row, index) {
-  const isSelected = row.classList.contains('active');
+  const isSelected = row.classList.contains('selected');
   
   if (isSelected) {
     // Deselect row
-    row.classList.remove('active');
+    row.classList.remove('selected');
     selectedIgnoredRows = selectedIgnoredRows.filter(i => i !== index);
   } else {
     // Select row (only allow single selection for ignored table)
-    document.querySelectorAll('.jsTableRow').forEach(r => r.classList.remove('active'));
+    document.querySelectorAll('.jsTableRow').forEach(r => r.classList.remove('selected'));
     selectedIgnoredRows = [];
     
-    row.classList.add('active');
+    row.classList.add('selected');
     selectedIgnoredRows.push(index);
   }
   
@@ -898,67 +901,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-  // Enhanced row selection with visual feedback
+  // Enhanced row selection with visual feedback - handled by TableManager
   function enhanceRowSelection() {
-    const tableRows = document.querySelectorAll('.modern-table tbody tr');
-    
-    tableRows.forEach(row => {
-      row.addEventListener('click', function(e) {
-        const isCtrlOrCmd = e.ctrlKey || e.metaKey;
-        const isShift = e.shiftKey;
-        
-        if (!isCtrlOrCmd && !isShift) {
-          // Single select - clear all other selections
-          tableRows.forEach(r => r.classList.remove('selected'));
-          this.classList.add('selected');
-        } else if (isCtrlOrCmd) {
-          // Ctrl/Cmd click - toggle this row
-          this.classList.toggle('selected');
-        } else if (isShift) {
-          // Shift click - select range
-          const selectedRows = Array.from(document.querySelectorAll('.modern-table tbody tr.selected'));
-          if (selectedRows.length > 0) {
-            const lastSelected = selectedRows[selectedRows.length - 1];
-            const allRows = Array.from(tableRows);
-            const start = allRows.indexOf(lastSelected);
-            const end = allRows.indexOf(this);
-            const rangeStart = Math.min(start, end);
-            const rangeEnd = Math.max(start, end);
-            
-            // Select all rows in range
-            for (let i = rangeStart; i <= rangeEnd; i++) {
-              allRows[i].classList.add('selected');
-            }
-          } else {
-            this.classList.add('selected');
-          }
-        }
-        
-        // Update button states based on selection
-        updateButtonStates();
-        
-        // Prevent event bubbling for double-click handling
-        e.stopPropagation();
-      });
-    });
+    // Row selection is now handled by the TableManager class
+    // This function is kept for compatibility but does nothing
+    return;
   }
   
-  // Update button states based on current selection
+  // Update button states based on current selection - handled by TableManager
   function updateButtonStates() {
-    const selectedRows = document.querySelectorAll('.modern-table tbody tr.selected');
-    const reviseButton = document.getElementById('ReviseButton');
-    const removeButton = document.getElementById('RemoveButton');
-    const removeIgnoredButton = document.getElementById('RemoveIgnoredButton');
-    
-    if (reviseButton) {
-      reviseButton.disabled = selectedRows.length === 0;
-    }
-    if (removeButton) {
-      removeButton.disabled = selectedRows.length === 0;
-    }
-    if (removeIgnoredButton) {
-      removeIgnoredButton.disabled = selectedRows.length === 0;
-    }
+    // Button state management is now handled by the TableManager class
+    // This function is kept for compatibility but does nothing
+    return;
   }
   
   // Function to add tooltips to all cell content
@@ -979,9 +933,8 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Initialize enhancements
   setColumnAlignment();
-  enhanceRowSelection();
-  updateButtonStates();
   addCellTooltips();
+  // Row selection and button states are now handled by TableManager
 });
 </script>
 

@@ -396,13 +396,12 @@
 .card-lists {
     padding: 16px;
     background-color: #f8f9fa;
+    display: flex;
+    gap: 16px;
 }
 
 .card-list {
-    margin-bottom: 16px;
-}
-
-.card-list:last-child {
+    flex: 1;
     margin-bottom: 0;
 }
 
@@ -603,4 +602,305 @@
         padding: 8px;
         font-size: 12px;
     }
+    
+    .revise-form-row-4 {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .revise-form-row-3-centered {
+        flex-direction: column;
+        gap: 16px;
+        padding: 0 20%;
+    }
+}
+
+/* ReviseModal Form Layout */
+.revise-form-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    align-items: end;
+}
+
+/* .revise-form-row-4 inherits all styles from .revise-form-row */
+
+.revise-form-row-4 .form-group {
+    flex: 1;
+}
+
+.revise-form-row-3-centered {
+    /* 3 equal columns, centered */
+    justify-content: center;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.revise-form-row-3-centered .form-group {
+    flex: 1;
+    max-width: 200px;
+}
+
+/* ReviseModal Dropdown Styling (similar to DraftIdModal) */
+#ReviseModal .dropdown {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+#ReviseModal .dropdown-toggle {
+    width: 100%;
+    text-align: left;
+    padding: 8px 12px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    color: #333 !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#ReviseModal .dropdown-toggle:hover {
+    border-color: #0039A6;
+    box-shadow: 0 2px 4px rgba(0, 57, 166, 0.1);
+}
+
+#ReviseModal .dropdown-toggle i {
+    margin-left: auto;
+    transition: transform 0.2s ease;
+    color: #666 !important;
+}
+
+#ReviseModal .dropdown-toggle span {
+    color: #333 !important;
+    flex: 1;
+}
+
+#ReviseModal .dropdown-toggle.active i {
+    transform: rotate(180deg);
+}
+
+#ReviseModal .dropdown-toggle:disabled {
+    background-color: #f5f5f5 !important;
+    color: #333 !important;
+    cursor: not-allowed;
+    border-color: #ddd;
+}
+
+#ReviseModal .dropdown-toggle:disabled span {
+    color: #333 !important;
+}
+
+#ReviseModal .dropdown-toggle:disabled i {
+    color: #999 !important;
+}
+
+#ReviseModal .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 99999;
+    max-height: 250px;
+    overflow-y: auto;
+    display: none;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+#ReviseModal .dropdown-menu.show {
+    display: block;
+}
+
+#ReviseModal .dropdown-menu li {
+    list-style: none;
+    margin: 0;
+    padding: 8px 12px;
+    color: #333 !important;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+    display: block;
+    text-align: left;
+    background-color: transparent;
+}
+
+#ReviseModal .dropdown-menu li:last-child {
+    border-bottom: none;
+}
+
+#ReviseModal .dropdown-menu li:hover {
+    background-color: #0039A6 !important;
+    color: white !important;
+    font-weight: 500 !important;
+}
+
+/* ReviseMultiModal Dropdown Styling (same as ReviseModal) */
+#ReviseMultiModal .dropdown {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+#ReviseMultiModal .dropdown-toggle {
+    width: 100%;
+    text-align: left;
+    padding: 8px 12px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    color: #333 !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#ReviseMultiModal .dropdown-toggle:hover {
+    border-color: #0039A6;
+    box-shadow: 0 2px 4px rgba(0, 57, 166, 0.1);
+}
+
+#ReviseMultiModal .dropdown-toggle i {
+    margin-left: auto;
+    transition: transform 0.2s ease;
+    color: #666 !important;
+}
+
+#ReviseMultiModal .dropdown-toggle span {
+    color: #333 !important;
+    flex: 1;
+}
+
+#ReviseMultiModal .dropdown-toggle.active i {
+    transform: rotate(180deg);
+}
+
+#ReviseMultiModal .dropdown-toggle:disabled {
+    background-color: #f5f5f5 !important;
+    color: #333 !important;
+    cursor: not-allowed;
+    border-color: #ddd;
+}
+
+#ReviseMultiModal .dropdown-toggle:disabled span {
+    color: #333 !important;
+}
+
+#ReviseMultiModal .dropdown-toggle:disabled i {
+    color: #999 !important;
+}
+
+#ReviseMultiModal .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 99999;
+    max-height: 250px;
+    overflow-y: auto;
+    display: none;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+#ReviseMultiModal .dropdown-menu.show {
+    display: block;
+}
+
+#ReviseMultiModal .dropdown-menu li {
+    list-style: none;
+    margin: 0;
+    padding: 8px 12px;
+    color: #333 !important;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+    display: block;
+    text-align: left;
+    background-color: transparent;
+}
+
+#ReviseMultiModal .dropdown-menu li:last-child {
+    border-bottom: none;
+}
+
+#ReviseMultiModal .dropdown-menu li:hover {
+    background-color: #0039A6 !important;
+    color: white !important;
+    font-weight: 500 !important;
+}
+
+/* ReviseModal Form Input Styling - Match dropdown height exactly */
+#ReviseModal .form-input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    background: white;
+    height: auto;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+#ReviseModal .form-input:hover {
+    border-color: #0039A6;
+    box-shadow: 0 2px 4px rgba(0, 57, 166, 0.1);
+}
+
+#ReviseModal .form-input:focus {
+    outline: none;
+    border-color: #0039A6;
+    box-shadow: 0 0 0 3px rgba(0, 57, 166, 0.1);
+}
+
+/* ReviseMultiModal Form Input Styling - Match dropdown height exactly */
+#ReviseMultiModal .form-input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    background: white;
+    height: auto;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+#ReviseMultiModal .form-input:hover {
+    border-color: #0039A6;
+    box-shadow: 0 2px 4px rgba(0, 57, 166, 0.1);
+}
+
+#ReviseMultiModal .form-input:focus {
+    outline: none;
+    border-color: #0039A6;
+    box-shadow: 0 0 0 3px rgba(0, 57, 166, 0.1);
 }

@@ -202,28 +202,40 @@ class TableManager {
   }
 
   setupEventListeners() {
+    console.log('TableManager: Setting up event listeners');
+    console.log('TableManager: tableBody:', this.tableBody);
+    console.log('TableManager: reviseButton:', this.reviseButton);
+    console.log('TableManager: removeButton:', this.removeButton);
+    
     // Row click handling (single, ctrl, shift)
-    this.tableBody.addEventListener('click', (e) => {
-      const row = e.target.closest('.jsTableRow');
-      if (!row) return;
-      
-      this.handleRowClick(row, e);
-    });
+    if (this.tableBody) {
+      this.tableBody.addEventListener('click', (e) => {
+        const row = e.target.closest('.jsTableRow');
+        if (!row) return;
+        
+        console.log('TableManager: Row clicked:', row);
+        this.handleRowClick(row, e);
+      });
 
-    // Double-click for drill-down
-    this.tableBody.addEventListener('dblclick', (e) => {
-      const row = e.target.closest('.jsTableRow');
-      if (!row) return;
-      
-      this.handleRowDoubleClick(row);
-    });
+      // Double-click for drill-down
+      this.tableBody.addEventListener('dblclick', (e) => {
+        const row = e.target.closest('.jsTableRow');
+        if (!row) return;
+        
+        this.handleRowDoubleClick(row);
+      });
+    }
 
     // Button event listeners
     if (this.reviseButton) {
+      console.log('TableManager: Adding click listener to revise button');
       this.reviseButton.addEventListener('click', (e) => {
+        console.log('TableManager: Revise button clicked!');
         e.preventDefault();
         this.openReviseModal();
       });
+    } else {
+      console.log('TableManager: No revise button found');
     }
 
     if (this.removeButton) {
@@ -337,16 +349,16 @@ class TableManager {
   }
 
   selectRow(row, index) {
-    row.classList.add('active');
+    row.classList.add('selected');
     this.selectedRows.add(index);
   }
 
   toggleRowSelection(row, index) {
     if (this.selectedRows.has(index)) {
-      row.classList.remove('active');
+      row.classList.remove('selected');
       this.selectedRows.delete(index);
     } else {
-      row.classList.add('active');
+      row.classList.add('selected');
       this.selectedRows.add(index);
     }
   }
@@ -364,8 +376,8 @@ class TableManager {
   }
 
   clearSelection() {
-    document.querySelectorAll('.jsTableRow.active').forEach(row => {
-      row.classList.remove('active');
+    document.querySelectorAll('.jsTableRow.selected').forEach(row => {
+      row.classList.remove('selected');
     });
     this.selectedRows.clear();
   }
@@ -514,8 +526,14 @@ class TableManager {
   updateDropdownValue(buttonId, value) {
     const button = document.getElementById(buttonId);
     if (button) {
-      // Always show the current value, use 'NA' as fallback for null/undefined
-      button.textContent = value || 'NA';
+      const span = button.querySelector('span');
+      if (span) {
+        // New structure with span and icon
+        span.textContent = value || 'NA';
+      } else {
+        // Fallback for old structure
+        button.textContent = value || 'NA';
+      }
     }
   }
 
@@ -532,11 +550,21 @@ class TableManager {
       // Limited format
       if (p1ArchButton) {
         p1ArchButton.disabled = true;
-        p1ArchButton.textContent = 'Limited';
+        const span = p1ArchButton.querySelector('span');
+        if (span) {
+          span.textContent = 'Limited';
+        } else {
+          p1ArchButton.textContent = 'Limited';
+        }
       }
       if (p2ArchButton) {
         p2ArchButton.disabled = true;
-        p2ArchButton.textContent = 'Limited';
+        const span = p2ArchButton.querySelector('span');
+        if (span) {
+          span.textContent = 'Limited';
+        } else {
+          p2ArchButton.textContent = 'Limited';
+        }
       }
       if (limitedFormatButton) {
         limitedFormatButton.disabled = false;
@@ -551,19 +579,31 @@ class TableManager {
       }
       if (limitedFormatButton) {
         limitedFormatButton.disabled = true;
-        limitedFormatButton.textContent = 'NA';
+        const span = limitedFormatButton.querySelector('span');
+        if (span) {
+          span.textContent = 'NA';
+        } else {
+          limitedFormatButton.textContent = 'NA';
+        }
       }
     }
   }
 
   async openReviseModal() {
+    console.log('TableManager: openReviseModal called');
     const selectedData = this.getSelectedRowData();
-    if (selectedData.length === 0) return;
+    console.log('TableManager: selectedData:', selectedData);
+    if (selectedData.length === 0) {
+      console.log('TableManager: No rows selected, returning');
+      return;
+    }
 
     if (selectedData.length === 1) {
+      console.log('TableManager: Single row selected, showing single revision modal');
       // Single revision modal is already populated by loadMatchDetails
       await this.showReviseModal();
     } else {
+      console.log('TableManager: Multiple rows selected, showing multi revision modal');
       // Multi revision modal
       await this.showReviseMultiModal();
     }
@@ -833,12 +873,18 @@ let tableManager = null;
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
+  console.log('TableManager: DOMContentLoaded event fired');
   const tableNameElement = document.getElementById('tname');
+  console.log('TableManager: tname element:', tableNameElement);
   if (tableNameElement) {
     const tableName = tableNameElement.value;
     const pageNum = parseInt(new URLSearchParams(window.location.search).get('page')) || 1;
+    console.log('TableManager: Initializing with table:', tableName, 'page:', pageNum);
     
     tableManager = new TableManager(tableName, pageNum);
+    console.log('TableManager: Instance created:', tableManager);
+  } else {
+    console.log('TableManager: No tname element found');
   }
 });
 
@@ -873,7 +919,14 @@ function changeHiddenInputsMulti() {
   function getButtonText(buttonId) {
     const button = document.getElementById(buttonId);
     if (!button) return null;
-    // Get text content and trim whitespace
+    
+    // Check for new structure with span element
+    const span = button.querySelector('span');
+    if (span) {
+      return span.textContent?.trim() || span.innerText?.trim() || null;
+    }
+    
+    // Fallback to old structure
     return button.textContent?.trim() || button.innerText?.trim() || null;
   }
 
@@ -918,15 +971,33 @@ function closeAllDropdowns() {
 
 // Dropdown helper functions (keeping compatibility with existing modals)
 function showP1Arch(item) { 
-  document.getElementById("P1ArchButton").innerHTML = item.innerHTML;
+  const button = document.getElementById("P1ArchButton");
+  const span = button.querySelector('span');
+  if (span) {
+    span.textContent = item.textContent;
+  } else {
+    button.innerHTML = item.innerHTML;
+  }
   closeAllDropdowns();
 }
 function showP2Arch(item) { 
-  document.getElementById("P2ArchButton").innerHTML = item.innerHTML;
+  const button = document.getElementById("P2ArchButton");
+  const span = button.querySelector('span');
+  if (span) {
+    span.textContent = item.textContent;
+  } else {
+    button.innerHTML = item.innerHTML;
+  }
   closeAllDropdowns();
 }
 function showFormat(item) { 
-  document.getElementById("FormatButton").innerHTML = item.innerHTML;
+  const button = document.getElementById("FormatButton");
+  const span = button.querySelector('span');
+  if (span) {
+    span.textContent = item.textContent;
+  } else {
+    button.innerHTML = item.innerHTML;
+  }
   closeAllDropdowns();
   if (tableManager) {
     // Fire and forget - don't block UI
@@ -967,11 +1038,23 @@ function showFormat(item) {
   }
 }
 function showLimitedFormat(item) { 
-  document.getElementById("LimitedFormatButton").innerHTML = item.innerHTML;
+  const button = document.getElementById("LimitedFormatButton");
+  const span = button.querySelector('span');
+  if (span) {
+    span.textContent = item.textContent;
+  } else {
+    button.innerHTML = item.innerHTML;
+  }
   closeAllDropdowns();
 }
 function showMatchType(item) { 
-  document.getElementById("MatchTypeButton").innerHTML = item.innerHTML;
+  const button = document.getElementById("MatchTypeButton");
+  const span = button.querySelector('span');
+  if (span) {
+    span.textContent = item.textContent;
+  } else {
+    button.innerHTML = item.innerHTML;
+  }
   closeAllDropdowns();
 }
 

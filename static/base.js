@@ -367,7 +367,7 @@ class GameWinnerManager {
   updateModalContent(gameData) {
     // Update game info section
     const dateElement = document.getElementById('GameWinnerModalDate');
-    dateElement.innerHTML = `<strong>Match</strong>: ${gameData.match_id}-${gameData.game_num} vs. ${gameData.p2}<br/><strong>Date</strong>: ${gameData.date}`;
+    dateElement.innerHTML = `<center><strong>Match</strong>: ${gameData.match_id}-${gameData.game_num} vs. ${gameData.p2}<br/><strong>Date</strong>: ${gameData.date}</center>`;
 
     // Update game actions
     const actionsElement = document.getElementById('EndGameActions');
@@ -563,7 +563,7 @@ class DraftIdManager {
   updateModalContent(matchData) {
     // Update match info section
     const dateElement = document.getElementById('DraftIdModalDate');
-    dateElement.innerHTML = `<strong>Match</strong>: ${matchData.match_id}<br/><strong>Date</strong>: ${matchData.date}`;
+    dateElement.innerHTML = `<center><strong>Match</strong>: ${matchData.match_id}<br/><strong>Date</strong>: ${matchData.date}</center>`;
 
     // Update card lists
     this.updateCardList('DraftIdLands', matchData.lands);
