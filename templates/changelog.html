@@ -2,58 +2,98 @@
 
 {% block page_title %}Change Log{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='changelog.css') }}">
+{% endblock %}
+
 {% block content %}
 
 <div class="content-wrapper">
   <div class="changelog-container">
-    <div >
+    <div>
       
       <!-- Version 1.0.0 - Initial Release -->
-      <div class="card collapsible-tab" data-target="v1-0-0">
-            <div class="section-card-header">
-      <h3 class="section-card-title">
+      <div class="card collapsible-tab expanded" data-target="v1-0-0">
+        <div class="section-card-header">
+          <h3 class="section-card-title">
             Version 1.0.0 - Initial Release
             <span class="version-date">November 1, 2023</span>
           </h3>
+          <div class="message-box standard table-description">
+            <strong>Initial Release:</strong> The first public release of the web-based MTGO data analytics platform.
+          </div>
           <i class="fas fa-chevron-down"></i>
         </div>
         <div class="section-card-content" id="v1-0-0">
-          <p><strong>Welcome to MTGO-DB!</strong> The first public release of the web-based MTGO data analytics platform.</p>
-            
-          <h4>Core Features</h4>
-          <div class="message-box standard">
-            <h4><i class="fas fa-upload" ></i>Data Import</h4>
-            <p>Upload and process MTGO GameLog and DraftLog files</p>
-          </div>
-          <div class="message-box standard">
-            <h4><i class="fas fa-chart-line" ></i>Analytics Dashboard</h4>
-            <p>View match statistics and performance metrics</p>
-          </div>
-          <div class="message-box standard">
-            <h4><i class="fas fa-table" ></i>Data Tables</h4>
-            <p>Browse matches, games, drafts, and plays</p>
-          </div>
-          <div class="message-box standard">
-            <h4><i class="fas fa-download" ></i>Data Export</h4>
-            <p>Export your data as CSV files</p>
-          </div>
-            
-          <h4>Key Capabilities</h4>
-          <ul>
-            <li><strong>User Registration:</strong> Secure account creation and email verification</li>
-            <li><strong>GameLog Processing:</strong> Automated parsing of MTGO game files</li>
-            <li><strong>Draft Analysis:</strong> Track draft picks and performance</li>
-            <li><strong>Match History:</strong> Detailed match and game statistics</li>
-            <li><strong>Data Cleaning:</strong> Tools to improve and organize your data</li>
-            <li><strong>MTGO-Tracker Import:</strong> Migrate data from the desktop application</li>
-          </ul>
-            
-          <div class="message-box standard">
-            <h4><i class="fas fa-play"></i><a href="/getting_started">Get Started</a></h4>
-            <p>Learn how to set up your account and import your first data</p>
+          <div class="section-card-body">
+            <h2 style="font-size: 16px;">New Features</h2>
+            <ul class="dash-list" style="margin-bottom: 24px;">
+              <li><strong>Data Import:</strong> Upload and process MTGO GameLog and DraftLog files.</li>
+              <li><strong>Analytics Dashboard:</strong> View match statistics and performance metrics.</li>
+              <li><strong>Data Tables:</strong> Browse matches, games, drafts, and plays.</li>
+              <li><strong>Data Export:</strong> Export your data as CSV files.</li>
+            </ul>
+            <h2 style="font-size: 16px;">Change List</h2>
+            <ul class="dash-list" style="margin-bottom: 24px;">
+              <li><strong>Data Import:</strong> Upload and process MTGO GameLog and DraftLog files.</li>
+              <li><strong>Analytics Dashboard:</strong> View match statistics and performance metrics.</li>
+              <li><strong>Data Tables:</strong> Browse matches, games, drafts, and plays.</li>
+              <li><strong>Data Export:</strong> Export your data as CSV files.</li>
+            </ul>
+            <h2 style="font-size: 16px;">Bug Fixes</h2>
+            <ul class="dash-list" style="margin-bottom: 24px;">
+              <li><strong>Data Import:</strong> Upload and process MTGO GameLog and DraftLog files.</li>
+              <li><strong>Analytics Dashboard:</strong> View match statistics and performance metrics.</li>
+              <li><strong>Data Tables:</strong> Browse matches, games, drafts, and plays.</li>
+              <li><strong>Data Export:</strong> Export your data as CSV files.</li>
+            </ul>
           </div>
         </div>
       </div>
+
+      <!-- Version 1.0.0 - Template -->
+      <!--
+      <div class="card collapsible-tab expanded" data-target="v1-0-0">
+        <div class="section-card-header">
+          <h3 class="section-card-title">
+            Version 1.0.0 - Initial Release
+            <span class="version-date">November 1, 2023</span>
+          </h3>
+          <div class="message-box standard table-description">
+            <strong>Initial Release:</strong> The first public release of the web-based MTGO data analytics platform.
+          </div>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="section-card-content" id="v1-0-0">
+          <div class="section-card-body">
+            <h2 style="font-size: 16px;">New Features</h2>
+            <ul class="dash-list">
+              <li><strong>Data Import:</strong> Upload and process MTGO GameLog and DraftLog files.</li>
+              <li><strong>Analytics Dashboard:</strong> View match statistics and performance metrics.</li>
+              <li><strong>Data Tables:</strong> Browse matches, games, drafts, and plays.</li>
+              <li><strong>Data Export:</strong> Export your data as CSV files.</li>
+            </ul>
+            <br>
+            <h2 style="font-size: 16px;">Change List</h2>
+            <ul class="dash-list">
+              <li><strong>Data Import:</strong> Upload and process MTGO GameLog and DraftLog files.</li>
+              <li><strong>Analytics Dashboard:</strong> View match statistics and performance metrics.</li>
+              <li><strong>Data Tables:</strong> Browse matches, games, drafts, and plays.</li>
+              <li><strong>Data Export:</strong> Export your data as CSV files.</li>
+            </ul>
+            <br>
+            <h2 style="font-size: 16px;">Bug Fixes</h2>
+            <ul class="dash-list" style="margin-bottom: 24px;">
+              <li><strong>Data Import:</strong> Upload and process MTGO GameLog and DraftLog files.</li>
+              <li><strong>Analytics Dashboard:</strong> View match statistics and performance metrics.</li>
+              <li><strong>Data Tables:</strong> Browse matches, games, drafts, and plays.</li>
+              <li><strong>Data Export:</strong> Export your data as CSV files.</li>
+            </ul>
+            <br>
+          </div>
+        </div>
+      </div>
+      -->
 
       <!-- Future Updates Section -->
       <div class="card collapsible-tab" data-target="future">
@@ -61,63 +101,24 @@
           <h3 class="section-card-title">
             Planned Features & Roadmap
           </h3>
+          <div class="message-box standard table-description">
+            <strong>Planned Features:</strong> We're constantly working on new features and improvements based on user feedback.
+          </div>
           <i class="fas fa-chevron-down"></i>
         </div>
         <div class="section-card-content" id="future">
-          <div class="message-box standard">
-            <h4><strong>Coming Soon:</strong> We're constantly working on new features and improvements based on user feedback.</h4>
-          </div>
-            
-          <h4>Potential Future Enhancements</h4>
+          <div class="section-card-body">             
+            <h2 style="font-size: 16px;">Feature Backlog</h2>
+            <ul class="dash-list" style="margin-bottom: 24px;">
+              <li>More data tables</li>
+              <li>More data views</li>
+              <li>More data analysis</li>
+              <li>More data export options</li>
+            </ul>
             <div class="message-box standard">
-              <h4><i class="fas fa-mobile-alt"></i>Mobile Optimization</h4>
-              <p>Enhanced mobile experience for viewing data on the go</p>
+              <h4><i class="fas fa-lightbulb"></i>Submit Feature Requests</a></h4>
+              <p>Feel free to reach out to me with any feature requests or suggestions.</p>
             </div>
-            <div class="message-box standard">
-              <h4><i class="fas fa-chart-pie"></i>Advanced Analytics</h4>
-              <p>More detailed statistics and performance insights</p>
-            </div>
-            <div class="message-box standard">
-              <h4><i class="fas fa-users"></i>Community Features</h4>
-              <p>Share decks and compare performance with other players</p>
-            </div>
-            <div class="message-box standard">
-              <h4><i class="fas fa-lightbulb"></i><a href="/contact">Submit Feature Requests</a></h4>
-              <p>Have an idea for a new feature? Let us know!</p>
-            </div>
-        </div>
-      </div>
-
-      <!-- Version 1.1.0 - Bug Fixes -->
-      <div class="card collapsible-tab" data-target="v1-1-0">
-        <div class="section-card-header">
-          <h3 class="section-card-title">
-            Version 1.1.0 - Bug Fixes & Improvements
-            <span class="version-date">December 2023</span>
-          </h3>
-          <i class="fas fa-chevron-down"></i>
-        </div>
-        <div class="section-card-content" id="v1-1-0">
-          <h4>What's New</h4>
-          <div class="message-box standard">
-            <h4><i class="fas fa-bug" ></i>Bug Fixes</h4>
-            <p>Resolved critical issues with data parsing</p>
-          </div>
-          <div class="message-box standard">
-            <h4><i class="fas fa-code" ></i>Code Improvements</h4>
-            <p>Enhanced performance and reliability</p>
-          </div>
-          <div class="message-box standard">
-            <h4><i class="fas fa-comments" ></i>User Feedback</h4>
-            <p>Implemented suggestions from the community</p>
-          </div>
-          <div class="message-box standard">
-            <h4><i class="fas fa-share" ></i>Better Sharing</h4>
-            <p>Improved data export and sharing options</p>
-          </div>
-          <div class="message-box standard">
-            <h4><i class="fas fa-code-branch"></i><a href="https://github.com/cderickson/MTGO-DB" target="_blank">View on GitHub</a></h4>
-            <p>Check out the source code and contribute to the project</p>
           </div>
         </div>
       </div>

@@ -73,17 +73,13 @@
               Profile
             </a>
             <div class="divider"></div>
-            <a href="{{ url_for('views.faq') }}" class="user-dropdown-item">
-              <i class="fas fa-question-circle nav-icon"></i>
-              FAQ
-            </a>
             <a href="{{ url_for('views.changelog') }}" class="user-dropdown-item">
               <i class="fas fa-history nav-icon"></i>
               Change Log
             </a>
-            <a href="{{ url_for('views.contact') }}" class="user-dropdown-item">
+            <a href="{{ url_for('views.faq') }}" class="user-dropdown-item">
               <i class="fas fa-envelope nav-icon"></i>
-              Contact/Links
+              FAQ & Contact
             </a>
             <a href="#" class="user-dropdown-item" onclick="showZipLogsModal()">
               <i class="fas fa-file-archive nav-icon"></i>
@@ -139,9 +135,9 @@
                 </a>
               </li>
               <li class="nav-item">
-                <a href="{{ url_for('views.contact') }}" class="nav-link">
+                <a href="{{ url_for('views.faq') }}" class="nav-link">
                   <i class="fas fa-envelope nav-icon"></i>
-                  <span class="nav-text">Contact/Links</span>
+                  <span class="nav-text">FAQ & Contact</span>
                 </a>
               </li>
               {#
@@ -285,6 +281,30 @@
           {% endif %}
         </div>
 
+        <!-- Sidebar Footer -->
+        <div class="sidebar-footer">
+          <div class="social-links">
+            <a href="https://github.com/cderickson" target="_blank" class="social-link" title="GitHub">
+              <i class="fab fa-github"></i>
+            </a>
+            <a href="https://twitter.com/Sundodger04" target="_blank" class="social-link" title="Twitter">
+              <i class="fab fa-twitter"></i>
+            </a>
+            <a href="https://reddit.com/user/SundodgerLOL/" target="_blank" class="social-link" title="Reddit">
+              <i class="fab fa-reddit"></i>
+            </a>
+            <a href="https://linkedin.com/in/cderickson04/" target="_blank" class="social-link" title="LinkedIn">
+              <i class="fab fa-linkedin"></i>
+            </a>
+          </div>
+          <!--
+          <div class="footer-info">
+            <div class="footer-text">MTGO-DB</div>
+            <div class="footer-version">v1.1.0</div>
+            <div class="footer-copyright">&copy; 2023 Chris Erickson</div>
+          </div>
+          -->
+        </div>
 
       </nav>
 
@@ -313,7 +333,8 @@
             </button>
           </div>
           <div class="modal-body">
-            <div class="message-box standard">
+            <div class="table-hint" style="justify-content: center;">
+              <i class="fas fa-info-circle"></i>
               <div id="GameWinnerModalDate">
                 Date
               </div>  
@@ -329,7 +350,7 @@
             </div>
 
             <div class="message-box standard">
-              <h4><i class="fas fa-exclamation-triangle"></i>Instructions</h4>
+              <h4><i class="fas fa-info-circle"></i>Instructions</h4>
               <p>Game winner could not be determined.<br>
               Please review the game actions above and choose a winner manually.</p>
             </div>
@@ -364,7 +385,7 @@
             </button>
           </div>
           <div class="modal-body">
-            <div id="DraftIdModalDate" class="message-box standard">
+            <div id="DraftIdModalDate" class="table-hint" style="justify-content: center;">
             </div>
 
             <div class="card">
@@ -398,7 +419,8 @@
             </div>
 
             <div class="message-box standard">
-              <h4><i class="fas fa-link"></i>Choose the Draft ID that should be associated with this match based on the card pool.</h4>
+              <h4><i class="fas fa-info-circle"></i>Instructions</h4>
+              <p>Choose the Draft ID that should be associated with this match based on the card pool.<br><br></p>
               <div class="dropdown-container-center">
                 <div class="dropdown">
                   <button class="button secondary dropdown-toggle" type="button" id="DraftIdButton" onclick="toggleDropdown(event, 'DraftIdMenu')" >
@@ -719,16 +741,12 @@
           </div>
           <div class="modal-body">           
             <div class="message-box standard">
-              <h4><i class="fab fa-github"></i><a href="https://github.com/cderickson/Scripts/raw/main/Zip-MTGO-Logs.exe" target="_blank">Download and run the Zip-MTGO-Logs script</a></h4>
-              <p>The script code is open source and available on GitHub</p>
-            </div>
-            <div class="message-box standard">
+              <h4><div>1</div><a href="https://github.com/cderickson/Scripts/raw/main/Zip-MTGO-Logs.exe" target="_blank">Download and run the Zip-MTGO-Logs script</a></h4>
+              <p style="margin-left: 15px;">The script code is open source and available on GitHub</p><br>
               <h4><div>2</div>Create a .zip file</h4>
-              <p>Use the <strong>Zip-MTGO-Logs</strong> script to create a .zip file of your GameLog and DraftLog files.</p>
-            </div>
-            <div class="message-box standard">
+              <p style="margin-left: 15px;">Use the <strong>Zip-MTGO-Logs</strong> script to create a .zip file of your GameLog and DraftLog files.</p><br>
               <h4><div>3</div>Ready for import</h4>
-              <p>Upload the generated file using <strong>Processing → Import GameLogs</strong>.</p>
+              <p style="margin-left: 15px;">Upload the generated file using <strong>Processing → Import GameLogs</strong>.</p>
             </div>
           </div>
           <div class="modal-footer">

@@ -84,20 +84,23 @@
       <button type="button" onclick="hideResetModal()">&times;</button>
     </div>
     <div class="modal-body">
-      <p>
-        Enter your email address and we'll send you a link to reset your password.
-      </p>
+      <div class="message-box standard">
+        <h4><i class="fas fa-info-circle"></i>Instructions</h4>
+        <p>
+          Enter your email address and we'll send you a link to reset your password.
+        </p>
+      </div>
       <div class="form-group">
         <label for="reset_email_input" class="form-label">Email Address</label>
         <input type="email" class="form-input" id="reset_email_input" placeholder="Enter your email">
       </div>
     </div>
     <div class="modal-footer">
-      <button type="button"  onclick="hideResetModal()">
+      <button type="button" class="button secondary" onclick="hideResetModal()">
         <i class="fas fa-times"></i>
         Cancel
       </button>
-      <button type="button"  onclick="sendResetEmail()">
+      <button type="button" class="button primary" onclick="sendResetEmail()">
         <i class="fas fa-check"></i>
         Send Reset Link
       </button>

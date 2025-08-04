@@ -47,8 +47,6 @@
     background: #0039A6;
 }
 
-
-
 /* Remove card padding and make it behave like section-card */
 .data-dict-container .card {
     padding: 0 !important;

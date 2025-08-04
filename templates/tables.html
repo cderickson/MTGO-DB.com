@@ -167,6 +167,7 @@
                 <th>Available 14</th>
               {% elif table_name.lower() == 'ignored' %}
                 <th>Match ID</th>
+                <th>Date Ignored</th>
                 <th>Reason</th>
               {% endif %}
             </tr>
@@ -261,6 +262,7 @@
                   <td>{{ row.avail14 }}</td>
                 {% elif table_name.lower() == 'ignored' %}
                   <td>{{ row.match_id }}</td>
+                  <td class="cell-date">{{ row.proc_dt }}</td>
                   <td>{{ row.reason }}</td>
                 {% endif %}
               </tr>
@@ -309,10 +311,10 @@
     <div id="ReviseModal" class="modal">
       <div class="modal-content" >
         <div class="modal-header">
-          <div >
+          <div>
             <div>
-              <h3 >Revise Record</h3>
-              <p >Update match information</p>
+              <h3>Revise Record</h3>
+              <p>Update match information</p>
             </div>
           </div>
           <button type="button" class="modal-close" onclick="hideReviseModal()">
@@ -321,27 +323,24 @@
         </div>
         <div class="modal-body">
           <!-- Game Information -->
-          <div >
+          <div class="table-hint" style="justify-content: center;">
             <div id="ModalMatchId" >
               Match ID
-            </div>
-            <div id="ModalDate" >
-              Date
             </div>
           </div>
 
           <!-- Players and Cards -->
-          <div >
+          <div>
             <div class="revision-players">
               <div class="player-section">
                 <div id="ModalP1" class="player-name">Player 1</div>
                 <div class="card-lists">
                   <div class="card-list">
-                    <h5>Lands</h5>
+                    <h5><i class="fas fa-mountain"></i>Lands</h5>
                     <div id="ReviseLands1" class="card-content"></div>
                   </div>
                   <div class="card-list">
-                    <h5>Spells</h5>
+                    <h5><i class="fas fa-magic"></i>Spells</h5>
                     <div id="RevisePlays1" class="card-content"></div>
                   </div>
                 </div>
@@ -350,11 +349,11 @@
                 <div id="ModalP2" class="player-name">Player 2</div>
                 <div class="card-lists">
                   <div class="card-list">
-                    <h5>Lands</h5>
+                    <h5><i class="fas fa-mountain"></i>Lands</h5>
                     <div id="ReviseLands2" class="card-content"></div>
                   </div>
                   <div class="card-list">
-                    <h5>Spells</h5>
+                    <h5><i class="fas fa-magic"></i>Spells</h5>
                     <div id="RevisePlays2" class="card-content"></div>
                   </div>
                 </div>
@@ -603,33 +602,32 @@
           </button>
         </div>
         <div class="modal-body">
-          <div>
-            <div>
-              <i class="fas fa-exclamation-triangle"></i>
-              <h4>Warning</h4>
-            </div>
-            <p>This will remove all selected matches and their associated games/plays from your database.</p>
-          </div>
-
           <div class="removal-options">
-            <div class="option-section">
+            <div class="message-box standard">
               <h5>Remove</h5>
               <p>The record will be re-parsed and included in future data imports.</p>
             </div>
-            <div class="option-section">
+            <div class="message-box standard">
               <h5>Remove & Ignore</h5>
-              <p>The record will <strong>not</strong> be included in future data imports. Match IDs can be unignored from your Ignore List, but you will lose any record revisions.</p>
+              <p>The record will <strong><u>not</u></strong> be included in future data imports. Match IDs can be unignored from your Ignore List, but you will lose any record revisions.</p>
             </div>
+          </div>
+          <div class="message-box warning">
+            <h4>
+              <i class="fas fa-exclamation-triangle"></i>
+              Warning
+            </h4>
+            <p>This will remove all selected matches and their associated games/plays from your database.</p>
           </div>
         </div>
         <div class="modal-footer">
-          <div >
+          <div>
             <button type="button" class="button danger" onclick="removeHidden('Remove')">
-              <i class="fas fa-trash" ></i>
+              <i class="fas fa-trash"></i>
               Remove
             </button>
             <button type="button" class="button danger" onclick="removeHidden('Ignore')">
-              <i class="fas fa-eye-slash" ></i>
+              <i class="fas fa-eye-slash"></i>
               Remove & Ignore
             </button>
           </div>
@@ -643,8 +641,8 @@
         <div class="modal-header">
           <div >
             <div>
-              <h3 >Unignore Match</h3>
-              <p >Remove from ignored list</p>
+              <h3>Unignore Match</h3>
+              <p>Remove from ignored list</p>
             </div>
           </div>
           <button type="button" class="modal-close" onclick="hideReviseIgnoredModal()">
@@ -652,18 +650,14 @@
           </button>
         </div>
         <div class="modal-body">
-          <div>
-            <div>
-              <i class="fas fa-info-circle"></i>
-              <h4>Confirmation</h4>
-            </div>
-            <p>
-              This will remove the selected match from your ignored list. The match will be included in future data imports.
-            </p>
+          <div class="table-hint" style="justify-content: center;">
+            <i class="fas fa-info-circle"></i>
+            <b>Match ID:</b> <span id="selectedMatchId">None selected</span>
           </div>
           <div>
-            <div>
-              Match ID: <span id="selectedMatchId">None selected</span>
+            <div class="message-box warning">
+              <h4><i class="fas fa-exclamation-triangle"></i>Confirmation</h4>
+              <p>This will remove the selected match from your ignored list. The match will be included in future data imports.</p>
             </div>
           </div>
         </div>
@@ -788,9 +782,8 @@ function toggleRowSelection(row, index) {
   const isSelected = row.classList.contains('selected');
   
   if (isSelected) {
-    // Deselect row
-    row.classList.remove('selected');
-    selectedIgnoredRows = selectedIgnoredRows.filter(i => i !== index);
+    // Don't deselect if row is already selected - keep it selected
+    return;
   } else {
     // Select row (only allow single selection for ignored table)
     document.querySelectorAll('.jsTableRow').forEach(r => r.classList.remove('selected'));

@@ -52,7 +52,7 @@ def debug_log(message):
 	except Exception as e:
 		debug_log(f"Warning: Could not write to log file: {e}")
 
-page_size = 15
+page_size = 20
 
 # Initialize Azure clients only if connection string is available
 try:
@@ -3329,10 +3329,6 @@ def getting_started():
 def faq():
 	return render_template('faq.html', user=current_user)
 
-@views.route('/contact', methods=['GET'])
-def contact():
-	return render_template('contact.html', user=current_user)
-
 @views.route('/changelog', methods=['GET'])
 def changelog():
 	return render_template('changelog.html', user=current_user)
@@ -4760,6 +4756,10 @@ def api_match_remove():
 		proc_dt = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific'))
 		
 		for match_id in match_ids:
+			# Get match date BEFORE deletion (needed for ignored list)
+			match_record = Match.query.filter_by(uid=current_user.uid, match_id=match_id).first()
+			mtime = match_record.date if match_record else None
+			
 			# Count records before deletion
 			match_count += Match.query.filter_by(uid=current_user.uid, match_id=match_id).count()
 			game_count += Game.query.filter_by(uid=current_user.uid, match_id=match_id).count()
@@ -4769,11 +4769,9 @@ def api_match_remove():
 			Match.query.filter_by(uid=current_user.uid, match_id=match_id).delete()
 			Game.query.filter_by(uid=current_user.uid, match_id=match_id).delete()
 			Play.query.filter_by(uid=current_user.uid, match_id=match_id).delete()
-
-			mtime = Match.query.filter_by(uid=current_user.uid, match_id=match_id).first().date
 			
 			# Add to ignored list if requested
-			if remove_type == 'Ignore':
+			if remove_type == 'Ignore' and mtime:
 				new_ignore = Removed(uid=current_user.uid, match_id=match_id, date=mtime, reason='Ignored', proc_dt=proc_dt)
 				db.session.add(new_ignore)
 		

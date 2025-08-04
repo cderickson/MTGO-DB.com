@@ -18,18 +18,13 @@
       </div>
       <div class="section-card-content" id="tracker-import">
         <div class="section-card-body">
-          <div class="message-box standard">
-            <p><strong>No!</strong> You can import your saved data from MTGO-Tracker.</p>
-          </div>
-          
+          <p><strong>No!</strong> You can import your save data from MTGO-Tracker.</p>
           <p>The preferred method to accomplish this is to:</p>
           <div class="message-box standard">
-            <h4><div >1</div>Upload files normally</h4>
-            <p>Use <strong>Import GameLogs</strong> to upload your MTGO files first</p>
-          </div>
-          <div class="message-box standard">
-            <h4><div >2</div>Import your revisions</h4>
-            <p>Use <strong>Import from MTGO-Tracker</strong> to apply your manual revisions</p>
+            <h4><div>1</div>Upload files normally</h4>
+            <p style="margin-left: 15px;">Use <strong>Import GameLogs</strong> to upload your MTGO files first</p><br>
+            <h4><div>2</div>Import your revisions</h4>
+            <p style="margin-left: 15px;">Use <strong>Import from MTGO-Tracker</strong> to apply your manual revisions</p>
           </div>
         </div>
       </div>
@@ -46,17 +41,16 @@
       </div>
       <div class="section-card-content" id="zip-files">
         <div class="section-card-body">
+          <p>Zip files are required to maintain accurate match dates and times.</p>
           <div class="message-box standard">
-            <h4><strong>File timestamps are crucial:</strong> GameLog files don't include timestamp data in their contents.</h4>
+            <h4><i class="fas fa-clock"></i>File Timestamps</h4>
+            <p>GameLog files don't include timestamp data in their contents.
+            <ul>
+              <li>Our data ingestion process uses <b>file modification date</b> to record when a match was played.</li>
+              <li>This metadata is not preserved when individual files are uploaded.</li>
+              <li>File modification date is preserved when zipped files are uploaded.</li>
+            </ul>
           </div>
-          
-          <p>The parsing process relies on file modification date to record when a match was played. This metadata is:</p>
-          <ul>
-            <li><strong>Not preserved</strong> when individual files are uploaded</li>
-            <li><strong>Preserved</strong> when zipped files are uploaded</li>
-          </ul>
-          
-          <p>This is why we require the .zip format to maintain accurate match timing data.</p>
         </div>
       </div>
     </div>
@@ -75,20 +69,16 @@
           <p>The script performs these actions:</p>
           
           <div class="message-box standard">
-            <h4><div >1</div>Scan your PC</h4>
-              <p>Looks for files matching MTGO Game/DraftLog naming conventions and file types</p>
-            </div>
-          <div class="message-box standard">
-            <h4><div >2</div>Copy files</h4>
-              <p>Creates copies of found Game/DraftLog files</p>
-            </div>
-          <div class="message-box standard">
-            <h4><div >3</div>Create zip archive</h4>
-            <p>Adds all files to a .zip that can be uploaded to MTGO-DB</p>
+            <h4><div>1</div>Scans your PC</h4>
+            <p style="margin-left: 15px;">Looks for files matching MTGO Game/DraftLog naming conventions and file types.</p><br>
+            <h4><div >2</div>Copies files</h4>
+            <p style="margin-left: 15px;">Creates copies of discovered Game/DraftLog files.</p><br>
+            <h4><div >3</div>Creates .zip archive</h4>
+            <p style="margin-left: 15px;">Adds all files to a .zip that can be uploaded to MTGO-DB for processing using the <b>Import GameLogs</b> feature.</p>
           </div>
-          <div class="message-box standard">
+          <div class="message-box link">
             <h4><i class="fab fa-github"></i><a href="https://github.com/cderickson/Scripts/blob/main/zip-mtgo-logs.py" target="_blank">View Script Source Code</a></h4>
-            <p>The script code is open source and available on GitHub</p>
+            <p>The script code is open source and available on GitHub.</p>
           </div>
         </div>
       </div>
@@ -104,83 +94,114 @@
         <i class="fas fa-chevron-down"></i>
       </div>
       <div class="section-card-content" id="data-processing">
-        <div >
-          <p>Processing time depends on several factors:</p>
-          
+        <div class="section-card-body">         
           <div class="message-box standard">
             <h4><i class="fas fa-file" ></i>File Count</h4>
-            <p>More files = longer processing</p>
-          </div>
-          <div class="message-box standard">
-            <h4><i class="fas fa-gamepad" ></i>Game Complexity</h4>
-            <p>Longer games take more time</p>
-          </div>
-          <div class="message-box standard">
-            <h4><i class="fas fa-server" ></i>Server Load</h4>
-            <p>Peak times may be slower</p>
-          </div>
-          <div class="message-box standard">
-            <strong>Email notification:</strong> You'll receive a Load Report via email when processing is complete, so you don't need to wait around!
+            <p>Processing time depends on the number of files you upload.</p><br>
+            <h4><i class="fas fa-envelope" ></i>Email Notification</h4>
+            <p>You'll receive a <b>Load Report</b> via email when processing is complete.</p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Data Privacy FAQ -->
-    <div class="card collapsible-tab" data-target="privacy">
+    <!-- Bug Reports Section -->
+    <div class="card collapsible-tab" data-target="contact-bugs">
       <div class="section-card-header">
         <h3 class="section-card-title">
-          <span class="faq-number">5</span>
-          Is my MTGO data secure and private?
+        <span class="faq-number">5</span>
+        What should I do if I encounter an error? How do I report a bug?
         </h3>
         <i class="fas fa-chevron-down"></i>
       </div>
-      <div class="section-card-content" id="privacy">
+      <div class="section-card-content" id="contact-bugs">
         <div class="section-card-body">
-          <div  >
-            <p><strong>Your data is private:</strong> Only you can access your uploaded MTGO data.</p>
+          <p>Please open a <a href="https://github.com/cderickson/MTGO-DB/issues" target="_blank"><b>New Issue</b></a> on GitHub if you happen to have an account. Otherwise, messaging me on any social media is okay.</p>
+          <div class="message-box standard">
+            <h4><strong>Helpful Information to Include:</strong></h4>
+            <ul>
+              <li>Screenshots of the issue</li>
+              <li>Step-by-step reproduction instructions</li>
+              <li>Browser and operating system details</li>
+              <li>Any error messages you see</li>
+            </ul>
           </div>
-          
-          <p>MTGO-DB takes data privacy seriously:</p>
-          <ul>
-            <li><strong>Account-based access:</strong> Data is tied to your registered account</li>
-            <li><strong>No data sharing:</strong> Your game data is never shared with other users</li>
-            <li><strong>Secure storage:</strong> Data is stored securely and encrypted</li>
-            <li><strong>Data control:</strong> You can export or delete your data at any time</li>
-          </ul>
+          <div class="message-box link">
+            <h4><i class="fab fa-github"></i><a href="https://github.com/cderickson/MTGO-DB" target="_blank">MTGO-DB GitHub Repository</a></h4>
+            <p>View the source code, contribute, or star the project</p>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Troubleshooting FAQ -->
-    <div class="card collapsible-tab" data-target="troubleshooting">
+    <!-- MTGO-Tracker Section 
+    <div class="card collapsible-tab" data-target="contact-tracker">
       <div class="section-card-header">
         <h3 class="section-card-title">
-          <span class="faq-number">6</span>
-          What should I do if I encounter errors?
+        <span class="faq-number"><i class="fas fa-desktop"></i></span>
+        MTGO-Tracker
         </h3>
         <i class="fas fa-chevron-down"></i>
       </div>
-      <div class="section-card-content" id="troubleshooting">
-        <div>
-          <p>If you run into issues, try these steps:</p>
+      <div class="section-card-content" id="contact-tracker">
+        <div class="section-card-body">
+          <p><strong>MTGO-Tracker</strong> is a local, offline Windows application with much of the same functionality as this web application.</p>
+            
+          <div class="message-box standard">
+            <h4><i class="fas fa-download"></i>Offline Access</h4>
+            <p>Works without internet connection</p>
+          </div>
+          <div class="message-box standard">
+            <h4><i class="fas fa-shield-alt"></i>Local Data</h4>
+            <p>Your data stays on your machine</p>
+          </div>
+            
+          <div class="message-box standard">
+            <h4><i class="fas fa-external-link-alt"></i><a href="https://cderickson.io/mtgo-tracker/" target="_blank">Project Page</a></h4>
+            <p>Download links, updates, and documentation</p>
+          </div>
+          <div class="message-box standard">
+            <h4><i class="fab fa-github"></i><a href="https://github.com/cderickson/MTGO-Tracker" target="_blank">GitHub Repository</a></h4>
+            <p>Source code and project wiki</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    -->
+
+    <!-- Crossposting Section -->
+    <div class="card collapsible-tab" data-target="contact-crosspost">
+      <div class="section-card-header">
+        <h3 class="section-card-title">
+        <span class="faq-number">6</span>
+        Can I cross-post this tool to other communities?
+        </h3>
+        <i class="fas fa-chevron-down"></i>
+      </div>
+      <div class="section-card-content" id="contact-crosspost">
+        <div class="section-card-body">
+          <p>If you want to share this tool with other communities you think might be interested, feel free!</p>
           
           <div class="message-box standard">
-            <h4><div>1</div>Check the FAQ</h4>
-            <p>Many common issues are addressed in this FAQ section</p>
+            <h4><strong>Cross-posting:</strong></h4>
+            <p>Help other Magic players discover MTGO-DB by sharing it in communities, forums, or social media where it might be useful.</p>
           </div>
-          <div class="message-box standard">
-            <h4><div>2</div>Review error messages</h4>
-            <p>Take note of any specific error messages or codes</p>
-          </div>
-          <div class="message-box standard">
-            <h4><div>3</div>Contact support</h4>
-            <p>Report bugs or get help via the contact page</p>
-          </div>
-          <div class="message-box standard">
-            <h4><i class="fas fa-bug"></i><a href="/contact">Report Issues</a></h4>
-            <p>Get help or report bugs through our contact page</p>
-          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Questions/Info Section -->
+    <div class="card collapsible-tab" data-target="contact-questions">
+      <div class="section-card-header">
+        <h3 class="section-card-title">
+          <span class="faq-number">7</span>
+          How can I contact you?
+        </h3>
+        <i class="fas fa-chevron-down"></i>
+      </div>
+      <div class="section-card-content" id="contact-questions">
+        <div class="section-card-body">
+          <p>Message me on any social media: <a href="https://twitter.com/Sundodger04" target="_blank"><b>Twitter</b></a>, <a href="https://reddit.com/user/SundodgerLOL/" target="_blank"><b>Reddit</b></a>, <a href="https://linkedin.com/in/cderickson04/" target="_blank"><b>LinkedIn</b></a>. I'm happy to respond to any questions or critiques (even feature requests) when I have time.</p>
         </div>
       </div>
     </div>

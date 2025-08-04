@@ -165,7 +165,7 @@ class TableManager {
     switch (this.tableName) {
       case 'matches':
         return [
-          row.p1, row.p1_arch, row.p1_subarch,
+          row.draft_id, row.p1, row.p1_arch, row.p1_subarch,
           row.p2, row.p2_arch, row.p2_subarch, row.p1_roll, row.p2_roll,
           row.roll_winner, row.p1_wins, row.p2_wins, row.match_winner,
           row.format, row.limited_format, row.match_type, row.date
@@ -446,13 +446,7 @@ class TableManager {
     // Update match ID
     const modalMatchId = document.getElementById('ModalMatchId');
     if (modalMatchId) {
-      modalMatchId.innerHTML = `<b>Match ID:</b> ${data.match_id}`;
-    }
-
-    // Update date
-    const modalDate = document.getElementById('ModalDate');
-    if (modalDate) {
-      modalDate.innerHTML = `<b>Date Played:</b> ${data.date}`;
+      modalMatchId.innerHTML = `<center><b>Match ID:</b> ${data.match_id}<br><b>Date:</b> ${data.date}</center>`;
     }
 
     // Update players and card lists
@@ -569,6 +563,9 @@ class TableManager {
       if (limitedFormatButton) {
         limitedFormatButton.disabled = false;
       }
+
+      // Populate Limited Format dropdown menu based on the format
+      this.populateLimitedFormatMenu(format);
     } else {
       // Constructed format
       if (p1ArchButton) {
@@ -586,6 +583,32 @@ class TableManager {
           limitedFormatButton.textContent = 'NA';
         }
       }
+    }
+  }
+
+  populateLimitedFormatMenu(format) {
+    const limitedFormatMenu = document.getElementById("LimitedFormatMenu");
+    if (!limitedFormatMenu || !this.inputOptions) return;
+
+    // Clear the menu first
+    limitedFormatMenu.innerHTML = '';
+
+    // Populate based on the limited format type
+    if (format === "Booster Draft") {
+      const formats = this.inputOptions["Booster Draft Formats"] || [];
+      limitedFormatMenu.innerHTML = formats.map(fmt => 
+        `<li onclick="showLimitedFormat(this)">${fmt}</li>`
+      ).join('');
+    } else if (format === "Sealed Deck") {
+      const formats = this.inputOptions["Sealed Formats"] || [];
+      limitedFormatMenu.innerHTML = formats.map(fmt => 
+        `<li onclick="showLimitedFormat(this)">${fmt}</li>`
+      ).join('');
+    } else if (format === "Cube") {
+      const formats = this.inputOptions["Cube Formats"] || [];
+      limitedFormatMenu.innerHTML = formats.map(fmt => 
+        `<li onclick="showLimitedFormat(this)">${fmt}</li>`
+      ).join('');
     }
   }
 
@@ -625,9 +648,32 @@ class TableManager {
 
   async showReviseMultiModal() {
     await this.populateDropdownMenus();
+    
+    // Initialize field container visibility (default is P1 Deck)
+    this.initializeMultiModalFields();
+    
     const modal = document.getElementById('ReviseMultiModal');
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+  }
+
+  initializeMultiModalFields() {
+    // Reset Step 1 button to default "P1 Deck"
+    const fieldToChangeButton = document.getElementById("FieldToChangeButton");
+    if (fieldToChangeButton) {
+      fieldToChangeButton.innerHTML = "P1 Deck";
+    }
+    
+    // Default selection is "P1 Deck", so show only P1FieldsContainer
+    const p1Container = document.getElementById("P1FieldsContainer");
+    const p2Container = document.getElementById("P2FieldsContainer");
+    const formatContainer = document.getElementById("FormatFieldsContainer");
+    const matchTypeContainer = document.getElementById("MatchTypeFieldsContainer");
+    
+    if (p1Container) p1Container.style.display = 'block';
+    if (p2Container) p2Container.style.display = 'none';
+    if (formatContainer) formatContainer.style.display = 'none';
+    if (matchTypeContainer) matchTypeContainer.style.display = 'none';
   }
 
   async populateDropdownMenus() {

@@ -278,7 +278,6 @@
 
 .modern-table tbody tr.selected {
     background-color: rgba(0, 57, 166, 0.15) !important;
-    border-left: 4px solid #0039A6;
     box-shadow: inset 0 0 0 1px rgba(0, 57, 166, 0.2);
 }
 
@@ -379,6 +378,7 @@
 }
 
 .player-section {
+    background-color: #f8f9fa;
     border: 1px solid #e9ecef;
     border-radius: 8px;
     overflow: hidden;
@@ -412,15 +412,18 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    text-align: center; /* Center Lands/Spells labels */
+}
+
+/* Icon spacing for ReviseModal h5 elements (matches DraftIdModal) */
+.card-list h5 i {
+    margin-right: 8px;
 }
 
 .card-content {
-    background-color: white;
-    border: 1px solid #e9ecef;
     border-radius: 6px;
-    min-height: 80px;
+    min-height: 250px;
     padding: 12px;
-    font-family: 'Courier New', monospace;
     font-size: 13px;
     color: #333;
     line-height: 1.4;
@@ -616,11 +619,32 @@
 }
 
 /* ReviseModal Form Layout */
+
+/* Center form labels in ReviseModal */
+#ReviseModal .form-label {
+    text-align: center;
+}
+
+/* Override stacking margins in ReviseModal */
+#ReviseModal .form-group {
+    margin-bottom: 0px; /* Remove form-group bottom margin */
+}
+
 .revise-form-row {
     display: flex;
     gap: 16px;
-    margin-bottom: 24px;
     align-items: end;
+}
+
+/* ReviseModal specific form row spacing */
+#ReviseModal .revise-form-row {
+    margin-bottom: 16px; /* Controlled spacing between form rows */
+}
+
+/* Override both the form row margin AND any modal-body div margin for last child */
+#ReviseModal .modal-body > .revise-form-row:last-child,
+#ReviseModal .revise-form-row:last-child {
+    margin-bottom: 0 !important; /* Force remove margin from last form row */
 }
 
 /* .revise-form-row-4 inherits all styles from .revise-form-row */
@@ -718,6 +742,13 @@
     padding: 0;
     margin: 0;
     list-style: none;
+}
+
+/* Make Format/Limited Format/Match Type dropdowns flow upward */
+#ReviseModal .revise-form-row-3-centered .dropdown-menu {
+    top: auto;
+    bottom: 100%;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15); /* Flip shadow for upward flow */
 }
 
 #ReviseModal .dropdown-menu.show {
@@ -879,6 +910,94 @@
     outline: none;
     border-color: #0039A6;
     box-shadow: 0 0 0 3px rgba(0, 57, 166, 0.1);
+}
+
+/* Override stacking margins in ReviseMultiModal */
+#ReviseMultiModal .form-group {
+    margin-bottom: 16px; /* Remove form-group bottom margin */
+}
+
+#ReviseMultiModal .modal-body > .revision-fields-section {
+    margin-bottom: 0; /* Remove margin from revision fields section */
+}
+
+#ReviseMultiModal .modal-body > .revision-fields-section form {
+    margin-bottom: 0; /* Remove margin from form element */
+}
+
+/* Set consistent height for all Step 2 field containers */
+#ReviseMultiModal #P1FieldsContainer,
+#ReviseMultiModal #P2FieldsContainer,
+#ReviseMultiModal #FormatFieldsContainer,
+#ReviseMultiModal #MatchTypeFieldsContainer {
+    min-height: 140px; /* Consistent height for 1-2 form groups + spacing */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Align content to top */
+}
+
+/* Target the last form-group in each container to remove double stacking */
+#ReviseMultiModal #P1FieldsContainer .form-group:last-child,
+#ReviseMultiModal #P2FieldsContainer .form-group:last-child,
+#ReviseMultiModal #FormatFieldsContainer .form-group:last-child,
+#ReviseMultiModal #MatchTypeFieldsContainer .form-group:last-child {
+    margin-bottom: 0 !important; /* Remove margin from last form-group in each container */
+}
+
+#ReviseMultiModal .modal-body > div:last-child {
+    margin-bottom: 0 !important; /* Force remove margin from last modal body child */
+}
+
+/* Subtle Step Labels Styling */
+#ReviseMultiModal .field-selector-section .form-label,
+#ReviseMultiModal .revision-fields-section > div .form-label {
+    background: #f8f9fa;
+    color: #333;
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    text-align: left;
+    border-left: 4px solid #0039A6;
+    position: relative;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Add space above Step 2 label */
+#ReviseMultiModal .revision-fields-section > div .form-label {
+    margin-top: 32px !important;
+}
+
+/* Add subtle step numbers */
+#ReviseMultiModal .field-selector-section .form-label::before {
+    content: "1";
+    display: inline-block;
+    background: #0039A6;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-right: 8px;
+}
+
+#ReviseMultiModal .revision-fields-section > div .form-label::before {
+    content: "2";
+    display: inline-block;
+    background: #0039A6;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-right: 8px;
 }
 
 /* ReviseMultiModal Form Input Styling - Match dropdown height exactly */

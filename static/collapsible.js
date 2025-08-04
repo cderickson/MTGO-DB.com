@@ -42,8 +42,12 @@ function initializeCollapsibleTabs() {
             }
         });
         
-        // Initialize as collapsed
-        collapseTab(tab, false);
+        // Initialize: expand if has 'expanded' class, otherwise collapse
+        if (tab.classList.contains('expanded')) {
+            expandTab(tab, false);
+        } else {
+            collapseTab(tab, false);
+        }
     });
 }
 

@@ -262,11 +262,12 @@ body {
     padding: 0;
     position: fixed;
     height: calc(100vh - 72px);
-    overflow-y: auto;
     left: 0;
     top: 72px;
     z-index: 999;
     transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
 }
 
 .sidebar.collapsed {
@@ -941,6 +942,40 @@ table tbody tr:last-child td {
     background-color: #f8fff8;
 }
 
+.message-box.link {
+    border-left-color: #7c3aed;
+    background-color: #faf7ff;
+}
+
+.message-box.thin {
+    border-left-color: #0039A6;
+    background-color: #f8f9ff;
+    font-size: 13px;
+}
+
+.message-box.thin h4 {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.message-box.thin p,
+.message-box.thin ul,
+.message-box.thin ol {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+/* List Styles */
+.dash-list {
+    list-style-type: none;
+}
+
+.dash-list li:before {
+    content: "– ";
+    margin-left: -1em;
+    margin-right: 0.5em;
+}
+
 /* Utility Classes */
 .text-center { text-align: center; }
 .text-left { text-align: left; }
@@ -1366,6 +1401,125 @@ table tbody tr:last-child td {
     flex-shrink: 0;
 }
 
+/* Ensure FontAwesome icons inside faq-number stay white and don't rotate */
+.faq-number i {
+    color: white !important;
+    transform: none !important;
+    transition: none !important;
+    margin: 0 !important;
+}
+
+/* FAQ Container Width Constraints */
+.faq-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Responsive width adjustments for FAQ */
+@media (max-width: 1240px) {
+    .faq-container {
+        margin: 0 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .faq-container {
+        margin: 0 16px;
+        max-width: none;
+    }
+}
+
+/* Sidebar Footer Styling */
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.sidebar-footer {
+    border-top: 1px solid white;
+    background: white;
+    margin-top: auto;
+    height: 65px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.social-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin: 0 0 8px 0;
+}
+
+.social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid black;
+    background: rgba(0, 0, 0, 0.1);
+    color: black;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.social-link:hover {
+    background: rgba(0, 0, 0, 0.2);
+    color: black;
+    transform: translateY(-2px);
+}
+
+.footer-info {
+    text-align: center;
+    color: rgba(0, 0, 0, 0.8);
+    font-size: 11px;
+    line-height: 1.3;
+    margin: 0;
+}
+
+.footer-text {
+    font-weight: 600;
+    color: black;
+    margin: 0 0 2px 0;
+}
+
+.footer-version {
+    color: rgba(0, 0, 0, 0.7);
+    margin: 0 0 2px 0;
+}
+
+.footer-copyright {
+    color: rgba(0, 0, 0, 0.6);
+    margin: 0;
+}
+
+/* Mobile adjustments for sidebar footer */
+@media (max-width: 768px) {
+    .sidebar-footer {
+        height: 60px;
+        padding: 0 16px;
+    }
+    
+    .social-links {
+        gap: 12px;
+        margin-bottom: 6px;
+    }
+    
+    .social-link {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+}
+
 /* Draft Pool Container - styled like EndGameActions */
 .draft-pool-container {
     height: 300px;
@@ -1411,14 +1565,15 @@ table tbody tr:last-child td {
 #ReviseModal .modal-content {
     width: 900px;
     max-width: 90vw;
-    min-height: 700px;
+    min-height: 800px; /* Increased from 700px */
+    overflow: visible !important; /* Allow dropdowns to extend outside modal bounds */
 }
 
 /* ReviseMultiModal specific styling */
 #ReviseMultiModal .modal-content {
-    width: 900px;
+    width: 500px;
     max-width: 90vw;
-    min-height: 600px;
+    min-height: 400px;
 }
 
 /* Center dropdown in DraftIdModal */
@@ -1438,15 +1593,68 @@ table tbody tr:last-child td {
     display: inline-block;
 }
 
+/* DraftIdModal Dropdown Button Styling (matches ReviseModal) */
+#DraftIdModal .dropdown-toggle {
+    width: 100%;
+    text-align: center;
+    padding: 8px 12px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    color: #333 !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#DraftIdModal .dropdown-toggle:hover {
+    border-color: #0039A6;
+    box-shadow: 0 2px 4px rgba(0, 57, 166, 0.1);
+}
+
+#DraftIdModal .dropdown-toggle i {
+    margin-left: 8px;
+    transition: transform 0.2s ease;
+    color: #666 !important;
+}
+
+#DraftIdModal .dropdown-toggle span {
+    color: #333 !important;
+}
+
+#DraftIdModal .dropdown-toggle.active i {
+    transform: rotate(180deg);
+}
+
+#DraftIdModal .dropdown-toggle:disabled {
+    background-color: #f5f5f5 !important;
+    color: #333 !important;
+    cursor: not-allowed;
+    border-color: #ddd;
+}
+
+#DraftIdModal .dropdown-toggle:disabled span {
+    color: #333 !important;
+}
+
+#DraftIdModal .dropdown-toggle:disabled i {
+    color: #999 !important;
+}
+
 #DraftIdModal .dropdown-menu {
     position: absolute;
-    top: 100%;
+    top: auto;
+    bottom: 100%;
     left: 0;
     right: 0;
     background: white;
     border: 1px solid #ddd;
     border-radius: 4px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15); /* Flip shadow for upward flow */
     z-index: 99999;
     max-height: 250px;
     overflow-y: auto;
@@ -1455,6 +1663,7 @@ table tbody tr:last-child td {
     font-size: 14px;
     padding: 0;
     margin: 0;
+    list-style: none;
 }
 
 #DraftIdModal .dropdown-menu.show {
