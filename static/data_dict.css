@@ -1,3 +1,30 @@
+/* Data Dictionary Container Width Constraints */
+.data-dict-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Responsive width adjustments */
+@media (max-width: 1280px) {
+    .data-dict-container {
+        max-width: 95%;
+    }
+}
+
+@media (max-width: 768px) {
+    .data-dict-container {
+        max-width: 100%;
+        padding: 0 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .data-dict-container {
+        padding: 0 12px;
+    }
+}
+
 /* Data Dictionary Table Styling */
 .data-table {
     width: 100%;

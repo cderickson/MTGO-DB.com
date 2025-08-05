@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block page_title %}{% endblock %}
+{% block page_title %}Tables{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
@@ -8,7 +8,7 @@
 
 {% block content %}
 
-<script src="{{ url_for('static', filename='table.js') }}"></script>
+<script src="{{ url_for('static', filename='tables.js') }}"></script>
 
 <input type="hidden" name="tname" id="tname" value="{{ table_name }}">
 

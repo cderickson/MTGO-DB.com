@@ -463,7 +463,23 @@
     border-color: #999;
 }
 
-/* Individual Table Container Styling - Uses existing modern-table classes from tables.css */
+/* Game Performance Table - Left align first column (category names) */
+.dashboard-main .modern-table th:first-child,
+.dashboard-main .modern-table td:first-child {
+    text-align: left !important;
+}
+
+/* Dashboard table tooltip styling */
+.dashboard-main .modern-table td[title],
+.dashboard-main .modern-table th[title] {
+    position: relative;
+}
+
+.dashboard-main .modern-table td[title]:hover,
+.dashboard-main .modern-table th[title]:hover {
+    background-color: rgba(0, 57, 166, 0.1) !important;
+    transition: background-color 0.2s ease;
+}
 
 /* Simple fix for loading state - override flex behavior */
 #loadingState .section-card-header {

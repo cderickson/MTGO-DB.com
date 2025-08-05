@@ -55,27 +55,7 @@
     color: #0039A6;
 }
 
-.table-hint {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    padding: 10px 14px;
-    background-color: #e8f4fd;
-    border: 1px solid #b8daff;
-    border-radius: 6px;
-    font-size: 13px;
-    color: #0c5460;
-    line-height: 1.4;
-    width: 100%; /* Span full width */
-    box-sizing: border-box;
-    margin: 0; /* Remove margin since it's now separate */
-}
-
-.table-hint i {
-    color: #0039A6;
-    margin-top: 2px;
-    flex-shrink: 0;
-}
+/* table-hint styles moved to base.css for global availability */
 
 .table-header-right {
     display: flex;
@@ -550,11 +530,7 @@
         padding: 5px 8px;
         font-size: 11px;
     }
-    
-    .table-hint {
-        padding: 8px 12px;
-        font-size: 12px;
-    }
+
     
     .pagination-container {
         padding: 16px 20px;
@@ -583,11 +559,7 @@
         gap: 6px;
         margin-bottom: 6px;
     }
-    
-    .table-hint {
-        font-size: 11px;
-        padding: 6px 10px;
-    }
+
     
     .modern-table th,
     .modern-table td {

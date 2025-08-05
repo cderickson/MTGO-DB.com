@@ -20,6 +20,12 @@
     margin-bottom: 0;
 }
 
+/* Align message-box with user information content above */
+.profile-left-column .message-box {
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
 /* User Information Card Height Control */
 .profile-left-column .section-card:nth-child(1) {
     /* Set explicit height for user information card */

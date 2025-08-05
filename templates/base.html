@@ -156,18 +156,18 @@
           <div class="nav-section">
             <h3 class="nav-section-title">Tables</h3>
             <ul class="nav-list">
-              <li class="nav-item">
-                <a href="{{ url_for('views.table', table_name='matches', page_num=1) }}" class="nav-link">
-                  <i class="fas fa-chess-board nav-icon"></i>
-                  <span class="nav-text">Matches</span>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="{{ url_for('views.table', table_name='drafts', page_num=1) }}" class="nav-link">
-                  <i class="fas fa-cube nav-icon"></i>
-                  <span class="nav-text">Drafts</span>
-                </a>
-              </li>
+                          <li class="nav-item">
+              <a href="{{ url_for('views.table', table_name='matches', page_num=1) }}" class="nav-link disabled table-dependent" id="matchesMenuButton">
+                <i class="fas fa-chess-board nav-icon"></i>
+                <span class="nav-text">Matches</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ url_for('views.table', table_name='drafts', page_num=1) }}" class="nav-link disabled table-dependent" id="draftsMenuButton">
+                <i class="fas fa-cube nav-icon"></i>
+                <span class="nav-text">Drafts</span>
+              </a>
+            </li>
               <li class="nav-item">
                 <a href="{{ url_for('views.data_dict') }}" class="nav-link">
                   <i class="fas fa-book nav-icon"></i>
@@ -180,22 +180,22 @@
           <div class="nav-section">
             <h3 class="nav-section-title">Data Cleaning</h3>
             <ul class="nav-list">
+                          <li class="nav-item">
+              <a href="#" class="nav-link disabled table-dependent" id="bestGuessMenuButton" data-original-onclick="showBestGuessModal()">
+                <i class="fas fa-magic nav-icon"></i>
+                <span class="nav-text">Best Guess Deck Names</span>
+              </a>
+            </li>
               <li class="nav-item">
-                <a href="#" class="nav-link" onclick="showBestGuessModal()">
-                  <i class="fas fa-magic nav-icon"></i>
-                  <span class="nav-text">Best Guess Deck Names</span>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="#" class="nav-link" id="getMissingMenuButton" onclick="initGetWinner()">
+                <a href="#" class="nav-link disabled table-dependent" id="getMissingMenuButton" data-original-onclick="initGetWinner()">
                   <i class="fas fa-trophy nav-icon"></i>
                   <span class="nav-text">Get Missing Game Winners</span>
                 </a>
               </li>
               <li class="nav-item">
-                <a href="#" class="nav-link" id="applyDraftIdMenuButton" onclick="initGetDraftId()">
+                <a href="#" class="nav-link disabled table-dependent" id="applyDraftIdMenuButton" data-original-onclick="initGetDraftId()">
                   <i class="fas fa-link nav-icon"></i>
-                  <span class="nav-text">Apply Associated Draft_IDs</span>
+                  <span class="nav-text">Apply Associated Draft IDs</span>
                 </a>
               </li>
             </ul>
@@ -228,12 +228,12 @@
                   <span class="nav-text">Re-Process Archived Files</span>
                 </a>
               </li>
-              <li class="nav-item">
-                <a href="/ignored" class="nav-link">
-                  <i class="fas fa-eye-slash nav-icon"></i>
-                  <span class="nav-text">Ignored Matches</span>
-                </a>
-              </li>
+                          <li class="nav-item">
+              <a href="/ignored" class="nav-link disabled table-dependent" id="ignoredMatchesMenuButton">
+                <i class="fas fa-eye-slash nav-icon"></i>
+                <span class="nav-text">Ignored Matches</span>
+              </a>
+            </li>
               <li class="nav-item">
                 <a href="{{ url_for('views.export') }}" class="nav-link" onclick="handleExportClick(this); return false;">
                   <i class="fas fa-file-excel nav-icon"></i>
@@ -385,7 +385,9 @@
             </button>
           </div>
           <div class="modal-body">
-            <div id="DraftIdModalDate" class="table-hint" style="justify-content: center;">
+            <div class="table-hint" style="justify-content: center;">
+              <i class="fas fa-info-circle"></i>
+              <div id="DraftIdModalDate"></div>
             </div>
 
             <div class="card">
@@ -1323,6 +1325,104 @@
         submitBtn.disabled = true;
       }
     }
+
+    // Check table status and update sidebar button states
+    async function checkTableStatusAndUpdateButtons() {
+      try {
+        const response = await fetch('/api/table-status', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          updateSidebarButtonStates(data.status);
+        } else {
+          console.error('Failed to fetch table status');
+        }
+      } catch (error) {
+        console.error('Error checking table status:', error);
+      }
+    }
+
+    // Update sidebar button states based on table status
+    function updateSidebarButtonStates(status) {
+      const buttonConfigs = [
+        { id: 'matchesMenuButton', enabled: status.matches_enabled },
+        { id: 'bestGuessMenuButton', enabled: status.best_guess_enabled },
+        { id: 'draftsMenuButton', enabled: status.drafts_enabled },
+        { id: 'ignoredMatchesMenuButton', enabled: status.ignored_matches_enabled },
+        { id: 'getMissingMenuButton', enabled: status.missing_winners_enabled },
+        { id: 'applyDraftIdMenuButton', enabled: status.draft_ids_enabled }
+      ];
+
+      buttonConfigs.forEach(config => {
+        const button = document.getElementById(config.id);
+        if (button) {
+          if (config.enabled) {
+            enableSidebarButton(button);
+          } else {
+            disableSidebarButton(button);
+          }
+        }
+      });
+    }
+
+    // Enable sidebar button
+    function enableSidebarButton(button) {
+      button.classList.remove('disabled', 'table-dependent');
+      button.style.pointerEvents = 'auto';
+      button.style.opacity = '1';
+      button.style.color = '';
+      
+      // Re-enable onclick if it exists in data-original-onclick
+      const originalOnclick = button.getAttribute('data-original-onclick');
+      if (originalOnclick) {
+        button.setAttribute('onclick', originalOnclick);
+      }
+      
+      // Remove click prevention for href links
+      button.removeEventListener('click', preventNavigation);
+      
+      // Reset icon color
+      const icon = button.querySelector('.nav-icon');
+      if (icon) {
+        icon.style.color = '';
+      }
+    }
+
+    // Disable sidebar button
+    function disableSidebarButton(button) {
+      button.classList.add('disabled');
+      button.style.pointerEvents = 'none';
+      button.style.opacity = '0.5';
+      
+      // Remove onclick to prevent interaction
+      button.removeAttribute('onclick');
+      
+      // Prevent navigation for href links
+      button.addEventListener('click', preventNavigation);
+    }
+
+    // Function to prevent navigation
+    function preventNavigation(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+
+    // Make function globally accessible for refreshing after data operations
+    window.refreshSidebarButtonStates = checkTableStatusAndUpdateButtons;
+
+    // Initialize table status check on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Only check if user is authenticated (sidebar is visible)
+      if (document.getElementById('sidebar')) {
+        checkTableStatusAndUpdateButtons();
+      }
+    });
     </script>
 
   </body>

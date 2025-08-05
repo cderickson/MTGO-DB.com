@@ -502,10 +502,10 @@ class GameWinnerManager {
 
   showNoGamesMessage() {
     const dateElement = document.getElementById('GameWinnerModalDate');
-    dateElement.textContent = 'No games found';
+    dateElement.innerHTML = `No games found.`;
     
     const actionsElement = document.getElementById('EndGameActions');
-    actionsElement.innerHTML = '<div style="text-align: center; color: var(--fg-muted); padding: var(--spacing-lg);">No games with missing winners found.</div>';
+    actionsElement.innerHTML = '<div style="text-align: center;">No games with missing winners found.</div>';
     
     // Disable action buttons
     document.querySelectorAll('#GameWinnerModal .button').forEach(btn => {
@@ -744,7 +744,7 @@ class DraftIdManager {
     const spells2Element = document.getElementById('DraftIdSpells2');
     
     if (landsElement) landsElement.innerHTML = '';
-    if (spellsElement) spellsElement.innerHTML = '<div style="color: var(--fg-muted); padding: var(--spacing-lg);">No Limited Matches missing an Associated Draft_ID.<br><br>Note: Matches need to have Format set to \'Limited\' before they can be associated with a Draft.</div>';
+    if (spellsElement) spellsElement.innerHTML = '<div>No Limited Matches missing an Associated Draft_ID.<br><br>Note: Matches need to have Format set to \'Limited\' before they can be associated with a Draft.</div>';
     if (spells2Element) spells2Element.innerHTML = '';
     
     // Disable action buttons

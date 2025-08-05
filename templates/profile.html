@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block page_title %}{% endblock %}
+{% block page_title %}Profile{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
@@ -15,7 +15,7 @@
     <div class="profile-left-column">
       
       <!-- User Information Section -->
-      <div class="section-card fixed-height-200">
+      <div class="section-card fixed-height-275">
         <div class="section-card-header">
           <h2 class="section-card-title">
             <i class="fas fa-user-circle profile-icon"></i>
@@ -73,7 +73,7 @@
         
         <div class="section-card-body">
           {% if match_history %}
-          <div >
+          <div>
             <table class="match-history-table">
               <thead >
                   <tr>
@@ -112,12 +112,9 @@
             </table>
           </div>
           {% else %}
-          <div>
-            <i class="fas fa-inbox"></i>
-            <h5>No Match History Yet</h5>
-            <p>
-              Your recent matches will appear here once you start importing GameLogs.
-            </p>
+          <div class="message-box standard">
+            <h4><i class="fas fa-inbox"></i>No Match History Yet</h4>
+            <p>Your recent matches will appear here once you start importing GameLogs.</p>
           </div>
           {% endif %}
         </div>

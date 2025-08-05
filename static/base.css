@@ -236,6 +236,14 @@ body {
     text-decoration: none;
 }
 
+.login-btn .nav-icon {
+    color: white;
+}
+
+.login-btn:hover .nav-icon {
+    color: white;
+}
+
 .register-btn {
     background-color: white;
     color: #0039A6;
@@ -276,6 +284,34 @@ body {
 
 .sidebar-content {
     padding: 24px 0;
+}
+
+/* Disabled sidebar button styling */
+.sidebar .nav-link.disabled {
+    opacity: 0.5 !important;
+    pointer-events: none !important;
+    cursor: not-allowed !important;
+    color: #6c757d !important;
+}
+
+.sidebar .nav-link.disabled .nav-icon {
+    color: #6c757d !important;
+}
+
+.sidebar .nav-link.disabled:hover {
+    background-color: transparent !important;
+}
+
+/* Table-dependent buttons start disabled by default */
+.sidebar .nav-link.table-dependent {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+    color: #6c757d;
+}
+
+.sidebar .nav-link.table-dependent .nav-icon {
+    color: #6c757d;
 }
 
 .nav-section {
@@ -879,6 +915,44 @@ table tbody tr:last-child td {
     
     .section-card-title {
         font-size: 18px;
+    }
+}
+
+/* Table Hint Styles - Available globally for modals */
+.table-hint {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 14px;
+    background-color: #e8f4fd;
+    border: 1px solid #b8daff;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #0c5460;
+    line-height: 1.4;
+    width: 100%; /* Span full width */
+    box-sizing: border-box;
+    margin: 0; /* Remove margin since it's now separate */
+}
+
+.table-hint i {
+    color: #0039A6;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+/* Table hint responsive styles */
+@media (max-width: 768px) {
+    .table-hint {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .table-hint {
+        font-size: 11px;
+        padding: 6px 10px;
     }
 }
 

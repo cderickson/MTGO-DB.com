@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block page_title %}{% endblock %}
+{% block page_title %}Analytics{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='dashboards.css') }}">
@@ -173,6 +173,8 @@ let isUpdatingFilters = false; // Prevent recursive updates
 // Load filter options on page load
 document.addEventListener('DOMContentLoaded', function() {
   loadFilterOptions().then(() => {
+    // Set up dashboard type filtering after filters are loaded
+    setupDashboardTypeFiltering();
     // Auto-load Match Performance dashboard after filters are loaded
     generateDashboard();
   });
@@ -233,6 +235,76 @@ function setupFilterEventListeners() {
       });
     }
   });
+}
+
+function setupDashboardTypeFiltering() {
+  // Add event listener for dashboard type changes
+  const dashboardTypeElement = document.getElementById('dashboardType');
+  if (dashboardTypeElement) {
+    dashboardTypeElement.addEventListener('change', function() {
+      handleDashboardTypeChange(this.value);
+    });
+    
+    // Initialize the card filter state based on current selection
+    handleDashboardTypeChange(dashboardTypeElement.value);
+  }
+}
+
+function handleDashboardTypeChange(dashboardType) {
+  const cardFilter = document.getElementById('cardFilter');
+  const cardFilterGroup = cardFilter ? cardFilter.closest('.filter-group') : null;
+  
+  if (!cardFilter || !cardFilterGroup) return;
+  
+  if (dashboardType === 'card-analysis') {
+    // Enable the card filter for Card Analysis dashboard
+    enableCardFilter();
+  } else {
+    // Disable and reset the card filter for other dashboards
+    disableCardFilter();
+  }
+}
+
+function enableCardFilter() {
+  const cardFilter = document.getElementById('cardFilter');
+  const cardFilterGroup = cardFilter ? cardFilter.closest('.filter-group') : null;
+  
+  if (cardFilter && cardFilterGroup) {
+    cardFilter.disabled = false;
+    cardFilterGroup.style.opacity = '1';
+    cardFilterGroup.style.pointerEvents = 'auto';
+    
+    // Add a visual indicator that this filter is specific to Card Analysis
+    const label = cardFilterGroup.querySelector('.filter-label');
+    if (label && !label.querySelector('.card-analysis-indicator')) {
+      const indicator = document.createElement('span');
+      indicator.className = 'card-analysis-indicator';
+      indicator.style.cssText = 'color: var(--accent-color); font-size: 0.8em; margin-left: 5px;';
+      indicator.textContent = '(Card Analysis only)';
+      label.appendChild(indicator);
+    }
+  }
+}
+
+function disableCardFilter() {
+  const cardFilter = document.getElementById('cardFilter');
+  const cardFilterGroup = cardFilter ? cardFilter.closest('.filter-group') : null;
+  
+  if (cardFilter && cardFilterGroup) {
+    // Reset the card filter to "All Cards"
+    cardFilter.value = '';
+    
+    // Disable the filter
+    cardFilter.disabled = true;
+    cardFilterGroup.style.opacity = '0.5';
+    cardFilterGroup.style.pointerEvents = 'none';
+    
+    // Remove the Card Analysis indicator if it exists
+    const indicator = cardFilterGroup.querySelector('.card-analysis-indicator');
+    if (indicator) {
+      indicator.remove();
+    }
+  }
 }
 
 function populateFilterDropdowns(options = null) {
@@ -348,8 +420,10 @@ function getCurrentFilterValues() {
   const opponentThresholdInput = document.getElementById('opponentThresholdFilter');
   const heroMullsInput = document.getElementById('heroMullsFilter');
   const oppMullsInput = document.getElementById('oppMullsFilter');
+  const cardFilter = document.getElementById('cardFilter');
+  
   return {
-    card: document.getElementById('cardFilter').value,
+    card: (cardFilter && !cardFilter.disabled) ? cardFilter.value : '', // Only include card filter if enabled
     opponent: document.getElementById('opponentFilter').value,
     format: document.getElementById('formatFilter').value,
     limitedFormat: document.getElementById('limitedFormatFilter').value,
@@ -385,6 +459,10 @@ function clearFilters() {
   
   // Restore original filter options
   populateFilterDropdowns(filterOptions);
+  
+  // Re-apply dashboard type filtering after clearing filters
+  const dashboardType = document.getElementById('dashboardType').value;
+  handleDashboardTypeChange(dashboardType);
   
   isUpdatingFilters = false;
   
@@ -660,7 +738,10 @@ function renderDashboardContent(dashboardData, dashboardType) {
                     <table class="modern-table">
                       <thead>
                         <tr>
-                          ${table.headers.map(header => `<th>${header}</th>`).join('')}
+                          ${table.headers.map((header, index) => {
+                            const width = table.columnWidths && table.columnWidths[index] ? ` style="width: ${table.columnWidths[index]}"` : '';
+                            return `<th${width}>${header}</th>`;
+                          }).join('')}
                         </tr>
                       </thead>
                       <tbody>
@@ -707,11 +788,14 @@ function renderDashboardContent(dashboardData, dashboardType) {
             </h2>
           </div>
           <div class="section-card-body section-thin-body table-body-no-padding">
-            <div class="table-wrapper" ${useFixedHeight ? `style="height: ${tableHeight}"` : ''}>
+            <div class="table-wrapper ${table.cssClass || ''}" ${useFixedHeight ? `style="height: ${tableHeight}"` : ''}>
               <table class="modern-table">
                 <thead>
                   <tr>
-                    ${table.headers.map(header => `<th>${header}</th>`).join('')}
+                    ${table.headers.map((header, index) => {
+                      const width = table.columnWidths && table.columnWidths[index] ? ` style="width: ${table.columnWidths[index]}"` : '';
+                      return `<th${width}>${header}</th>`;
+                    }).join('')}
                   </tr>
                 </thead>
                 <tbody>
@@ -761,6 +845,11 @@ function renderDashboardContent(dashboardData, dashboardType) {
   
   resultsDiv.innerHTML = content;
   resultsDiv.style.display = 'block';
+  
+  // Add tooltips to all table cells after content is rendered
+  setTimeout(() => {
+    addDashboardTableTooltips();
+  }, 0);
 }
 
 // Function to set perspective and regenerate dashboard
@@ -793,6 +882,42 @@ function setPerspective(perspective) {
   // Regenerate the dashboard
   generateDashboard();
 }
+
+// Function to add tooltips to all dashboard table cells
+function addDashboardTableTooltips() {
+  const tableCells = document.querySelectorAll('#dashboardResults .modern-table td');
+  
+  tableCells.forEach(cell => {
+    // Get clean text content, handling HTML elements like <center> tags
+    const textContent = cell.textContent.trim();
+    
+    // Only add tooltip if there's actual content and it's not just whitespace
+    if (textContent && textContent.length > 0) {
+      // Remove any existing title to avoid duplicates
+      cell.removeAttribute('title');
+      
+      // Add new title with the clean text content
+      cell.title = textContent;
+      
+      // Add subtle styling to indicate hover functionality
+      cell.style.cursor = 'help';
+    }
+  });
+  
+  // Also add tooltips to table headers for completeness
+  const tableHeaders = document.querySelectorAll('#dashboardResults .modern-table th');
+  tableHeaders.forEach(header => {
+    const textContent = header.textContent.trim();
+    if (textContent && textContent.length > 0) {
+      header.removeAttribute('title');
+      header.title = textContent;
+      header.style.cursor = 'help';
+    }
+  });
+}
+
+// Make function globally accessible for when new data is loaded
+window.addDashboardTableTooltips = addDashboardTableTooltips;
 </script>
 
 {% endblock %} 

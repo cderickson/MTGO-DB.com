@@ -2313,9 +2313,8 @@ def table(table_name, page_num):
 		table = table[-page_size:]
 
 	page_num = int(page_num)
-	if (page_num < 1) or (page_num > pages) or (len(table) == 0):
-		flash(f'Either the {table_name.capitalize()} Table is empty or the page number you are trying to view does not exist.', category='error')
-		return render_template('tables.html', user=current_user, table_name=table_name, page_num=page_num, pages=pages)  
+	# if (page_num < 1) or (page_num > pages) or (len(table) == 0):
+	# 	flash(f'Either the {table_name.capitalize()} Table is empty or the page number you are trying to view does not exist.', category='error')
 
 	return render_template('tables.html', user=current_user, table_name=table_name, table=table, page_num=page_num, pages=pages)
 
@@ -3544,6 +3543,86 @@ def apply_dashboard_filters(query, filters):
 		debug_log(f"Error applying dashboard filters: {str(e)}")
 		raise e
 
+def apply_dashboard_filters_to_play_query(query, filters):
+	"""Apply filters to a Play query that's already joined with Match table"""
+	try:
+		# Filter by opponent
+		if filters.get('opponent'):
+			query = query.filter(Match.p2 == filters['opponent'])
+		
+		# Filter by format
+		if filters.get('format'):
+			query = query.filter(Match.format == filters['format'])
+		
+		# Filter by limited format
+		if filters.get('limitedFormat'):
+			query = query.filter(Match.limited_format == filters['limitedFormat'])
+		
+		# Filter by deck (p1_subarch)
+		if filters.get('deck'):
+			query = query.filter(Match.p1_subarch == filters['deck'])
+		
+		# Filter by opponent deck (p2_subarch)
+		if filters.get('oppDeck'):
+			query = query.filter(Match.p2_subarch == filters['oppDeck'])
+		
+		# Filter by date range
+		if filters.get('startDate'):
+			query = query.filter(Match.date >= filters['startDate'])
+		if filters.get('endDate'):
+			query = query.filter(Match.date <= filters['endDate'] + '-23:59')
+		
+		# Filter by card (since we're already querying Play table)
+		if filters.get('card'):
+			query = query.filter(Play.primary_card == filters['card'])
+		
+		return query
+		
+	except Exception as e:
+		debug_log(f"Error applying dashboard filters to Play query: {str(e)}")
+		raise e
+
+def apply_dashboard_filters_to_game_query(query, filters):
+	"""Apply filters to a Game query that's already joined with Match table"""
+	try:
+		# Filter by opponent
+		if filters.get('opponent'):
+			query = query.filter(Match.p2 == filters['opponent'])
+		
+		# Filter by format
+		if filters.get('format'):
+			query = query.filter(Match.format == filters['format'])
+		
+		# Filter by limited format
+		if filters.get('limitedFormat'):
+			query = query.filter(Match.limited_format == filters['limitedFormat'])
+		
+		# Filter by deck (p1_subarch)
+		if filters.get('deck'):
+			query = query.filter(Match.p1_subarch == filters['deck'])
+		
+		# Filter by opponent deck (p2_subarch)
+		if filters.get('oppDeck'):
+			query = query.filter(Match.p2_subarch == filters['oppDeck'])
+		
+		# Filter by date range
+		if filters.get('startDate'):
+			query = query.filter(Match.date >= filters['startDate'])
+		if filters.get('endDate'):
+			query = query.filter(Match.date <= filters['endDate'] + '-23:59')
+		
+		# Filter by card (requires additional join with Play table)
+		if filters.get('card'):
+			query = query.join(Play, (Game.match_id == Play.match_id) & (Game.game_num == Play.game_num) & (Game.uid == Play.uid))\
+						 .filter(Play.primary_card == filters['card'])\
+						 .filter(Play.casting_player == current_user.username)
+		
+		return query
+		
+	except Exception as e:
+		debug_log(f"Error applying dashboard filters to Game query: {str(e)}")
+		raise e
+
 def generate_match_performance_dashboard(filtered_query, filters):
 	"""Generate match performance dashboard data"""
 	try:
@@ -3795,20 +3874,47 @@ def generate_card_analysis_dashboard(filtered_query, filters):
 			casting_player_filter = Play.casting_player == current_user.username
 			perspective_label = 'Hero'
 		
-		# Get plays data for these matches (keeping original queries for metrics)
-		plays_hero = Play.query.filter(
-			Play.uid == current_user.uid,
+		# Get the filtered matches first
+		filtered_matches = filtered_query.all()
+		filtered_match_ids = [(m.match_id, m.uid) for m in filtered_matches]
+		
+		if not filtered_match_ids:
+			# Return empty dashboard if no matches found
+			return {
+				'metrics': [
+					{'title': 'Unique Cards Played', 'value': '0', 'subtitle': 'Different cards (non-land)', 'type': 'count'},
+					{'title': 'Most Played Card', 'value': 'None', 'subtitle': 'No data', 'type': 'text'},
+					{'title': 'Most Played Card Against', 'value': 'None', 'subtitle': 'No data', 'type': 'text'}
+				],
+				'charts': [{'title': 'Most Played Cards', 'type': 'bar', 'data': {'labels': [], 'datasets': [{'label': 'Times Played', 'data': []}]}}],
+				'tables': [],
+				'table_grids': []
+			}
+		
+		# Get plays data for filtered matches with joins
+		plays_hero = db.session.query(Play).join(Match, 
+			(Play.uid == Match.uid) & (Play.match_id == Match.match_id)
+		).filter(
+			Match.uid == current_user.uid,
+			Match.p1 == current_user.username,
 			Play.casting_player == current_user.username,
 			Play.action == 'Casts',
 			Play.primary_card != 'NA'
-		).all()
+		)
+		# Apply the same filters as the filtered_query
+		plays_hero = apply_dashboard_filters_to_play_query(plays_hero, filters).all()
 
-		plays_opp = Play.query.filter(
-			Play.uid == current_user.uid,
+		plays_opp = db.session.query(Play).join(Match,
+			(Play.uid == Match.uid) & (Play.match_id == Match.match_id)
+		).filter(
+			Match.uid == current_user.uid,
+			Match.p1 == current_user.username,
 			Play.casting_player != current_user.username,
 			Play.action == 'Casts',
 			Play.primary_card != 'NA'
-		).all()
+		)
+		# Apply the same filters as the filtered_query
+		plays_opp = apply_dashboard_filters_to_play_query(plays_opp, filters).all()
 			
 		# Basic card frequency analysis
 		card_frequency_hero = {}
@@ -3825,24 +3931,33 @@ def generate_card_analysis_dashboard(filtered_query, filters):
 		top_cards_hero = sorted(card_frequency_hero.items(), key=lambda x: x[1], reverse=True)[:10]
 		top_cards_opp = sorted(card_frequency_opp.items(), key=lambda x: x[1], reverse=True)[:10]
 			
-		# Get all games for these matches to calculate game-specific statistics
-		games = Game.query.filter(
-			Game.uid == current_user.uid,
-			Game.p1 == current_user.username
-		).all()
+		# Get all games for filtered matches with joins
+		games = db.session.query(Game).join(Match,
+			(Game.uid == Match.uid) & (Game.match_id == Match.match_id) & (Game.p1 == Match.p1)
+		).filter(
+			Match.uid == current_user.uid,
+			Match.p1 == current_user.username
+		)
+		# Apply the same filters as the filtered_query
+		games = apply_dashboard_filters_to_game_query(games, filters).all()
 		
 		# Game 1 Analysis
 		games_g1 = [g for g in games if g.game_num == 1]
 		total_games_g1 = len(games_g1)
 		
-		# Get plays for Game 1
-		plays_g1 = Play.query.filter(
-			Play.uid == current_user.uid,
+		# Get plays for Game 1 with joins
+		plays_g1 = db.session.query(Play).join(Match,
+			(Play.uid == Match.uid) & (Play.match_id == Match.match_id)
+		).filter(
+			Match.uid == current_user.uid,
+			Match.p1 == current_user.username,
 			casting_player_filter,
 			Play.game_num == 1,
 			Play.action == 'Casts',
 			Play.primary_card != 'NA'
-		).all()
+		)
+		# Apply the same filters as the filtered_query
+		plays_g1 = apply_dashboard_filters_to_play_query(plays_g1, filters).all()
 		
 		# Calculate Game 1 card statistics
 		if plays_g1 and total_games_g1 > 0:
@@ -3906,14 +4021,19 @@ def generate_card_analysis_dashboard(filtered_query, filters):
 		games_g23 = [g for g in games if g.game_num in [2, 3]]
 		total_games_g23 = len(games_g23)
 		
-		# Get plays for Games 2/3
-		plays_g23 = Play.query.filter(
-			Play.uid == current_user.uid,
+		# Get plays for Games 2/3 with joins
+		plays_g23 = db.session.query(Play).join(Match,
+			(Play.uid == Match.uid) & (Play.match_id == Match.match_id)
+		).filter(
+			Match.uid == current_user.uid,
+			Match.p1 == current_user.username,
 			casting_player_filter,
 			Play.game_num.in_([2, 3]),
 			Play.action == 'Casts',
 			Play.primary_card != 'NA'
-		).all()
+		)
+		# Apply the same filters as the filtered_query
+		plays_g23 = apply_dashboard_filters_to_play_query(plays_g23, filters).all()
 		
 		# Calculate Games 2/3 card statistics
 		if plays_g23 and total_games_g23 > 0:
@@ -4030,6 +4150,32 @@ def generate_opponent_analysis_dashboard(filtered_query, filters):
 	try:
 		matches = filtered_query.all()
 		
+		# Check if we have any matches after filtering
+		if not matches:
+			# Return empty dashboard if no matches found
+			return {
+				'metrics': [
+					{'title': 'Unique Opponents', 'value': '0', 'subtitle': 'With 1+ matches', 'type': 'count'},
+					{'title': 'Most Faced Opponent', 'value': 'None', 'subtitle': 'No data', 'type': 'text'},
+					{'title': 'Best Matchup', 'value': 'None', 'subtitle': 'No data', 'type': 'text'}
+				],
+				'charts': [
+					{
+						'title': 'Win Rate by Opponent',
+						'type': 'bar',
+						'data': {
+							'labels': [],
+							'datasets': [{
+								'label': 'Win Rate %',
+								'data': []
+							}]
+						}
+					}
+				],
+				'tables': [],
+				'table_grids': []
+			}
+		
 		# Basic opponent analysis
 		opponent_stats = {}
 		for match in matches:
@@ -4052,6 +4198,60 @@ def generate_opponent_analysis_dashboard(filtered_query, filters):
 		# Apply minimum match threshold filter
 		min_threshold = int(filters.get('opponentThreshold', 1))  # Default to 1 if not specified
 		filtered_opponent_stats = {opp: stats for opp, stats in opponent_stats.items() if stats['total'] >= min_threshold}
+		
+		# Check if any opponents meet the threshold
+		if not filtered_opponent_stats:
+			# Return dashboard indicating no opponents meet the threshold
+			return {
+				'metrics': [
+					{'title': 'Unique Opponents', 'value': '0', 'subtitle': f'With {min_threshold}+ matches', 'type': 'count'},
+					{'title': 'Most Faced Opponent', 'value': 'None', 'subtitle': f'No opponents with {min_threshold}+ matches', 'type': 'text'},
+					{'title': 'Best Matchup', 'value': 'None', 'subtitle': f'No data', 'type': 'text'}
+				],
+				'charts': [
+					{
+						'title': 'Win Rate by Opponent',
+						'type': 'bar',
+						'data': {
+							'labels': [],
+							'datasets': [{
+								'label': 'Win Rate %',
+								'data': []
+							}]
+						}
+					}
+				],
+				'tables': [
+					{
+						'title': 'Recent Match History',
+						'headers': ['<center>Date</center>', '<center>Deck</center>', '<center>Opp. Deck</center>', '<center>Match Result</center>', '<center>Match Format</center>', '<center>Match Type</center>'],
+						'height': '400px',
+						'rows': []
+					}
+				],
+				'table_grids': [
+					{
+						'type': '2x2',
+						'title': 'Performance Overview',
+						'grid': [
+							[
+								{
+									'title': 'Opponent Performance',
+									'headers': ['<center>Opponent</center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Win% Against</center>'],
+									'height': '300px',
+									'rows': []
+								},
+								{
+									'title': 'Decks Played',
+									'headers': ['<center>Deck</center>', '<center>Share</center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Win% Against</center>'],
+									'height': '300px',
+									'rows': []
+								}
+							]
+						]
+					}
+				]
+			}
 		
 		# Sort by total matches
 		top_opponents = sorted(filtered_opponent_stats.items(), key=lambda x: x[1]['total'], reverse=True)
@@ -4201,9 +4401,14 @@ def generate_opponent_analysis_dashboard(filtered_query, filters):
 			],
 			'charts': [
 				{
-					'title': 'Most Played Cards',
+					'title': 'Win Rate by Opponent',
 					'type': 'bar',
 					'data': {
+						'labels': [opp[0] for opp in top_opponents[:10]],  # Top 10 opponents
+						'datasets': [{
+							'label': 'Win Rate %',
+							'data': [opp[1]['win_rate'] for opp in top_opponents[:10]]
+						}]
 					}
 				}
 			],
@@ -4233,21 +4438,32 @@ def generate_game_data_dashboard(filtered_query, filters):
 		if not matches:
 			# Return empty structure if no matches
 			return {
-				'metrics': [],
+				'metrics': [
+					{'title': 'Overall Game Win Rate', 'value': '0.0%', 'subtitle': '0 wins, 0 losses', 'type': 'percentage'},
+					{'title': 'On the Play', 'value': '0.0%', 'subtitle': '0 games played', 'type': 'percentage'},
+					{'title': 'On the Draw', 'value': '0.0%', 'subtitle': '0 games played', 'type': 'percentage'}
+				],
 				'charts': [],
 				'tables': [{
 					'title': 'Game Performance Statistics',
 					'headers': ['<center></center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Win%</center>', '<center>Mulls/Game</center>', '<center>Opp Mulls/Game</center>', '<center>Turns/Game</center>'],
 					'height': '400px',
-					'rows': []
+					'rows': [],
+					'columnWidths': ['16%', '14%', '14%', '14%', '14%', '14%', '14%'],
+					'cssClass': 'game-performance-table'
 				}]
 			}
 		
-		# Get all games for the filtered matches
-		games_query = Game.query.filter(
-			Game.uid == current_user.uid,
-			Game.p1 == current_user.username
+		# Get games for filtered matches with joins
+		games_query = db.session.query(Game).join(Match,
+			(Game.uid == Match.uid) & (Game.match_id == Match.match_id) & (Game.p1 == Match.p1)
+		).filter(
+			Match.uid == current_user.uid,
+			Match.p1 == current_user.username
 		)
+		
+		# Apply the same filters as the filtered_query
+		games_query = apply_dashboard_filters_to_game_query(games_query, filters)
 		
 		# Apply mulligans filters
 		hero_mulls_filter = int(filters.get('heroMulls', 0))
@@ -4337,7 +4553,8 @@ def generate_game_data_dashboard(filtered_query, filters):
 			'title': 'Game Performance Statistics',
 			'headers': ['<center></center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Win%</center>', '<center>Mulls/Game</center>', '<center>Opp Mulls/Game</center>', '<center>Turns/Game</center>'],
 			'height': '416px',
-			'rows': table_rows
+			'rows': table_rows,
+			'columnWidths': ['16%', '14%', '14%', '14%', '14%', '14%', '14%'],  # Option 1: Custom widths
 		}
 
 		return {
@@ -4373,6 +4590,35 @@ def generate_game_data_dashboard(filtered_query, filters):
 
 # Initialize these variables as None - they'll be loaded on demand
 options = None
+
+@views.route('/api/table-status', methods=['GET'])
+@login_required
+def api_table_status():
+	"""Get table status (empty/non-empty) for sidebar button management"""
+	try:
+		# Check if tables have data for current user
+		match_count = Match.query.filter_by(uid=current_user.uid).count()
+		draft_count = Draft.query.filter_by(uid=current_user.uid).count()
+		removed_count = Removed.query.filter_by(uid=current_user.uid).count()
+		game_actions_count = GameActions.query.filter_by(uid=current_user.uid).count()
+		
+		return jsonify({
+			'match_count': match_count,
+			'draft_count': draft_count,
+			'removed_count': removed_count,
+			'game_actions_count': game_actions_count,
+			'status': {
+				'matches_enabled': match_count > 0,
+				'best_guess_enabled': match_count > 0,
+				'drafts_enabled': draft_count > 0,
+				'ignored_matches_enabled': removed_count > 0,
+				'missing_winners_enabled': game_actions_count > 0,
+				'draft_ids_enabled': match_count > 0 and draft_count > 0
+			}
+		})
+	except Exception as e:
+		debug_log(f"Error checking table status: {str(e)}")
+		return jsonify({'error': 'Failed to check table status'}), 500
 multifaced = None
 all_decks = None
 
