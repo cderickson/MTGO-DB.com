@@ -279,9 +279,40 @@ body {
 }
 
 .sidebar.collapsed {
-    transform: translateX(-100%);
+    transform: translateX(-82%);
 }
 
+/* Sidebar collapse button */
+.sidebar-collapse-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 28px;
+    height: 28px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: #6c757d;
+    transition: all 0.2s ease;
+    z-index: 1000;
+}
+
+.sidebar-collapse-btn:hover {
+    background: #e9ecef;
+    color: #0039A6;
+    border-color: #0039A6;
+}
+
+.sidebar-collapse-btn:active {
+    transform: scale(0.95);
+}
+
+/* Adjust sidebar content to avoid overlap with collapse button */
 .sidebar-content {
     padding: 24px 0;
 }
@@ -367,6 +398,11 @@ body {
     margin-left: 280px;
     padding: 24px;
     min-width: 0;
+}
+
+/* Adjust main content when sidebar is collapsed - higher specificity */
+.app-layout .sidebar.collapsed ~ .main-content {
+    margin-left: calc(280px * 0.18) !important;
 }
 
 /* Container Styles */

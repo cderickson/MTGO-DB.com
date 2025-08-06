@@ -23,7 +23,7 @@
 
 /* Table description styling in header */
 .table-description {
-  color: #656d76;
+  color: black;
   font-size: 13px;
   margin-top: 8px;
   margin-bottom: 4px;
@@ -90,6 +90,8 @@
 /* Fix spacing between header border and message-box */
 .changelog-container .section-card-header .message-box {
     margin-top: 0px !important;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .changelog-container .section-card-header i {

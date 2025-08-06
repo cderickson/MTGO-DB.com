@@ -2,38 +2,140 @@
 
 {% block page_title %}Reset Password{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='auth.css') }}">
+{% endblock %}
+
 {% block content %}
 
-  <div class="container">
-    <div>
-      <div>
-        <div>
+<div class="auth-container">
+  <div>
+    <div class="card-content">
+      <div class="section-header">
+        <h2 class="section-title">Reset Your Password</h2>
+        <p class="section-subtitle">Enter a new password for {{ inputs.0 }}</p>
+      </div>
+      
+      <form action="/change_pwd" method="POST">
+        <input type="hidden" name="email" id="email" value="{{ inputs.0 }}">
+        
+        <div class="form-group">
+          <label for="new_pwd" class="form-label">New Password</label>
           <div>
-            <div>
-                <form action="/change_pwd" method="POST">
-                  <input type="hidden" name="email" id="email" value="{{ inputs.0 }}">
-                  <div >
-                    <h4><p><b><center>{{ inputs.0 }}</center></b></p></h4>
-                  </div>
-                  <div >
-                    <label for="reg_pwd" class="form-label">New Password</label>
-                    <input type="password"  id="new_pwd" name="new_pwd" placeholder="Password" value="">
-                  </div>
-                  <div >
-                    <label for="reg_pwd" class="form-label">Confirm Password</label>
-                    <input type="password"  id="new_pwd_confirm" name="new_pwd_confirm" placeholder="Confirm Password" value="">
-                  </div>
-                  <button type="submit" class="modal-button">
-                  <i class="fas fa-check"></i>
-                  Submit
-                </button>
-                </form>
-
-            </div>
+            <input type="password" class="form-input" id="new_pwd" name="new_pwd" placeholder="Enter your new password" required>
+            <button type="button" class="password-toggle">
+              <i class="fas fa-eye"></i>
+            </button>
           </div>
         </div>
+        
+        <div class="form-group">
+          <label for="new_pwd_confirm" class="form-label">Confirm Password</label>
+          <div>
+            <input type="password" class="form-input" id="new_pwd_confirm" name="new_pwd_confirm" placeholder="Confirm your new password" required>
+            <button type="button" class="password-toggle">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+          <div id="password-match-indicator"></div>
+        </div>
+
+        <button type="submit" class="auth-button">
+          <i class="fas fa-check"></i>
+          Update Password
+        </button>
+      </form>
+      
+      <div class="auth-links">
+        <p>Remember your password?</p>
+        <a href="{{ url_for('views.login') }}">Back to Sign In</a>
       </div>
     </div>
-  </div> 
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Password visibility toggle
+  const passwordToggles = document.querySelectorAll('.password-toggle');
+  passwordToggles.forEach(toggle => {
+    toggle.addEventListener('click', function() {
+      const input = this.previousElementSibling;
+      const type = input.type === 'password' ? 'text' : 'password';
+      input.type = type;
+      
+      // Update icon
+      const icon = this.querySelector('i');
+      if (icon) {
+        icon.className = type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+      }
+    });
+  });
+
+  // Password confirmation matching
+  const passwordInput = document.getElementById('new_pwd');
+  const confirmInput = document.getElementById('new_pwd_confirm');
+  const matchIndicator = document.getElementById('password-match-indicator');
+  
+  function checkPasswordMatch() {
+    if (!confirmInput.value) {
+      matchIndicator.textContent = '';
+      return;
+    }
+    
+    if (passwordInput.value === confirmInput.value) {
+      matchIndicator.textContent = '✓ Passwords match';
+      matchIndicator.style.color = 'black';
+    } else {
+      matchIndicator.textContent = '✗ Passwords do not match';
+      matchIndicator.style.color = 'red';
+    }
+  }
+  
+  if (confirmInput && matchIndicator) {
+    confirmInput.addEventListener('input', checkPasswordMatch);
+    passwordInput.addEventListener('input', checkPasswordMatch);
+  }
+
+  // Form validation
+  const form = document.querySelector('form');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      const password = passwordInput.value;
+      const confirmPassword = confirmInput.value;
+      
+      // Basic validation
+      if (!password || !confirmPassword) {
+        e.preventDefault();
+        alert('Please fill in both password fields.');
+        return;
+      }
+      
+      if (password !== confirmPassword) {
+        e.preventDefault();
+        alert('Passwords do not match.');
+        return;
+      }
+      
+      if (password.length < 6) {
+        e.preventDefault();
+        alert('Password must be at least 6 characters long.');
+        return;
+      }
+      
+      // If we get here, form is valid
+      const submitBtn = form.querySelector('button[type="submit"]');
+      submitBtn.innerHTML = '<span class="spinner"></span> Updating Password...';
+      submitBtn.disabled = true;
+    });
+  }
+
+  // Auto-focus on first input
+  const firstInput = document.getElementById('new_pwd');
+  if (firstInput) {
+    firstInput.focus();
+  }
+});
+</script>
 
 {% endblock %}

@@ -658,15 +658,14 @@ def process_logs(self, data):
 										casting_player=play[4],
 										action=play[5],
 										primary_card=play[6],
-										target1=play[7],
-										target2=play[8],
-										target3=play[9],
-										opp_target=play[10],
-										self_target=play[11],
-										cards_drawn=play[12],
-										attackers=play[13],
-										active_player=play[14],
-										non_active_player=play[15],
+										target_list=play[7],
+										opp_target=play[8],
+										self_target=play[9],
+										cards_drawn=play[10],
+										attacker_list=play[11],
+										attackers=play[12],
+										active_player=play[13],
+										non_active_player=play[14],
 										proc_dt=proc_dt)
 						db.session.add(new_play)
 						counts['new_plays'] += 1
@@ -1176,23 +1175,22 @@ def process_from_app(self, data):
 					continue
 				else:
 					new_play = Play(uid=uid,
-									match_id=play[0],
-									game_num=play[1],
-									play_num=play[2],
-									turn_num=play[3],
-									casting_player=play[4],
-									action=play[5],
-									primary_card=play[6],
-									target1=play[7],
-									target2=play[8],
-									target3=play[9],
-									opp_target=play[10],
-									self_target=play[11],
-									cards_drawn=play[12],
-									attackers=play[13],
-									active_player=play[14],
-									non_active_player=play[15],
-									proc_dt=proc_dt)
+										match_id=play[0],
+										game_num=play[1],
+										play_num=play[2],
+										turn_num=play[3],
+										casting_player=play[4],
+										action=play[5],
+										primary_card=play[6],
+										target_list=play[7],
+										opp_target=play[8],
+										self_target=play[9],
+										cards_drawn=play[10],
+										attacker_list=play[11],
+										attackers=play[12],
+										active_player=play[13],
+										non_active_player=play[14],
+										proc_dt=proc_dt)
 					db.session.add(new_play)
 					counts['new_plays'] += 1
 			debug_log(f'Starting Game Action Loop')
@@ -1611,23 +1609,22 @@ def reprocess_logs(self, data):
 					for play in parsed_data_inverted[2]:
 						# Plays are always new since we deleted all plays for this match_id above
 						new_play = Play(uid=uid,
-											match_id=play[0],
-											game_num=play[1],
-											play_num=play[2],
-											turn_num=play[3],
-											casting_player=play[4],
-											action=play[5],
-											primary_card=play[6],
-											target1=play[7],
-											target2=play[8],
-											target3=play[9],
-											opp_target=play[10],
-											self_target=play[11],
-											cards_drawn=play[12],
-											attackers=play[13],
-											active_player=play[14],
-											non_active_player=play[15],
-											proc_dt=proc_dt)
+										match_id=play[0],
+										game_num=play[1],
+										play_num=play[2],
+										turn_num=play[3],
+										casting_player=play[4],
+										action=play[5],
+										primary_card=play[6],
+										target_list=play[7],
+										opp_target=play[8],
+										self_target=play[9],
+										cards_drawn=play[10],
+										attacker_list=play[11],
+										attackers=play[12],
+										active_player=play[13],
+										non_active_player=play[14],
+										proc_dt=proc_dt)
 						db.session.add(new_play)
 						counts['new_plays'] += 1
 					for game in parsed_data_inverted[3]:
@@ -3874,23 +3871,6 @@ def generate_card_analysis_dashboard(filtered_query, filters):
 			casting_player_filter = Play.casting_player == current_user.username
 			perspective_label = 'Hero'
 		
-		# Get the filtered matches first
-		filtered_matches = filtered_query.all()
-		filtered_match_ids = [(m.match_id, m.uid) for m in filtered_matches]
-		
-		if not filtered_match_ids:
-			# Return empty dashboard if no matches found
-			return {
-				'metrics': [
-					{'title': 'Unique Cards Played', 'value': '0', 'subtitle': 'Different cards (non-land)', 'type': 'count'},
-					{'title': 'Most Played Card', 'value': 'None', 'subtitle': 'No data', 'type': 'text'},
-					{'title': 'Most Played Card Against', 'value': 'None', 'subtitle': 'No data', 'type': 'text'}
-				],
-				'charts': [{'title': 'Most Played Cards', 'type': 'bar', 'data': {'labels': [], 'datasets': [{'label': 'Times Played', 'data': []}]}}],
-				'tables': [],
-				'table_grids': []
-			}
-		
 		# Get plays data for filtered matches with joins
 		plays_hero = db.session.query(Play).join(Match, 
 			(Play.uid == Match.uid) & (Play.match_id == Match.match_id)
@@ -4149,32 +4129,6 @@ def generate_opponent_analysis_dashboard(filtered_query, filters):
 	"""Generate opponent analysis dashboard data"""
 	try:
 		matches = filtered_query.all()
-		
-		# Check if we have any matches after filtering
-		if not matches:
-			# Return empty dashboard if no matches found
-			return {
-				'metrics': [
-					{'title': 'Unique Opponents', 'value': '0', 'subtitle': 'With 1+ matches', 'type': 'count'},
-					{'title': 'Most Faced Opponent', 'value': 'None', 'subtitle': 'No data', 'type': 'text'},
-					{'title': 'Best Matchup', 'value': 'None', 'subtitle': 'No data', 'type': 'text'}
-				],
-				'charts': [
-					{
-						'title': 'Win Rate by Opponent',
-						'type': 'bar',
-						'data': {
-							'labels': [],
-							'datasets': [{
-								'label': 'Win Rate %',
-								'data': []
-							}]
-						}
-					}
-				],
-				'tables': [],
-				'table_grids': []
-			}
 		
 		# Basic opponent analysis
 		opponent_stats = {}
@@ -4435,25 +4389,6 @@ def generate_game_data_dashboard(filtered_query, filters):
 	try:
 		matches = filtered_query.all()
 		
-		if not matches:
-			# Return empty structure if no matches
-			return {
-				'metrics': [
-					{'title': 'Overall Game Win Rate', 'value': '0.0%', 'subtitle': '0 wins, 0 losses', 'type': 'percentage'},
-					{'title': 'On the Play', 'value': '0.0%', 'subtitle': '0 games played', 'type': 'percentage'},
-					{'title': 'On the Draw', 'value': '0.0%', 'subtitle': '0 games played', 'type': 'percentage'}
-				],
-				'charts': [],
-				'tables': [{
-					'title': 'Game Performance Statistics',
-					'headers': ['<center></center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Win%</center>', '<center>Mulls/Game</center>', '<center>Opp Mulls/Game</center>', '<center>Turns/Game</center>'],
-					'height': '400px',
-					'rows': [],
-					'columnWidths': ['16%', '14%', '14%', '14%', '14%', '14%', '14%'],
-					'cssClass': 'game-performance-table'
-				}]
-			}
-		
 		# Get games for filtered matches with joins
 		games_query = db.session.query(Game).join(Match,
 			(Game.uid == Match.uid) & (Game.match_id == Match.match_id) & (Game.p1 == Match.p1)
@@ -4602,18 +4537,56 @@ def api_table_status():
 		removed_count = Removed.query.filter_by(uid=current_user.uid).count()
 		game_actions_count = GameActions.query.filter_by(uid=current_user.uid).count()
 		
+		# Check if there are GameActions with valid match_ids (exist in Match table)
+		valid_game_actions_count = 0
+		if game_actions_count > 0:
+			# Get all match_ids from GameActions for current user
+			game_action_match_ids = db.session.query(GameActions.match_id).filter_by(uid=current_user.uid).distinct().all()
+			game_action_match_ids = [row[0] for row in game_action_match_ids]
+			
+			# Check how many of these match_ids exist in Match table
+			if game_action_match_ids:
+				valid_match_ids = db.session.query(Match.match_id).filter(
+					Match.uid == current_user.uid,
+					Match.match_id.in_(game_action_match_ids)
+				).all()
+				valid_match_ids = [row[0] for row in valid_match_ids]
+				
+				# Count GameActions records that have valid match_ids
+				if valid_match_ids:
+					valid_game_actions_count = GameActions.query.filter(
+						GameActions.uid == current_user.uid,
+						GameActions.match_id.in_(valid_match_ids)
+					).count()
+		
+		# Check if archive directory has files for reprocessing
+		archive_files_count = 0
+		archive_dir = os.path.join('local-dev', 'data', 'uploads', str(current_user.uid))
+		if os.path.exists(archive_dir):
+			all_files = os.listdir(archive_dir)
+			# Count only GameLog and DraftLog files (not .meta files)
+			for filename in all_files:
+				if not filename.endswith('.meta'):
+					log_type = get_logtype_from_filename(filename)
+					if log_type in ['GameLog', 'DraftLog']:
+						archive_files_count += 1
+		
 		return jsonify({
 			'match_count': match_count,
 			'draft_count': draft_count,
 			'removed_count': removed_count,
 			'game_actions_count': game_actions_count,
+			'archive_files_count': archive_files_count,
 			'status': {
 				'matches_enabled': match_count > 0,
 				'best_guess_enabled': match_count > 0,
 				'drafts_enabled': draft_count > 0,
 				'ignored_matches_enabled': removed_count > 0,
-				'missing_winners_enabled': game_actions_count > 0,
-				'draft_ids_enabled': match_count > 0 and draft_count > 0
+				'missing_winners_enabled': valid_game_actions_count > 0,
+				'draft_ids_enabled': match_count > 0 and draft_count > 0,
+				'reprocess_enabled': archive_files_count > 0,
+				'export_enabled': match_count > 0 or draft_count > 0,
+				'dashboards_enabled': match_count > 0 or draft_count > 0
 			}
 		})
 	except Exception as e:

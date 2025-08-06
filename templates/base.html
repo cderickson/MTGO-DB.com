@@ -110,7 +110,9 @@
     <div id="loadBlock" class="app-layout">
       <!-- Sidebar Navigation -->
       <nav class="sidebar" id="sidebar">
-
+        <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" onclick="toggleDesktopSidebar()" title="Collapse Sidebar">
+          <i class="fas fa-chevron-left"></i>
+        </button>
         <div class="sidebar-content">
           {% if not user.is_authenticated %}
           <div class="nav-section">
@@ -120,12 +122,6 @@
                 <a href="{{ url_for('views.getting_started') }}" class="nav-link">
                   <i class="fas fa-play-circle nav-icon"></i>
                   <span class="nav-text">Getting Started</span>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="{{ url_for('views.faq') }}" class="nav-link">
-                  <i class="fas fa-question-circle nav-icon"></i>
-                  <span class="nav-text">FAQ</span>
                 </a>
               </li>
               <li class="nav-item">
@@ -223,7 +219,7 @@
                 </a>
               </li>
               <li class="nav-item">
-                <a href="#" class="nav-link" onclick="showReprocessModal()">
+                <a href="#" class="nav-link disabled table-dependent" id="reprocessMenuButton" onclick="showReprocessModal()">
                   <i class="fas fa-redo nav-icon"></i>
                   <span class="nav-text">Re-Process Archived Files</span>
                 </a>
@@ -235,7 +231,7 @@
               </a>
             </li>
               <li class="nav-item">
-                <a href="{{ url_for('views.export') }}" class="nav-link" onclick="handleExportClick(this); return false;">
+                <a href="{{ url_for('views.export') }}" class="nav-link disabled table-dependent" id="exportMenuButton" onclick="handleExportClick(this); return false;">
                   <i class="fas fa-file-excel nav-icon"></i>
                   <span class="nav-text">Export to Excel</span>
                 </a>
@@ -247,7 +243,7 @@
             <h3 class="nav-section-title">Dashboards</h3>
             <ul class="nav-list">
               <li class="nav-item">
-                <a href="{{ url_for('views.dashboards') }}" class="nav-link">
+                <a href="{{ url_for('views.dashboards') }}" class="nav-link disabled table-dependent" id="dashboardsMenuButton">
                   <i class="fas fa-chart-line nav-icon"></i>
                   <span class="nav-text">Analytics Dashboards</span>
                 </a>
@@ -1355,7 +1351,10 @@
         { id: 'draftsMenuButton', enabled: status.drafts_enabled },
         { id: 'ignoredMatchesMenuButton', enabled: status.ignored_matches_enabled },
         { id: 'getMissingMenuButton', enabled: status.missing_winners_enabled },
-        { id: 'applyDraftIdMenuButton', enabled: status.draft_ids_enabled }
+        { id: 'applyDraftIdMenuButton', enabled: status.draft_ids_enabled },
+        { id: 'reprocessMenuButton', enabled: status.reprocess_enabled },
+        { id: 'exportMenuButton', enabled: status.export_enabled },
+        { id: 'dashboardsMenuButton', enabled: status.dashboards_enabled }
       ];
 
       buttonConfigs.forEach(config => {
@@ -1418,9 +1417,68 @@
 
     // Initialize table status check on page load
     document.addEventListener('DOMContentLoaded', function() {
-      // Only check if user is authenticated (sidebar is visible)
-      if (document.getElementById('sidebar')) {
+      // Check if any table-dependent buttons exist (only present when authenticated)
+      const tableDependent = document.querySelectorAll('.table-dependent');
+      
+      if (tableDependent.length > 0) {
         checkTableStatusAndUpdateButtons();
+      }
+    });
+
+    // Mobile sidebar toggle functionality
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('show');
+    }
+
+    // Desktop sidebar collapse functionality  
+    function toggleDesktopSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const collapseBtn = document.getElementById('sidebarCollapseBtn');
+      const mainContent = document.querySelector('.main-content');
+      
+      sidebar.classList.toggle('collapsed');
+      
+      // Update button icon
+      const icon = collapseBtn.querySelector('i');
+      if (sidebar.classList.contains('collapsed')) {
+        icon.className = 'fas fa-chevron-right';
+        collapseBtn.title = 'Expand Sidebar';
+        // Adjust main content margin if needed
+        if (mainContent) {
+          mainContent.style.marginLeft = '0';
+        }
+      } else {
+        icon.className = 'fas fa-chevron-left';
+        collapseBtn.title = 'Collapse Sidebar';
+        // Restore main content margin
+        if (mainContent) {
+          mainContent.style.marginLeft = '280px';
+        }
+      }
+      
+      // Save state to localStorage
+      localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+    }
+
+    // Restore sidebar state on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+      if (sidebarCollapsed) {
+        const sidebar = document.getElementById('sidebar');
+        const collapseBtn = document.getElementById('sidebarCollapseBtn');
+        
+        if (sidebar && collapseBtn) {
+          sidebar.classList.add('collapsed');
+          const icon = collapseBtn.querySelector('i');
+          icon.className = 'fas fa-chevron-right';
+          collapseBtn.title = 'Expand Sidebar';
+          
+          const mainContent = document.querySelector('.main-content');
+          if (mainContent) {
+            mainContent.style.marginLeft = '0';
+          }
+        }
       }
     });
     </script>

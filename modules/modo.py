@@ -197,12 +197,11 @@ def header(table):
                 "Casting_Player",
                 "Action",
                 "Primary_Card",
-                "Target1",
-                "Target2",
-                "Target3",
+                "Target_List",
                 "Opp_Target",
                 "Self_Target",
                 "Cards_Drawn",
+                "Attacker_List",
                 "Attackers",
                 "Active_Player",
                 "Nonactive_Player"]
@@ -990,12 +989,14 @@ def play_data(ga,fname):
         CASTING_PLAYER = ""
         ACTION = ""
         PRIMARY_CARD = "NA"
+        TARGET_LIST = []
         TARGET_1 = "NA"
         TARGET_2 = "NA"
         TARGET_3 = "NA"
         OPP_TARGET = 0
         SELF_TARGET = 0
         CARDS_DRAWN = 0
+        ATTACKER_LIST = []
         ATTACKERS = 0
         PLAY_DATA = []
         if (i.find("chooses to play first") != -1) or (i.find("chooses to not play first") != -1):
@@ -1032,17 +1033,17 @@ def play_data(ga,fname):
                         pass
                 ACTION = curr_list[1].capitalize()
                 if i.find("targeting") != -1:
-                    targets = get_cards(i.split("targeting")[1])
+                    TARGET_LIST = get_cards(i.split("targeting")[1])
                     try:
-                        TARGET_1 = targets[0]
+                        TARGET_1 = TARGET_LIST[0]
                     except IndexError:
                         pass
                     try:
-                        TARGET_2 = targets[1]
+                        TARGET_2 = TARGET_LIST[1]
                     except IndexError:
                         pass
                     try:
-                        TARGET_3 = targets[2]
+                        TARGET_3 = TARGET_LIST[2]
                     except IndexError:
                         pass
                     if CASTING_PLAYER == P1:
@@ -1063,6 +1064,7 @@ def play_data(ga,fname):
                 CASTING_PLAYER = ACTIVE_PLAYER
                 ACTION = "Attacks"
                 ATTACKERS = len(get_cards(i.split("is being attacked by")[1]))
+                ATTACKER_LIST = get_cards(i.split("is being attacked by")[1])
             elif i.find("puts triggered ability from") != -1:
                 CASTING_PLAYER = curr_list[0]
                 try:
@@ -1074,17 +1076,17 @@ def play_data(ga,fname):
                         PRIMARY_CARD = "NA"
                 ACTION = "Triggers"
                 if i.find("targeting") != -1:
-                    targets = get_cards(i.split("targeting")[1])
+                    TARGET_LIST = get_cards(i.split("targeting")[1])
                     try:
-                        TARGET_1 = targets[0]
+                        TARGET_1 = TARGET_LIST[0]
                     except IndexError:
                         pass
                     try:
-                        TARGET_2 = targets[1]
+                        TARGET_2 = TARGET_LIST[1]
                     except IndexError:
                         pass
                     try:
-                        TARGET_3 = targets[2]
+                        TARGET_3 = TARGET_LIST[2]
                     except IndexError:
                         pass
                     if CASTING_PLAYER == P1:
@@ -1104,17 +1106,17 @@ def play_data(ga,fname):
                         PRIMARY_CARD = "NA"
                 ACTION = "Activated Ability"
                 if i.find("targeting") != -1:
-                    targets = get_cards(i.split("targeting")[1])
+                    TARGET_LIST = get_cards(i.split("targeting")[1])
                     try:
-                        TARGET_1 = targets[0]
+                        TARGET_1 = TARGET_LIST[0]
                     except IndexError:
                         pass
                     try:
-                        TARGET_2 = targets[1]
+                        TARGET_2 = TARGET_LIST[1]
                     except IndexError:
                         pass
                     try:
-                        TARGET_3 = targets[2]
+                        TARGET_3 = TARGET_LIST[2]
                     except IndexError:
                         pass
                     if CASTING_PLAYER == P1:
@@ -1131,12 +1133,11 @@ def play_data(ga,fname):
                               alter(CASTING_PLAYER,original=True),
                               ACTION,
                               PRIMARY_CARD,
-                              TARGET_1,
-                              TARGET_2,
-                              TARGET_3,
+                              TARGET_LIST,
                               OPP_TARGET,
                               SELF_TARGET,
                               CARDS_DRAWN,
+                              ATTACKER_LIST,
                               ATTACKERS,
                               alter(ACTIVE_PLAYER,original=True),
                               alter(NON_ACTIVE_PLAYER,original=True)))
