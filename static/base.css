@@ -1888,17 +1888,6 @@ table tbody tr:last-child td {
     min-height: 400px;
 }
 
-/* Center dropdown in DraftIdModal */
-.dropdown-container-center {
-    display: flex;
-    justify-content: center;
-    position: relative;
-}
-
-.dropdown-container-center .dropdown {
-    position: relative;
-}
-
 /* Simple dropdown for DraftIdModal */
 #DraftIdModal .dropdown {
     position: relative;
@@ -1910,7 +1899,6 @@ table tbody tr:last-child td {
     width: 100%;
     text-align: center;
     padding: 8px 12px;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     font-size: 14px;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -1936,10 +1924,6 @@ table tbody tr:last-child td {
 
 #DraftIdModal .dropdown-toggle span {
     color: #333 !important;
-}
-
-#DraftIdModal .dropdown-toggle.active i {
-    transform: rotate(180deg);
 }
 
 #DraftIdModal .dropdown-toggle:disabled {
@@ -1971,7 +1955,6 @@ table tbody tr:last-child td {
     max-height: 250px;
     overflow-y: auto;
     display: none;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     font-size: 14px;
     padding: 0;
     margin: 0;
@@ -2018,4 +2001,116 @@ table tbody tr:last-child td {
     border-radius: 4px;
     padding: 10px;
     background-color: #f9f9f9;
+}
+
+/* Center dropdown in DraftIdModal */
+.dropdown-container-center {
+    display: flex;
+    justify-content: center;
+    position: relative;
+}
+
+.dropdown-container-center .dropdown {
+    position: relative;
+}
+
+/* Simple dropdown for DraftIdModal */
+#BestGuessModal .dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* BestGuessModal Dropdown Button Styling (matches ReviseModal) */
+#BestGuessModal .dropdown-toggle {
+    width: 100%;
+    text-align: center;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    color: #333 !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#BestGuessModal .dropdown-toggle:hover {
+    border-color: #0039A6;
+    box-shadow: 0 2px 4px rgba(0, 57, 166, 0.1);
+}
+
+#BestGuessModal .dropdown-toggle i {
+    margin-left: 8px;
+    transition: transform 0.2s ease;
+    color: #666 !important;
+}
+
+#BestGuessModal .dropdown-toggle span {
+    color: #333 !important;
+}
+
+#BestGuessModal .dropdown-toggle:disabled {
+    background-color: #f5f5f5 !important;
+    color: #333 !important;
+    cursor: not-allowed;
+    border-color: #ddd;
+}
+
+#BestGuessModal .dropdown-toggle:disabled span {
+    color: #333 !important;
+}
+
+#BestGuessModal .dropdown-toggle:disabled i {
+    color: #999 !important;
+}
+
+#BestGuessModal .dropdown-menu {
+    position: absolute;
+    bottom: auto;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Flip shadow for upward flow */
+    z-index: 99999;
+    max-height: 250px;
+    overflow-y: auto;
+    display: none;
+    font-size: 14px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+#BestGuessModal .dropdown-menu.show {
+    display: block;
+}
+
+#BestGuessModal .dropdown-menu li {
+    list-style: none;
+    margin: 0;
+    padding: 6px 12px;
+    color: #333;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+    display: block;
+    text-align: center;
+}
+
+#BestGuessModal .dropdown-menu li:last-child {
+    border-bottom: none;
+}
+
+#BestGuessModal .dropdown-menu li:hover {
+    background-color: #0039A6 !important;
+    color: white !important;
+    font-weight: 500 !important;
 }

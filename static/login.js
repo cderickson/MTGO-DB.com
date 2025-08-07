@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         
         if (email && !emailRegex.test(email)) {
-            showFieldError(input, 'Please enter a valid email address');
+            showFieldError(passwordInput, 'Please enter a valid email address');
             return false;
         } else {
             clearFieldError(input);
@@ -67,15 +67,27 @@ document.addEventListener('DOMContentLoaded', function() {
             font-size: 0.875rem;
             margin-top: 0.5rem;
             padding: 0.25rem 0;
+            display: block;
+            width: 100%;
         `;
         errorDiv.textContent = message;
         
-        input.parentElement.appendChild(errorDiv);
+        // Find the form-group container to append error after it
+        let container = input.parentElement;
+        if (container.tagName === 'DIV' && !container.classList.contains('form-group')) {
+            container = container.parentElement; // Go up one more level if needed
+        }
+        container.appendChild(errorDiv);
         input.style.borderColor = 'var(--redis-red)';
     }
 
     function clearFieldError(input) {
-        const existingError = input.parentElement.querySelector('.field-error');
+        // Find the form-group container to look for errors
+        let container = input.parentElement;
+        if (container.tagName === 'DIV' && !container.classList.contains('form-group')) {
+            container = container.parentElement; // Go up one more level if needed
+        }
+        const existingError = container.querySelector('.field-error');
         if (existingError) {
             existingError.remove();
         }

@@ -675,7 +675,6 @@
     width: 100%;
     text-align: left;
     padding: 8px 12px;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     font-size: 14px;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -736,7 +735,6 @@
     max-height: 250px;
     overflow-y: auto;
     display: none;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     font-size: 14px;
     padding: 0;
     margin: 0;
@@ -790,7 +788,6 @@
     width: 100%;
     text-align: left;
     padding: 8px 12px;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     font-size: 14px;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -851,7 +848,7 @@
     max-height: 250px;
     overflow-y: auto;
     display: none;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    /* font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; */
     font-size: 14px;
     padding: 0;
     margin: 0;
@@ -860,6 +857,11 @@
 
 #ReviseMultiModal .dropdown-menu.show {
     display: block;
+}
+
+/* Allow dropdowns to extend beyond modal boundaries */
+#ReviseMultiModal .modal-content {
+    overflow: visible;
 }
 
 #ReviseMultiModal .dropdown-menu li {
@@ -892,7 +894,6 @@
     padding: 8px 12px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     font-size: 14px;
     background: white;
     height: auto;
@@ -1004,7 +1005,6 @@
     padding: 8px 12px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     font-size: 14px;
     background: white;
     height: auto;

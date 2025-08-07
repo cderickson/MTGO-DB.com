@@ -427,7 +427,6 @@
               <div class="dropdown-container-center">
                 <div class="dropdown">
                   <button class="button secondary dropdown-toggle" type="button" id="DraftIdButton" onclick="toggleDropdown(event, 'DraftIdMenu')" >
-                    <i class="fas fa-chevron-down"></i>
                     Draft ID
                   </button>
                   <ul class="dropdown-menu" id="DraftIdMenu"></ul>
@@ -473,11 +472,16 @@
                   <i class="fas fa-filter" ></i>
                   Match Set
                 </label>
-                <select class="form-input" id="BG_Match_Set_Select" onchange="updateBestGuessForm()">
-                  <option value="All Matches">All Matches</option>
-                  <option value="Limited Only">Limited Only</option>
-                  <option value="Constructed Only">Constructed Only</option>
-                </select>
+                <div class="dropdown">
+                  <button class="button secondary dropdown-toggle" type="button" id="BG_Match_Set_Button" onclick="toggleDropdown(event, 'BG_Match_Set_Menu')">
+                    All Matches
+                  </button>
+                  <ul class="dropdown-menu" id="BG_Match_Set_Menu">
+                    <li onclick="setBestGuessMatchSet(this, 'All Matches')">All Matches</li>
+                    <li onclick="setBestGuessMatchSet(this, 'Limited Only')">Limited Only</li>
+                    <li onclick="setBestGuessMatchSet(this, 'Constructed Only')">Constructed Only</li>
+                  </ul>
+                </div>
                 <small >Choose which matches to analyze for deck name suggestions</small>
               </div>
               
@@ -486,10 +490,15 @@
                   <i class="fas fa-sync-alt" ></i>
                   Replace Strategy
                 </label>
-                <select class="form-input" id="BG_Replace_Select" onchange="updateBestGuessForm()">
-                  <option value="Overwrite All">Overwrite All</option>
-                  <option value="Replace NA">Replace NA</option>
-                </select>
+                <div class="dropdown">
+                  <button class="button secondary dropdown-toggle" type="button" id="BG_Replace_Button" onclick="toggleDropdown(event, 'BG_Replace_Menu')">
+                    Replace NA
+                  </button>
+                  <ul class="dropdown-menu" id="BG_Replace_Menu">
+                    <li onclick="setBestGuessReplace(this, 'Overwrite All')">Overwrite All</li>
+                    <li onclick="setBestGuessReplace(this, 'Replace NA')">Replace NA</li>
+                  </ul>
+                </div>
                 <small >Decide whether to overwrite manually assigned deck names</small>
               </div>
             </form>
@@ -890,6 +899,32 @@
       const modal = document.getElementById('BestGuessModal');
       modal.style.display = 'none';
       document.body.style.overflow = 'auto';
+    }
+    
+    function setBestGuessMatchSet(element, value) {
+      const button = document.getElementById('BG_Match_Set_Button');
+      const hiddenInput = document.getElementById('BG_Match_Set');
+      
+      button.textContent = value;
+      hiddenInput.value = value;
+      
+      // Close dropdown
+      const dropdown = document.getElementById('BG_Match_Set_Menu');
+      dropdown.classList.remove('show');
+      button.classList.remove('active');
+    }
+    
+    function setBestGuessReplace(element, value) {
+      const button = document.getElementById('BG_Replace_Button');
+      const hiddenInput = document.getElementById('BG_Replace');
+      
+      button.textContent = value;
+      hiddenInput.value = value;
+      
+      // Close dropdown
+      const dropdown = document.getElementById('BG_Replace_Menu');
+      dropdown.classList.remove('show');
+      button.classList.remove('active');
     }
     
     function showImportModal() {

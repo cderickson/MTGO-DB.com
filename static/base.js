@@ -627,7 +627,7 @@ class DraftIdManager {
 
     // Set default selection
     this.selectedDraftId = draftIds[0];
-    button.innerHTML = `<i class="fas fa-chevron-down" style="margin-right: var(--spacing-xs);"></i>${draftIds[0]}`;
+    button.innerHTML = `<i style="margin-right: var(--spacing-xs);"></i>${draftIds[0]}`;
 
     // Populate dropdown menu
     menu.innerHTML = draftIds.map(draftId => 
@@ -639,7 +639,7 @@ class DraftIdManager {
     this.selectedDraftId = draftId;
     const button = document.getElementById('DraftIdButton');
     if (button) {
-      button.innerHTML = `<i class="fas fa-chevron-down" style="margin-right: var(--spacing-xs);"></i>${draftId}`;
+      button.innerHTML = `<i style="margin-right: var(--spacing-xs);"></i>${draftId}`;
     }
     
     // Close dropdown
