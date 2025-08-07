@@ -147,6 +147,25 @@ def get_input_options():
 	except Exception as e:
 		debug_log(f"Error reading input options file: {e}")
 		return {}
+
+def get_column_widths(table_name):
+	"""Get column widths for different table types - Updated v2.0"""
+	widths = {
+		# Matches: 17 columns = 100%
+		'matches': ["6%", "9%", "8%", "6%", "9%", "8%", "6%", "4%", "4%", "4%", "3%", "3%", "5%", "6%", "6%", "5%", "8%"],
+		# Games: 11 columns = 100% 
+		'games': ["12%", "12%", "7%", "9%", "9%", "9%", "9%", "8%", "8%", "8%", "9%"],
+		# Plays: 14 columns = 100%
+		'plays': ["5%", "5%", "5%", "10%", "8%", "12%", "9%", "7%", "7%", "7%", "7%", "6%", "7%", "5%"],
+		# Drafts: 12 columns = 100%
+		'drafts': ["8%", "7%", "7%", "7%", "7%", "7%", "7%", "7%", "9%", "9%", "12%", "13%"],
+		# Picks: 18 columns - Compact widths to fit without horizontal scroll
+		'picks': ["13%", "1%", "1%", "1%", "6%", "6%", "6%", "6%", "6%", "6%", "6%", "6%", "6%", "6%", "6%", "6%", "6%", "6%"],
+		# Ignored: 3 columns = 100%
+		'ignored': ["40%", "30%", "30%"]
+	}
+	return widths.get(table_name.lower(), [])
+
 def get_multifaced_cards():
 	"""Load multifaced cards from local file"""
 	multifaced_file = os.path.join('auxiliary', 'MULTIFACED_CARDS.txt')
@@ -2273,7 +2292,7 @@ def table(table_name, page_num):
 		page_num = int(page_num)
 	except ValueError:
 		flash(f'ValueError: Probably typed the address incorrectly.', category='error')
-		return render_template('tables.html', user=current_user, table_name=table_name)
+		return render_template('tables.html', user=current_user, table_name=table_name, column_widths=get_column_widths(table_name))
 
 	if table_name.lower() == 'matches':
 		# Uncomment to display fully inverted Matches table.
@@ -2310,20 +2329,16 @@ def table(table_name, page_num):
 		table = table[-page_size:]
 
 	page_num = int(page_num)
-	# if (page_num < 1) or (page_num > pages) or (len(table) == 0):
-	# 	flash(f'Either the {table_name.capitalize()} Table is empty or the page number you are trying to view does not exist.', category='error')
 
-	return render_template('tables.html', user=current_user, table_name=table_name, table=table, page_num=page_num, pages=pages)
+	return render_template('tables.html', user=current_user, table_name=table_name, table=table, page_num=page_num, pages=pages, column_widths=get_column_widths(table_name))
 
 @views.route('/ignored', methods=['GET'])
 @login_required
 def ignored():
 	table = Removed.query.filter_by(uid=current_user.uid).order_by(Removed.match_id).all()
-	#table = Removed.query.filter_by(uid=current_user.uid, reason='Ignored').order_by(Removed.match_id).all()
 	if len(table) == 0:
-		flash(f'No ignored matches to display.', category='error')
 		return redirect(url_for('views.index'))
-	return render_template('tables.html', user=current_user, table_name='ignored', table=table)
+	return render_template('tables.html', user=current_user, table_name='ignored', table=table, column_widths=get_column_widths('ignored'))
 
 @views.route('/table/<table_name>/<row_id>/<game_num>')
 @login_required
@@ -2335,7 +2350,7 @@ def table_drill(table_name, row_id, game_num):
 	elif table_name.lower() == 'picks':
 		table = Pick.query.filter_by(uid=current_user.uid, draft_id=row_id).order_by(Pick.pick_ovr).all()  
 
-	return render_template('tables.html', user=current_user, table_name=table_name, table=table)
+	return render_template('tables.html', user=current_user, table_name=table_name, table=table, column_widths=get_column_widths(table_name))
 
 # New cleaner API routes for Game Winner functionality
 @views.route('/api/game-winner/next', methods=['GET'])
@@ -3000,7 +3015,6 @@ def export():
 		if export_cnt == 0:
 			shutil.rmtree(temp_dir)  # Clean up empty temp dir
 			debug_log("No data available for export - all tables empty")
-			flash('No data available for export.', 'error')
 			return redirect(url_for('views.index'))
 		
 		# Create zip file

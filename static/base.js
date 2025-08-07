@@ -430,9 +430,9 @@ class GameWinnerManager {
 
       const result = await response.json();
       
-      // Show success message
-      const winnerText = winner === 'skip' ? 'Skipped' : (winner === 'P1' ? this.currentGame.p1 : this.currentGame.p2);
-      if (typeof showFlashMessage === 'function') {
+      // Show success message only when a winner is actually set (not skipped)
+      if (winner !== 'skip' && typeof showFlashMessage === 'function') {
+        const winnerText = winner === 'P1' ? this.currentGame.p1 : this.currentGame.p2;
         showFlashMessage(`Game winner set to: ${winnerText}`, 'success');
       }
 
@@ -443,10 +443,10 @@ class GameWinnerManager {
           this.updateModalContent(result.nextGame);
           this.enableMenuButton();
         } else {
-          // Truly no more games
+          // Check if there are still any games available to process
+          // (skipped games might still be processable from the beginning)
           hideGameWinnerModal();
-          this.showCompletionMessage();
-          this.disableMenuButton();
+          await this.checkAndUpdateButtonState();
         }
       } else {
         // For apply operations, use the reliable /api/game-winner/next
@@ -523,7 +523,7 @@ class GameWinnerManager {
   showCompletionMessage() {
     // Show a success flash message
     if (typeof showFlashMessage === 'function') {
-      showFlashMessage('All games with missing winners have been processed!', 'success');
+      showFlashMessage('Processed all games with missing winners.', 'success');
     }
   }
 
@@ -542,6 +542,39 @@ class GameWinnerManager {
       menuButton.classList.add('disabled');
     }
   }
+
+  async checkAndUpdateButtonState() {
+    try {
+      // Check if there are still any games that need processing
+      const response = await fetch('/api/game-winner/next', {
+        method: 'GET',
+        headers: {
+          'X-Requested-By': 'MTGO-Tracker',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to check for remaining games');
+      }
+
+      const data = await response.json();
+      
+      if (data.hasGames) {
+        // There are still games available, keep button enabled
+        this.enableMenuButton();
+      } else {
+        // Truly no more games to process
+        this.showCompletionMessage();
+        this.disableMenuButton();
+      }
+      
+    } catch (error) {
+      console.error('Error checking button state:', error);
+      // On error, keep button enabled to be safe
+      this.enableMenuButton();
+    }
+  }
 }
 
 // Global instance
@@ -553,7 +586,8 @@ class DraftIdManager {
     this.currentMatch = null;
     this.modal = document.getElementById('DraftIdModal');
     this.selectedDraftId = null;
-    this.processedMatches = new Set(); // Track processed matches in memory
+    this.processedMatches = new Set(); // Track actually processed (applied) matches in memory
+    this.skippedMatches = new Set(); // Track skipped matches separately
   }
 
   async initialize() {
@@ -621,8 +655,12 @@ class DraftIdManager {
       return;
     }
 
-    // Mark this match as processed (for both skip and apply)
-    this.processedMatches.add(this.currentMatch.match_id);
+    // Track matches differently based on whether they're skipped or applied
+    if (skip) {
+      this.skippedMatches.add(this.currentMatch.match_id);
+    } else {
+      this.processedMatches.add(this.currentMatch.match_id);
+    }
 
     // Call backend API for both skip and apply
     try {
@@ -647,10 +685,9 @@ class DraftIdManager {
 
       const result = await response.json();
 
-      // Show success message
-      const actionText = skip ? 'Skipped' : `Applied Draft ID: ${this.selectedDraftId}`;
-      if (typeof showFlashMessage === 'function') {
-        showFlashMessage(actionText, 'success');
+      // Show success message only when a draft ID is actually applied (not skipped)
+      if (!skip && typeof showFlashMessage === 'function') {
+        showFlashMessage(`Applied Draft ID: ${this.selectedDraftId}`, 'success');
       }
 
       if (skip) {
@@ -661,10 +698,10 @@ class DraftIdManager {
           this.updateModalContent(result.nextMatch);
           this.enableMenuButton();
         } else {
-          // Truly no more matches
+          // Check if there are still any matches available to process
+          // (skipped matches might still be processable from the beginning)
           hideDraftIdModal();
-          this.showCompletionMessage();
-          this.disableMenuButton();
+          await this.checkAndUpdateButtonState();
         }
       } else {
         // For apply operations, use the reliable /api/draft-id/next
@@ -712,9 +749,10 @@ class DraftIdManager {
         return;
       }
 
-      // Check if this match was already processed in this session
+      // Check if this match was already processed (applied) in this session
+      // Skipped matches can still be processed, so only check processedMatches
       if (this.processedMatches.has(data.match_id)) {
-        // We've seen this match before in this session, so we're really done
+        // We've already applied a draft ID to this match in this session, so we're really done
         hideDraftIdModal();
         this.showCompletionMessage();
         this.disableMenuButton();
@@ -804,6 +842,40 @@ class DraftIdManager {
 
   clearProcessedMatches() {
     this.processedMatches.clear();
+    this.skippedMatches.clear();
+  }
+
+  async checkAndUpdateButtonState() {
+    try {
+      // Check if there are still any matches that need processing
+      const response = await fetch('/api/draft-id/next', {
+        method: 'GET',
+        headers: {
+          'X-Requested-By': 'MTGO-Tracker',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to check for remaining matches');
+      }
+
+      const data = await response.json();
+      
+      if (data.hasMatches) {
+        // There are still matches available, keep button enabled
+        this.enableMenuButton();
+      } else {
+        // Truly no more matches to process
+        this.showCompletionMessage();
+        this.disableMenuButton();
+      }
+      
+    } catch (error) {
+      console.error('Error checking draft ID button state:', error);
+      // On error, keep button enabled to be safe
+      this.enableMenuButton();
+    }
   }
 }
 
@@ -828,7 +900,7 @@ function showFlashMessage(message, category = 'info') {
   alertDiv.setAttribute('role', 'alert');
   
   let iconClass = 'fas fa-info-circle';
-  let iconColor = '#ffffff'; // White icons for better contrast on solid backgrounds
+  let iconColor = 'black'; // White icons for better contrast on solid backgrounds
   
   switch(category) {
     case 'success':

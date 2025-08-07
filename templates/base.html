@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>MTGO-DB - Magic: The Gathering Online Database</title>
+    <title>{% block title %}MTGO-DB{% endblock %}</title>
     <link rel="icon" href="{{ url_for('static', filename='images/icon_1.png') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
@@ -54,9 +54,14 @@
           <span class="brand-text">MTGO-DB</span>
         </a>
       </div>
+
       <div class="header-center">
-        <h1 class="page-title section-title">{% block page_title %}MTGO-DB{% endblock %}</h1>
+        {% set show_title_pages = ['views.changelog', 'views.faq', 'views.getting_started', 'views.data_dict'] %}
+        {% if request.endpoint in show_title_pages %}
+          <h1 class="page-title section-title">{% block page_title %}{% endblock %}</h1>
+        {% endif %}
       </div>
+
       <div class="header-right">
         {% if user.is_authenticated %}
         <div class="user-menu">

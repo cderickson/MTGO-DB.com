@@ -95,13 +95,14 @@ body {
 }
 
 .page-title {
-    font-size: 22px;
+    font-size: 24px !important;
     font-weight: 600;
     margin: 0;
     letter-spacing: -0.01em;
     line-height: 1.3;
     white-space: nowrap;
     overflow: hidden;
+    color: white !important;
     text-overflow: ellipsis;
 }
 
@@ -396,7 +397,7 @@ body {
 .main-content {
     flex: 1;
     margin-left: 280px;
-    padding: 24px;
+    padding: 12px;
     min-width: 0;
 }
 
@@ -407,13 +408,122 @@ body {
 
 /* Container Styles */
 .container {
-    max-width: 1400px;
+    max-width: 1800px;
     margin: 0 auto;
     padding: 0;
 }
 
 .content-wrapper {
     width: 100%;
+}
+
+/* Getting Started Page Container */
+.getting-started-container {
+    max-width: 1000px;
+    width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.getting-started-container .card {
+    margin-bottom: 20px;
+}
+
+.getting-started-container .card:last-child {
+    margin-bottom: 0;
+}
+
+/* Ensure collapsible content has proper styling */
+.getting-started-container .section-card-content {
+    overflow: hidden;
+}
+
+/* Only enable transitions after JS has initialized (when body has 'js-loaded' class) */
+body.js-loaded .getting-started-container .section-card-content {
+    transition: max-height 0.4s ease, opacity 0.4s ease, padding 0.4s ease;
+}
+
+.getting-started-container .section-card-content:not(.expanded) {
+    max-height: 0;
+    opacity: 0;
+    padding: 0 20px;
+}
+
+.getting-started-container .section-card-content.expanded {
+    max-height: none;
+    opacity: 1;
+    padding: 20px;
+}
+
+.section-intro {
+    font-style: italic;
+    color: black;
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+.step {
+    margin-bottom: 20px;
+    padding: 18px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #0039A6;
+}
+
+.step:last-child {
+    margin-bottom: 0;
+}
+
+.step h4 {
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+}
+
+.step p {
+    color: #555;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.step a {
+    color: #0039A6;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.step a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive adjustments for getting started page */
+@media (max-width: 1040px) {
+    .getting-started-container {
+        max-width: 95%;
+        padding: 30px;
+    }
+}
+
+@media (max-width: 768px) {
+    .getting-started-container {
+        width: 100%;
+        max-width: 100%;
+        padding: 20px;
+    }
+    
+    .getting-started-container h2 {
+        font-size: 20px;
+    }
+    
+    .step h4 {
+        font-size: 16px;
+    }
+    
+    .step p {
+        font-size: 14px;
+    }
 }
 
 /* Section Styles */
@@ -814,25 +924,25 @@ table tbody tr:last-child td {
 
 .alert-success {
     background-color: #d4edda;
-    color: #155724;
+    color: black;
     border-color: #c3e6cb;
 }
 
 .alert-error {
     background-color: #f8d7da;
-    color: #721c24;
+    color: black;
     border-color: #f5c6cb;
 }
 
 .alert-warning {
     background-color: #fff3cd;
-    color: #856404;
+    color: black;
     border-color: #ffeaa7;
 }
 
 .alert-info {
     background-color: #d1ecf1;
-    color: #0c5460;
+    color: black;
     border-color: #bee5eb;
 }
 
@@ -1173,6 +1283,11 @@ table tbody tr:last-child td {
         min-height: 64px;
     }
     
+    .header-center {
+        /* Remove sidebar offset on mobile - sidebar is hidden */
+        margin-left: 0;
+    }
+    
     .sidebar {
         top: 64px; /* Adjust sidebar position for mobile header */
         height: calc(100vh - 64px);
@@ -1229,6 +1344,11 @@ table tbody tr:last-child td {
         padding: 8px 12px;
     }
     
+    .header-center {
+        /* Ensure no sidebar offset on small mobile devices */
+        margin-left: 0;
+    }
+    
     .brand-icon {
         width: 24px;
         height: 24px;
@@ -1261,6 +1381,54 @@ table tbody tr:last-child td {
         padding: 10px 16px;
         font-size: 13px;
     }
+}
+
+/* Static Card Styles - looks like collapsible tab but no functionality */
+.static-card {
+    margin-bottom: 16px;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    background: white;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.static-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.static-card .section-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: white;
+    border-bottom: 1px solid #e9ecef;
+    width: 100%;
+    margin: 0;
+}
+
+.static-card .section-card-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #0039A6;
+    flex: 1;
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.static-card .section-card-content {
+    max-height: none;
+    overflow: visible;
+    opacity: 1;
+    padding: 16px 20px;
+}
+
+.static-card .section-card-body {
+    padding: 0;
 }
 
 /* Collapsible Tab Styles */
@@ -1362,9 +1530,31 @@ table tbody tr:last-child td {
     margin-bottom: 0;
 }
 
+/* Minimize margins on first and last elements inside content */
+.static-card .section-card-content > *:first-child,
+.static-card .section-card-body > *:first-child {
+    margin-top: 0;
+}
+
+.static-card .section-card-content > *:last-child,
+.static-card .section-card-body > *:last-child {
+    margin-bottom: 0;
+}
+
 /* Badge styling in headers */
 .collapsible-tab .section-card-title .table-badge,
-.collapsible-tab .section-card-title .version-date {
+.collapsible-tab .section-card-title .blue-badge {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+    display: inline-block;
+}
+
+/* Badge styling in headers */
+.static-card .section-card-title .table-badge,
+.static-card .section-card-title .blue-badge {
     font-size: 12px;
     font-weight: 500;
     padding: 4px 8px;
@@ -1378,9 +1568,21 @@ table tbody tr:last-child td {
     color: #166534;
 }
 
-.collapsible-tab .section-card-title .version-date {
+.collapsible-tab .section-card-title .blue-badge {
     background: #e0e7ff;
     color: #3730a3;
+    font-weight: 400;
+}
+
+.static-card .section-card-title .table-badge {
+    background: #dcfce7;
+    color: black;
+    font-weight: 400;
+}
+
+.static-card .section-card-title .blue-badge {
+    background: #e0e7ff;
+    color: black;
     font-weight: 400;
 }
 
@@ -1435,7 +1637,7 @@ table tbody tr:last-child td {
     }
     
     .collapsible-tab .section-card-title .table-badge,
-    .collapsible-tab .section-card-title .version-date {
+    .collapsible-tab .section-card-title .blue-badge {
         font-size: 11px;
         padding: 2px 6px;
         margin-left: 6px;

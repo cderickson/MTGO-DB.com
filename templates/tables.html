@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 
+{% block title %}MTGO-DB - Tables{% endblock %}
 {% block page_title %}Tables{% endblock %}
 
 {% block extra_css %}
@@ -85,89 +86,25 @@
 
       <div class="table-wrapper">
         <table class="modern-table">
+          {% set table_headers = {
+            'matches': ['Draft ID', 'Player 1', 'P1 Archetype', 'P1 Subarchetype', 'Player 2', 'P2 Archetype', 'P2 Subarchetype', 'P1 Roll', 'P2 Roll', 'Roll Winner', 'P1 Wins', 'P2 Wins', 'Match Winner', 'Format', 'Limited Format', 'Match Type', 'Date'],
+            'games': ['Player 1', 'Player 2', 'Game#', 'P/D Selector', 'P/D Choice', 'On Play', 'On Draw', 'P1 Mulligans', 'P2 Mulligans', 'Turns', 'Game Winner'],
+            'plays': ['Game #', 'Play #', 'Turn #', 'Casting Player', 'Action', 'Primary Card', 'Target List', 'Opp Target', 'Self Target', 'Cards Drawn', 'Attacker List', 'Attackers', 'Active Player', 'Non-Active Player'],
+            'drafts': ['Hero', 'Player 2', 'Player 3', 'Player 4', 'Player 5', 'Player 6', 'Player 7', 'Player 8', 'Match Wins', 'Match Losses', 'Format', 'Date'],
+            'picks': ['Card', 'Pack #', 'Pick #', 'Pick Overall', 'Available 1', 'Available 2', 'Available 3', 'Available 4', 'Available 5', 'Available 6', 'Available 7', 'Available 8', 'Available 9', 'Available 10', 'Available 11', 'Available 12', 'Available 13', 'Available 14'],
+            'ignored': ['Match ID', 'Date Ignored', 'Reason']
+          } %}
+          
           <thead>
             <tr>
-              {% if table_name.lower() == 'matches' %}
-                <th>Draft ID</th>
-                <th>Player 1</th>
-                <th>P1 Deck</th>
-                <th>P1 Subdeck</th>
-                <th>Player 2</th>
-                <th>P2 Deck</th>
-                <th>P2 Subdeck</th>
-                <th>P1 Roll</th>
-                <th>P2 Roll</th>
-                <th>Roll Winner</th>
-                <th>P1 Wins</th>
-                <th>P2 Wins</th>
-                <th>Match Winner</th>
-                <th>Format</th>
-                <th>Limited Format</th>
-                <th>Match Type</th>
-                <th>Date</th>
-              {% elif table_name.lower() == 'games' %}
-                <th>Player 1</th>
-                <th>Player 2</th>
-                <th>Game #</th>
-                <th>P/D Selector</th>
-                <th>P/D Choice</th>
-                <th>On Play</th>
-                <th>On Draw</th>
-                <th>P1 Mulligans</th>
-                <th>P2 Mulligans</th>
-                <th>Turns</th>
-                <th>Game Winner</th>
-              {% elif table_name.lower() == 'plays' %}
-                <th>Game #</th>
-                <th>Play #</th>
-                <th>Turn #</th>
-                <th>Casting Player</th>
-                <th>Action</th>
-                <th>Primary Card</th>
-                <th>Target List</th>
-                <th>Opp Target</th>
-                <th>Self Target</th>
-                <th>Cards Drawn</th>
-                <th>Attacker List</th>
-                <th>Attackers</th>
-                <th>Active Player</th>
-                <th>Non-Active Player</th>
-              {% elif table_name.lower() == 'drafts' %}
-                <th>Hero</th>
-                <th>Player 2</th>
-                <th>Player 3</th>
-                <th>Player 4</th>
-                <th>Player 5</th>
-                <th>Player 6</th>
-                <th>Player 7</th>
-                <th>Player 8</th>
-                <th>Match Wins</th>
-                <th>Match Losses</th>
-                <th>Format</th>
-                <th>Date</th>
-              {% elif table_name.lower() == 'picks' %}
-                <th>Card</th>
-                <th>Pack #</th>
-                <th>Pick #</th>
-                <th>Pick Overall</th>
-                <th>Available 1</th>
-                <th>Available 2</th>
-                <th>Available 3</th>
-                <th>Available 4</th>
-                <th>Available 5</th>
-                <th>Available 6</th>
-                <th>Available 7</th>
-                <th>Available 8</th>
-                <th>Available 9</th>
-                <th>Available 10</th>
-                <th>Available 11</th>
-                <th>Available 12</th>
-                <th>Available 13</th>
-                <th>Available 14</th>
-              {% elif table_name.lower() == 'ignored' %}
-                <th>Match ID</th>
-                <th>Date Ignored</th>
-                <th>Reason</th>
+              {% if table_headers[table_name.lower()] %}
+                {% for header in table_headers[table_name.lower()] %}
+                  {% if column_widths and loop.index0 < column_widths|length %}
+                    <th style="width: {{ column_widths[loop.index0] }}; min-width: {{ column_widths[loop.index0] }};">{{ header }}</th>
+                  {% else %}
+                    <th>{{ header }}</th>
+                  {% endif %}
+                {% endfor %}
               {% endif %}
             </tr>
           </thead>

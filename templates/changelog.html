@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 
+{% block title %}MTGO-DB - Change Log{% endblock %}
 {% block page_title %}Change Log{% endblock %}
 
 {% block extra_css %}
@@ -13,20 +14,26 @@
     <div>
       
       <!-- Version 1.0.0 - Initial Release -->
-      <div class="card collapsible-tab expanded" data-target="v1-0-0">
+      <div class="static-card" data-target="v1-0-0">
         <div class="section-card-header">
           <h3 class="section-card-title">
             Version 1.0.0 - Initial Release
-            <span class="version-date">November 1, 2023</span>
+            <span class="table-badge">November 1, 2023</span>
           </h3>
           <div class="message-box standard table-description">
             <strong>Initial Release:</strong> The first public release of the web-based MTGO data analytics platform.
           </div>
           <i class="fas fa-chevron-down"></i>
         </div>
-        <div class="section-card-content" id="v1-0-0">
+        <div class="section-card-content" id="v1-0-0" data-initial-state="expanded">
           <div class="section-card-body">
             <h2 style="font-size: 16px;">New Features</h2>
+              <ul>
+                <li>Data Import: Upload and process MTGO GameLog and DraftLog files.</li>
+                <li>Analytics Dashboard: View match statistics and performance metrics.</li>
+                <li>Data Tables: Browse matches, games, drafts, and plays.</li>
+                <li>Data Export: Export your data as CSV files.</li>
+              </ul>
           </div>
         </div>
       </div>

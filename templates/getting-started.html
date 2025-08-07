@@ -1,131 +1,111 @@
 {% extends 'base.html' %}
 
+{% block title %}MTGO-DB - Getting Started{% endblock %}
 {% block page_title %}Getting Started{% endblock %}
 
 {% block content %}
 
-<div >
-	
-	<!-- Registration Section -->
-	<div class="card collapsible-tab" data-target="registration">
-		<div class="section-card-header">
-			<h3 class="section-card-title">
-				<span class="faq-number"><i class="fas fa-user-plus"></i></span>
-				Registration
-			</h3>
-			<i class="fas fa-chevron-down"></i>
-		</div>
-		<div class="section-card-content" id="registration">
-			<div class="message-box standard">
-				<h4><i class="fas fa-user-plus"></i><a href="/register">Register</a> for an account</h4>
-				<p>Create your MTGO-DB account with a valid email address</p>
-			</div>
-			<div class="message-box standard">
-				<h4><i class="fas fa-envelope-check"></i>Confirm your email</h4>
-				<p>Check your inbox and click the confirmation link we send you</p>
-			</div>
-		</div>
-	</div>
+<div class="content-wrapper">
+  <div class="faq-container">
 
-	<!-- Import from GameLogs Section -->
-	<div class="card collapsible-tab" data-target="gamelogs">
-		<div class="section-card-header">
-			<h3 class="section-card-title">
-				<span class="faq-number"><i class="fas fa-file-import"></i></span>
-				Import from GameLogs
-			</h3>
-			<i class="fas fa-chevron-down"></i>
-		</div>
-		
-		<div class="section-card-content" id="gamelogs">
-			<div class="message-box standard">
-				<p><strong>Recommended for new users:</strong> Use this option if you are importing data for the first time.</p>
-			</div>
-			<div class="message-box standard">
-				<h4><i class="fas fa-download"></i>Download the Zip Script</h4>
-				<p>Download and run the <a href="#" onclick="showZipLogsModal(); return false;">Zip-MTGO-Logs</a> script. A .zip file containing your GameLog and DraftLog files will be generated.</p>
-			</div>
-			
-			<div class="message-box standard">
-				<h4><i class="fas fa-compass"></i>Navigate to Import</h4>
-				<p>Click on <strong>Processing → Import GameLogs</strong> in the navigation menu.</p>
-			</div>
-			
-			<div class="message-box standard">
-				<h4><i class="fas fa-upload"></i>Upload Your Files</h4>
-				<p>Navigate to the .zip file created in Step 1 and upload it.</p>
-				<div class="note">
-					<i class="fas fa-info-circle"></i>
-					<span>Your browser may ask you to confirm your upload.</span>
-				</div>
-			</div>
-			
-			<div class="message-box standard">
-				<h4><i class="fas fa-cogs"></i>Process Data</h4>
-				<p>Click <strong>Import</strong>. Your files will be processed in the background and a Load Report will be emailed to you upon completion.</p>
-			</div>
-		</div>
-	</div>
+    <!-- Registration Section -->
+    <div class="card static-card">
+      <div class="section-card-header">
+        <h3 class="section-card-title">
+          <span class="faq-number">1</span>
+          Registration
+					<span class="blue-badge">Create your MTGO-DB account to get started.</span>
+        </h3>
+      </div>
+      <div class="section-card-content">
+        <div class="section-card-body">
+          <div class="message-box standard">
+            <h4><div>1</div><a href="/register">Register</a> for an account</h4>
+            <p>Create your MTGO-DB account with a valid email address.</p><br>
+            <h4><div>2</div>Confirm your email</h4>
+            <p>Check your inbox and click the confirmation link.</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-	<!-- Import from MTGO-Tracker Section -->
-	<div class="card collapsible-tab" data-target="tracker">
-		<div class="section-card-header">
-			<h3 class="section-card-title">
-				<span class="faq-number"><i class="fas fa-database"></i></span>
-				Import from MTGO-Tracker
-			</h3>
-			<i class="fas fa-chevron-down"></i>
-		</div>
-		<div class="section-card-content" id="tracker">
-			<div class="message-box standard">
-				<p><strong>For existing MTGO-Tracker users:</strong> Use this option if you have previously used the MTGO-Tracker desktop application and would like to upload your saved data.</p>
-			</div>
-			<div class="message-box standard">
-				<h4><i class="fas fa-search"></i>Locate Your Data</h4>
-				<p>Find your MTGO-Tracker database file (usually named <code>mtgo_tracker.db</code>).</p>
-			</div>
-			<div class="message-box standard">
-				<h4><i class="fas fa-compass"></i>Navigate to Import</h4>
-				<p>Click on <strong>Processing → Import from MTGO-Tracker</strong> in the navigation menu.</p>
-			</div>
-			<div class="message-box standard">
-				<h4><i class="fas fa-database"></i>Upload Database</h4>
-				<p>Upload your MTGO-Tracker database file to import your existing data and manual revisions.</p>
-			</div>
-		</div>
-	</div>
+    <!-- Import from GameLogs Section -->
+    <div class="card collapsible-tab" data-target="gamelogs">
+      <div class="section-card-header">
+        <h3 class="section-card-title">
+          <span class="faq-number">2</span>
+          Import from GameLogs
+					<span class="blue-badge">Upload your raw GameLogs and DraftLogs to MTGO-DB for processing.</span>
+        </h3>
+        <i class="fas fa-chevron-down"></i>
+      </div>
+      <div class="section-card-content" id="gamelogs">
+        <div class="section-card-body">
+          <div class="message-box standard">
+            <h4><div>1</div>Download the Zip Script</h4>
+            <p>Download and run the <a href="#" onclick="showZipLogsModal(); return false;"><b>Zip-MTGO-Logs</b></a> script. A .zip file containing your GameLog and DraftLog files will be generated.</p><br>
+            <h4><div>2</div>Navigate to Import</h4>
+            <p>Click on <b>Processing → Import GameLogs</b> in the navigation menu.</p><br>
+            <h4><div>3</div>Upload Your Files</h4>
+            <p>Navigate to the .zip file created in Step 1 and upload it.</p><br>
+            <h4><div>4</div>Process Data</h4>
+            <p>Click <b>Import</b>. Your files will be processed in the background and a <b>Load Report</b> will be emailed to you upon completion.</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-	<!-- Next Steps Section -->
-	<div class="card collapsible-tab" data-target="nextsteps">
-		<div class="section-card-header">
-			<h3 class="section-card-title">
-				<span class="faq-number"><i class="fas fa-arrow-right"></i></span>
-				Next Steps
-			</h3>
-			<i class="fas fa-chevron-down"></i>
-		</div>
+    <!-- Data Cleaning Section -->
+    <div class="card collapsible-tab" data-target="cleaning">
+      <div class="section-card-header">
+        <h3 class="section-card-title">
+          <span class="faq-number">3</span>
+          Clean Your Data
+					<span class="blue-badge">Clean and process your data, ensuring it is accurate and complete.</span>
+        </h3>
+        <i class="fas fa-chevron-down"></i>
+      </div>
+      <div class="section-card-content" id="cleaning">
+        <div class="section-card-body">
+          <div class="message-box standard">
+            <h4><div>1</div>Best Guess Deck Names</h4>
+            <p>Apply the best guess deck names to the <b>Match.P1_Subarchetype</b> and <b>Match.P2_Subarchetype</b> columns.</p><br>
+            <h4><div>2</div>Get Missing Game Winners</h4>
+            <p>Sometimes, a game winner can not be determined. In this case, you can manually set the winner after reviewing the game.</p><br>
+            <h4><div>3</div>Apply Associated Draft IDs</h4>
+            <p>Associate a Match with a specific Draft.</p><br>
+            <h4><div>4</div>Revise Match Data</h4>
+            <p>You can revise the Match data (<b>P1/P2_Archetype</b>, <b>P1/P2_Subarchetype</b>, <b>Format</b>, <b>Limited Format</b>, <b>Match Type</b>) after the initial import.</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-		<div class="section-card-content" id="nextsteps">
-			<p>Once your data is imported, you can:</p>
+    <!-- Next Steps Section -->
+    <div class="card collapsible-tab" data-target="nextsteps">
+      <div class="section-card-header">
+        <h3 class="section-card-title">
+          <span class="faq-number">4</span>
+          Next Steps
+					<span class="blue-badge">Explore your data and view your analytics.</span>
+        </h3>
+        <i class="fas fa-chevron-down"></i>
+      </div>
+      <div class="section-card-content" id="nextsteps">
+        <div class="section-card-body">
+          <div class="message-box standard">
+            <h4><div>1</div>Browse Data</h4>
+            <p>Search and filter your Matches, Drafts, and Play-by-Play data.</p><br>
+            <h4><div>2</div>View Analytics</h4>
+            <p>Explore your match history and performance statistics using prebuilt dashboards and reports.</p><br>
+            <h4><div>3</div>Export Data</h4>
+            <p>Download your data to Excel.</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-			<div class="message-box standard">
-				<h4><i class="fas fa-chart-line"></i>View Analytics</h4>
-				<p>Explore your match history and performance statistics</p>
-			</div>
-			<div class="message-box standard">
-				<h4><i class="fas fa-table"></i>Browse Data</h4>
-				<p>Search and filter your games, drafts, and plays</p>
-			</div>
-			<div class="message-box standard">
-				<h4><i class="fas fa-download"></i>Export Data</h4>
-				<p>Download your data in various formats</p>
-			</div>
-			<div class="message-box standard">
-				<h4><i class="fas fa-question-circle"></i><a href="/faq">Check the FAQ</a></h4>
-				<p>Find answers to common questions about using MTGO-DB</p>
-			</div>
-		</div>
-	</div>
+  </div>
 </div>
 
 <script src="{{ url_for('static', filename='collapsible.js') }}" defer></script>

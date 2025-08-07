@@ -6,8 +6,24 @@
 }
 
 .tables-container {
-    max-width: 1400px;
+    max-width: 1800px;
     margin: 0 auto;
+    padding: 0 8px;
+}
+
+/* Responsive adjustments for tables container */
+@media (max-width: 1850px) {
+    .tables-container {
+        max-width: 98%;
+        padding: 0 8px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .tables-container {
+        max-width: 100%;
+        padding: 0 4px;
+    }
 }
 
 .table-container {
@@ -75,6 +91,7 @@
     /* Remove fixed max-height that was causing unnecessary scrolling */
     max-height: none;
     overflow-y: visible;
+    min-width: 100%;
 }
 
 /* Only add scrolling when table actually has many rows */
@@ -90,6 +107,16 @@
     background: white;
     border-radius: 0;
     box-shadow: none;
+    table-layout: auto; /* Allow columns to size according to content and specified widths */
+    white-space: nowrap; /* Prevent text wrapping in cells */
+    min-width: fit-content; /* Ensure table expands to fit all content */
+}
+
+/* Reduce cell padding for tables with many columns */
+.modern-table th,
+.modern-table td {
+    padding: 8px 6px; /* Reduced from default padding */
+    font-size: 13px; /* Slightly smaller font for more compact layout */
 }
 
 /* Fixed table layout - can be added to specific table containers when needed */
