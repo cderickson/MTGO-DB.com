@@ -858,6 +858,26 @@
         }
       }
     });
+
+    // Close certain modals when clicking outside (backdrop click)
+    document.addEventListener('DOMContentLoaded', function() {
+      const gwModal = document.getElementById('GameWinnerModal');
+      if (gwModal) {
+        gwModal.addEventListener('click', function(e) {
+          if (e.target === gwModal) {
+            hideGameWinnerModal();
+          }
+        });
+      }
+      const draftModal = document.getElementById('DraftIdModal');
+      if (draftModal) {
+        draftModal.addEventListener('click', function(e) {
+          if (e.target === draftModal) {
+            hideDraftIdModal();
+          }
+        });
+      }
+    });
     
     // Modal functions - Updated to work with new CSS
     function showGameWinnerModal() {
@@ -870,6 +890,10 @@
       const modal = document.getElementById('GameWinnerModal');
       modal.style.display = 'none';
       document.body.style.overflow = 'auto';
+      // If we're on a tables page, reload to reflect changes
+      if (window.location.pathname.startsWith('/table/')) {
+        window.location.reload();
+      }
     }
     
     function showDraftIdModal() {
@@ -886,6 +910,10 @@
       // Clear processed matches so skipped matches can appear again next time
       if (window.draftIdManager) {
         window.draftIdManager.clearProcessedMatches();
+      }
+      // If we're on a tables page, reload to reflect changes
+      if (window.location.pathname.startsWith('/table/')) {
+        window.location.reload();
       }
     }
     

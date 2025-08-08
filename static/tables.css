@@ -6,13 +6,13 @@
 }
 
 .tables-container {
-    max-width: 1800px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 0 8px;
 }
 
 /* Responsive adjustments for tables container */
-@media (max-width: 1850px) {
+@media (max-width: 1450px) {
     .tables-container {
         max-width: 98%;
         padding: 0 8px;
@@ -71,8 +71,6 @@
     color: #0039A6;
 }
 
-/* table-hint styles moved to base.css for global availability */
-
 .table-header-right {
     display: flex;
     align-items: flex-start;
@@ -88,7 +86,6 @@
 /* Table Wrapper */
 .table-wrapper {
     overflow-x: auto;
-    /* Remove fixed max-height that was causing unnecessary scrolling */
     max-height: none;
     overflow-y: visible;
     min-width: 100%;
@@ -125,80 +122,15 @@
     width: 100%;
 }
 
-/* Matches Table Column Widths */
-.fixed-table-width.matches-table .modern-table th:nth-child(1),
-.fixed-table-width.matches-table .modern-table td:nth-child(1) { width: 10%; } /* Draft ID */
-.fixed-table-width.matches-table .modern-table th:nth-child(2),
-.fixed-table-width.matches-table .modern-table td:nth-child(2) { width: 12%; } /* Player 1 */
-.fixed-table-width.matches-table .modern-table th:nth-child(3),
-.fixed-table-width.matches-table .modern-table td:nth-child(3) { width: 10%; } /* P1 Deck */
-.fixed-table-width.matches-table .modern-table th:nth-child(4),
-.fixed-table-width.matches-table .modern-table td:nth-child(4) { width: 8%; }  /* P1 Subdeck */
-.fixed-table-width.matches-table .modern-table th:nth-child(5),
-.fixed-table-width.matches-table .modern-table td:nth-child(5) { width: 12%; } /* Player 2 */
-.fixed-table-width.matches-table .modern-table th:nth-child(6),
-.fixed-table-width.matches-table .modern-table td:nth-child(6) { width: 10%; } /* P2 Deck */
-.fixed-table-width.matches-table .modern-table th:nth-child(7),
-.fixed-table-width.matches-table .modern-table td:nth-child(7) { width: 8%; }  /* P2 Subdeck */
-.fixed-table-width.matches-table .modern-table th:nth-child(8),
-.fixed-table-width.matches-table .modern-table td:nth-child(8) { width: 6%; }  /* P1 Wins */
-.fixed-table-width.matches-table .modern-table th:nth-child(9),
-.fixed-table-width.matches-table .modern-table td:nth-child(9) { width: 6%; }  /* P2 Wins */
-.fixed-table-width.matches-table .modern-table th:nth-child(10),
-.fixed-table-width.matches-table .modern-table td:nth-child(10) { width: 8%; } /* Winner */
-.fixed-table-width.matches-table .modern-table th:nth-child(11),
-.fixed-table-width.matches-table .modern-table td:nth-child(11) { width: 10%; } /* Format/Date */
-
-/* Games Table Column Widths */
-.fixed-table-width.games-table .modern-table th:nth-child(1),
-.fixed-table-width.games-table .modern-table td:nth-child(1) { width: 15%; } /* Match ID */
-.fixed-table-width.games-table .modern-table th:nth-child(2),
-.fixed-table-width.games-table .modern-table td:nth-child(2) { width: 15%; } /* Player 1 */
-.fixed-table-width.games-table .modern-table th:nth-child(3),
-.fixed-table-width.games-table .modern-table td:nth-child(3) { width: 15%; } /* Player 2 */
-.fixed-table-width.games-table .modern-table th:nth-child(4),
-.fixed-table-width.games-table .modern-table td:nth-child(4) { width: 8%; }  /* Game # */
-.fixed-table-width.games-table .modern-table th:nth-child(5),
-.fixed-table-width.games-table .modern-table td:nth-child(5) { width: 10%; } /* PD Selector */
-.fixed-table-width.games-table .modern-table th:nth-child(6),
-.fixed-table-width.games-table .modern-table td:nth-child(6) { width: 8%; }  /* PD Choice */
-.fixed-table-width.games-table .modern-table th:nth-child(7),
-.fixed-table-width.games-table .modern-table td:nth-child(7) { width: 8%; }  /* On Play */
-.fixed-table-width.games-table .modern-table th:nth-child(8),
-.fixed-table-width.games-table .modern-table td:nth-child(8) { width: 8%; }  /* On Draw */
-.fixed-table-width.games-table .modern-table th:nth-child(9),
-.fixed-table-width.games-table .modern-table td:nth-child(9) { width: 6%; }  /* P1 Mulls */
-.fixed-table-width.games-table .modern-table th:nth-child(10),
-.fixed-table-width.games-table .modern-table td:nth-child(10) { width: 6%; } /* P2 Mulls */
-.fixed-table-width.games-table .modern-table th:nth-child(11),
-.fixed-table-width.games-table .modern-table td:nth-child(11) { width: 8%; } /* Winner */
-
-/* Plays Table Column Widths */
-.fixed-table-width.plays-table .modern-table th:nth-child(1),
-.fixed-table-width.plays-table .modern-table td:nth-child(1) { width: 12%; } /* Match ID */
-.fixed-table-width.plays-table .modern-table th:nth-child(2),
-.fixed-table-width.plays-table .modern-table td:nth-child(2) { width: 6%; }  /* Game # */
-.fixed-table-width.plays-table .modern-table th:nth-child(3),
-.fixed-table-width.plays-table .modern-table td:nth-child(3) { width: 6%; }  /* Play # */
-.fixed-table-width.plays-table .modern-table th:nth-child(4),
-.fixed-table-width.plays-table .modern-table td:nth-child(4) { width: 6%; }  /* Turn # */
-.fixed-table-width.plays-table .modern-table th:nth-child(5),
-.fixed-table-width.plays-table .modern-table td:nth-child(5) { width: 12%; } /* Casting Player */
-.fixed-table-width.plays-table .modern-table th:nth-child(6),
-.fixed-table-width.plays-table .modern-table td:nth-child(6) { width: 10%; } /* Action */
-.fixed-table-width.plays-table .modern-table th:nth-child(7),
-.fixed-table-width.plays-table .modern-table td:nth-child(7) { width: 15%; } /* Primary Card */
-.fixed-table-width.plays-table .modern-table th:nth-child(8),
-.fixed-table-width.plays-table .modern-table td:nth-child(8) { width: 10%; } /* Target1 */
-.fixed-table-width.plays-table .modern-table th:nth-child(9),
-.fixed-table-width.plays-table .modern-table td:nth-child(9) { width: 8%; }  /* Target2 */
-.fixed-table-width.plays-table .modern-table th:nth-child(10),
-.fixed-table-width.plays-table .modern-table td:nth-child(10) { width: 8%; } /* Target3 */
-.fixed-table-width.plays-table .modern-table th:nth-child(11),
-.fixed-table-width.plays-table .modern-table td:nth-child(11) { width: 7%; } /* Remaining columns */
+/* In fixed layout mode, allow cells to honor column widths */
+.fixed-table-width .modern-table th,
+.fixed-table-width .modern-table td {
+    max-width: none;
+}
 
 /* Generic Column Width Classes */
 .col-width-5 { width: 5% !important; }
+.col-width-6 { width: 6% !important; }
 .col-width-8 { width: 8% !important; }
 .col-width-10 { width: 10% !important; }
 .col-width-12 { width: 12% !important; }
@@ -207,12 +139,12 @@
 .col-width-25 { width: 25% !important; }
 .col-width-30 { width: 30% !important; }
 
-/* Pixel-based widths for precise control */
-.col-width-80px { width: 80px !important; }
-.col-width-100px { width: 100px !important; }
-.col-width-120px { width: 120px !important; }
-.col-width-150px { width: 150px !important; }
-.col-width-200px { width: 200px !important; }
+/* Ensure width classes can override td default max-width */
+.modern-table th[class^="col-width-"],
+.modern-table td[class^="col-width-"] {
+    max-width: none !important;
+    min-width: auto;
+}
 
 .modern-table th {
     background-color: #f8f9fa;
@@ -227,6 +159,9 @@
     position: sticky;
     top: 0;
     z-index: 10;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .modern-table td {
@@ -349,6 +284,14 @@
     justify-content: center;
 }
 
+#ReviseButton {
+    width: 160px;
+}
+
+#RemoveButton {
+    width: 160px;
+}
+
 .pagination-controls {
     display: flex;
     align-items: center;
@@ -361,6 +304,9 @@
     gap: 6px;
     padding: 8px 16px;
     font-size: 14px;
+    width: 125px;
+    justify-content: center;
+    text-align: center;
 }
 
 .pagination-btn:disabled {

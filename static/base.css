@@ -2179,3 +2179,45 @@ table tbody tr:last-child td {
     color: white !important;
     font-weight: 500 !important;
 }
+
+/* Profile page button width customization */
+#EditProfileButton {
+    width: 150px;
+    justify-content: center;
+    text-align: center;
+}
+
+#CancelProfileButton {
+    width: 150px;
+    justify-content: center;
+    text-align: center;
+}   
+
+#SaveProfileButton {
+    width: 150px;
+    justify-content: center;
+    text-align: center;
+}
+
+/* Modal footer button controls */
+.modal-footer .button,
+.modal-footer button,
+.modal-footer .btn-primary,
+.modal-footer .btn-secondary,
+.modal-footer .btn {
+    width: 150px;
+    justify-content: center;
+    text-align: center;
+}
+
+/* Game Winner Modal specific footer buttons */
+#GameWinnerModal .modal-footer .button {
+    /* Center all footer buttons in this modal, but do not change width here */
+    justify-content: center;
+    text-align: center;
+}
+
+#GameWinnerModal .modal-footer .button.primary {
+    /* Only widen Player buttons (primary). Skip (secondary) keeps global width */
+    width: 200px;
+}

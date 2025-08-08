@@ -84,8 +84,29 @@
         {% endif %}
       </div>
 
-      <div class="table-wrapper">
+      <div class="table-wrapper fixed-table-width">
         <table class="modern-table">
+          {% set header_width_classes = None %}
+          {% if table_name.lower() == 'matches' %}
+            {% set header_width_classes = ['col-width-10','col-width-6','col-width-6','col-width-6','col-width-6','col-width-6','col-width-6','col-width-6','col-width-6','col-width-6','col-width-6','col-width-6','col-width-6','col-width-6','col-width-6','col-width-6'] %}
+          {% elif table_name.lower() == 'games' %}
+            {% set header_width_classes = ['col-width-12','col-width-12','col-width-6','col-width-10','col-width-10','col-width-8','col-width-8','col-width-8','col-width-8','col-width-8','col-width-10'] %}
+          {% elif table_name.lower() == 'plays' %}
+            {% set header_width_classes = ['col-width-5','col-width-5','col-width-5','col-width-12','col-width-8','col-width-10','col-width-12','col-width-5','col-width-5','col-width-5','col-width-10','col-width-5','col-width-6','col-width-6'] %}
+          {% elif table_name.lower() == 'drafts' %}
+            {% set header_width_classes = ['col-width-10','col-width-8','col-width-8','col-width-8','col-width-8','col-width-8','col-width-8','col-width-8','col-width-6','col-width-6','col-width-10','col-width-12'] %}
+          {% elif table_name.lower() == 'ignored' %}
+            {% set header_width_classes = ['col-width-20','col-width-15','col-width-65'] %}
+          {% elif table_name.lower() == 'picks' %}
+            {% set header_width_classes = ['col-width-20','col-width-6','col-width-6','col-width-8'] %}
+          {% endif %}
+          {% if header_width_classes %}
+          <colgroup>
+            {% for cls in header_width_classes %}
+            <col class="{{ cls }}">
+            {% endfor %}
+          </colgroup>
+          {% endif %}
           {% set table_headers = {
             'matches': ['Draft ID', 'Player 1', 'P1 Archetype', 'P1 Subarchetype', 'Player 2', 'P2 Archetype', 'P2 Subarchetype', 'P1 Roll', 'P2 Roll', 'Roll Winner', 'P1 Wins', 'P2 Wins', 'Match Winner', 'Format', 'Match Type', 'Date'],
             'games': ['Player 1', 'Player 2', 'Game#', 'P/D Selector', 'P/D Choice', 'On Play', 'On Draw', 'P1 Mulligans', 'P2 Mulligans', 'Turns', 'Game Winner'],
@@ -94,7 +115,6 @@
             'picks': ['Card', 'Pack #', 'Pick #', 'Pick Overall', 'Available 1', 'Available 2', 'Available 3', 'Available 4', 'Available 5', 'Available 6', 'Available 7', 'Available 8', 'Available 9', 'Available 10', 'Available 11', 'Available 12', 'Available 13', 'Available 14'],
             'ignored': ['Match ID', 'Date Ignored', 'Reason']
           } %}
-          
           <thead>
             <tr>
               {% if table_headers[table_name.lower()] %}
