@@ -45,12 +45,7 @@
             </select>
           </div>
           
-          <div class="filter-group">
-            <label class="filter-label" for="limitedFormatFilter">Limited Format</label>
-            <select class="filter-select" id="limitedFormatFilter" name="limitedFormat">
-              <option value="">All Limited Formats</option>
-            </select>
-          </div>
+          
           
           <div class="filter-group">
             <label class="filter-label" for="deckFilter">Deck</label>
@@ -208,7 +203,6 @@ function setupFilterEventListeners() {
     'cardFilter',
     'opponentFilter', 
     'formatFilter',
-    'limitedFormatFilter',
     'deckFilter',
     'oppDeckFilter'
   ];
@@ -316,7 +310,6 @@ function populateFilterDropdowns(options = null) {
     card: document.getElementById('cardFilter').value,
     opponent: document.getElementById('opponentFilter').value,
     format: document.getElementById('formatFilter').value,
-    limitedFormat: document.getElementById('limitedFormatFilter').value,
     deck: document.getElementById('deckFilter').value,
     oppDeck: document.getElementById('oppDeckFilter').value
   };
@@ -329,9 +322,6 @@ function populateFilterDropdowns(options = null) {
   
   // Populate Format dropdown
   populateDropdown('formatFilter', optionsToUse.Format, 'All Formats', currentValues.format);
-  
-  // Populate Limited Format dropdown
-  populateDropdown('limitedFormatFilter', optionsToUse['Limited Format'], 'All Limited Formats', currentValues.limitedFormat);
   
   // Populate Deck dropdown
   populateDropdown('deckFilter', optionsToUse.Deck, 'All Decks', currentValues.deck);
@@ -427,7 +417,7 @@ function getCurrentFilterValues() {
     card: (cardFilter && !cardFilter.disabled) ? cardFilter.value : '', // Only include card filter if enabled
     opponent: document.getElementById('opponentFilter').value,
     format: document.getElementById('formatFilter').value,
-    limitedFormat: document.getElementById('limitedFormatFilter').value,
+    
     deck: document.getElementById('deckFilter').value,
     oppDeck: document.getElementById('oppDeckFilter').value,
     startDate: document.getElementById('startDate').value,

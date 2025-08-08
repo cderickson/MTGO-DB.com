@@ -901,10 +901,12 @@ table tbody tr:last-child td {
 /* Flash Messages */
 .flash-messages {
     position: fixed;
-    top: 80px;
-    right: 20px;
+    top: 12px; /* small gap from top of viewport */
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 1100;
-    max-width: 400px;
+    max-width: 560px; /* slightly wider */
+    width: calc(100% - 24px); /* responsive on very small screens */
 }
 
 .alert-success,
@@ -999,6 +1001,81 @@ table tbody tr:last-child td {
 .card-body {
     color: #333;
     line-height: 1.6;
+}
+
+/* Global Dropdown Styles (moved from tables.css for universal availability) */
+.dropdown {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.dropdown-toggle {
+    width: 100%;
+    padding: 12px 16px;
+    text-align: left;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dropdown-toggle:hover {
+    border-color: #0039A6;
+    background-color: #f8f9fa;
+}
+
+.dropdown-toggle::after {
+    content: '▼';
+    font-size: 10px;
+    color: #666;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-menu li {
+    list-style: none;
+    margin: 0;
+}
+
+.dropdown-menu li a {
+    display: block;
+    padding: 10px 16px;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+    border-bottom: 1px solid #f8f9fa;
+    transition: background-color 0.2s ease;
+}
+
+.dropdown-menu li:last-child a {
+    border-bottom: none;
+}
+
+.dropdown-menu li a:hover {
+    background-color: #f8f9fa;
+    color: #0039A6;
 }
 
 /* Section Card Styles - Default card styling for main content */
@@ -1888,12 +1965,6 @@ table tbody tr:last-child td {
     min-height: 400px;
 }
 
-/* Simple dropdown for DraftIdModal */
-#DraftIdModal .dropdown {
-    position: relative;
-    display: inline-block;
-}
-
 /* DraftIdModal Dropdown Button Styling (matches ReviseModal) */
 #DraftIdModal .dropdown-toggle {
     width: 100%;
@@ -2012,12 +2083,6 @@ table tbody tr:last-child td {
 
 .dropdown-container-center .dropdown {
     position: relative;
-}
-
-/* Simple dropdown for DraftIdModal */
-#BestGuessModal .dropdown {
-    position: relative;
-    display: inline-block;
 }
 
 /* BestGuessModal Dropdown Button Styling (matches ReviseModal) */

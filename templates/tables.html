@@ -87,10 +87,10 @@
       <div class="table-wrapper">
         <table class="modern-table">
           {% set table_headers = {
-            'matches': ['Draft ID', 'Player 1', 'P1 Archetype', 'P1 Subarchetype', 'Player 2', 'P2 Archetype', 'P2 Subarchetype', 'P1 Roll', 'P2 Roll', 'Roll Winner', 'P1 Wins', 'P2 Wins', 'Match Winner', 'Format', 'Limited Format', 'Match Type', 'Date'],
+            'matches': ['Draft ID', 'Player 1', 'P1 Archetype', 'P1 Subarchetype', 'Player 2', 'P2 Archetype', 'P2 Subarchetype', 'P1 Roll', 'P2 Roll', 'Roll Winner', 'P1 Wins', 'P2 Wins', 'Match Winner', 'Format', 'Match Type', 'Date'],
             'games': ['Player 1', 'Player 2', 'Game#', 'P/D Selector', 'P/D Choice', 'On Play', 'On Draw', 'P1 Mulligans', 'P2 Mulligans', 'Turns', 'Game Winner'],
             'plays': ['Game #', 'Play #', 'Turn #', 'Casting Player', 'Action', 'Primary Card', 'Target List', 'Opp Target', 'Self Target', 'Cards Drawn', 'Attacker List', 'Attackers', 'Active Player', 'Non-Active Player'],
-            'drafts': ['Hero', 'Player 2', 'Player 3', 'Player 4', 'Player 5', 'Player 6', 'Player 7', 'Player 8', 'Match Wins', 'Match Losses', 'Format', 'Date'],
+            'drafts': ['Hero', 'Player 2', 'Player 3', 'Player 4', 'Player 5', 'Player 6', 'Player 7', 'Player 8', 'Match Wins', 'Match Losses', 'Draft Format', 'Date'],
             'picks': ['Card', 'Pack #', 'Pick #', 'Pick Overall', 'Available 1', 'Available 2', 'Available 3', 'Available 4', 'Available 5', 'Available 6', 'Available 7', 'Available 8', 'Available 9', 'Available 10', 'Available 11', 'Available 12', 'Available 13', 'Available 14'],
             'ignored': ['Match ID', 'Date Ignored', 'Reason']
           } %}
@@ -133,7 +133,6 @@
                   <td>{{ row.p2_wins }}</td>
                   <td>{{ row.match_winner }}</td>
                   <td>{{ row.format }}</td>
-                  <td>{{ row.limited_format }}</td>
                   <td>{{ row.match_type }}</td>
                   <td class="cell-date">{{ row.date }}</td>
                 {% elif table_name.lower() == 'games' %}
@@ -174,7 +173,7 @@
                   <td>{{ row.player8 }}</td>
                   <td>{{ row.match_wins }}</td>
                   <td>{{ row.match_losses }}</td>
-                  <td>{{ row.format }}</td>
+                  <td>{{ row.draft_format }}</td>
                   <td class="cell-date">{{ row.date }}</td>
                 {% elif table_name.lower() == 'picks' %}
                   <td class="cell-card">{{ row.card }}</td>
@@ -344,16 +343,6 @@
               </div>
               
               <div class="form-group">
-                <label class="form-label">Limited Format</label>
-                <div class="dropdown">
-                  <button class="button secondary dropdown-toggle" type="button" id="LimitedFormatButton" onclick="toggleDropdown(event, 'LimitedFormatMenu')" disabled>
-                    <span>Loading...</span>
-                  </button>
-                  <ul class="dropdown-menu" id="LimitedFormatMenu"></ul>
-                </div>
-              </div>
-              
-              <div class="form-group">
                 <label class="form-label">Match Type</label>
                 <div class="dropdown">
                   <button class="button secondary dropdown-toggle" type="button" id="MatchTypeButton" onclick="toggleDropdown(event, 'MatchTypeMenu')">
@@ -470,16 +459,6 @@
                         NA
                       </button>
                       <ul class="dropdown-menu" id="FormatMenuMulti"></ul>
-                    </div>
-                  </div>
-
-                  <div class="form-group" >
-                    <label class="form-label">Limited Format</label>
-                    <div class="dropdown">
-                      <button class="button secondary dropdown-toggle" type="button" id="LimitedFormatButtonMulti" onclick="toggleDropdown(event, 'LimitedFormatMenuMulti')" disabled>
-                        NA
-                      </button>
-                      <ul class="dropdown-menu" id="LimitedFormatMenuMulti"></ul>
                     </div>
                   </div>
                 </div>
@@ -638,11 +617,6 @@ function resetReviseModalForm() {
   if (originalFormValues.format !== undefined) {
     const formatButton = document.getElementById('FormatButton');
     if (formatButton) formatButton.textContent = originalFormValues.format || 'NA';
-  }
-  
-  if (originalFormValues.limited_format !== undefined) {
-    const limitedFormatButton = document.getElementById('LimitedFormatButton');
-    if (limitedFormatButton) limitedFormatButton.textContent = originalFormValues.limited_format || 'NA';
   }
   
   if (originalFormValues.match_type !== undefined) {

@@ -36,7 +36,6 @@ class Match(db.Model):
 	p2_wins = db.Column(db.Integer)
 	match_winner = db.Column(db.String(2))
 	format = db.Column(db.String(20))
-	limited_format = db.Column(db.String(15))
 	match_type = db.Column(db.String(30))
 	date = db.Column(db.String(20))
 	proc_dt = db.Column(db.DateTime)
@@ -120,7 +119,7 @@ class Draft(db.Model):
 	player8 = db.Column(db.String(30))
 	match_wins = db.Column(db.Integer)
 	match_losses = db.Column(db.Integer)
-	format = db.Column(db.String(20))
+	draft_format = db.Column(db.String(20))
 	date = db.Column(db.String(20))
 	proc_dt = db.Column(db.DateTime)
 	def as_dict(self):

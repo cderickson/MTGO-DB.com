@@ -151,8 +151,8 @@ def get_input_options():
 def get_column_widths(table_name):
 	"""Get column widths for different table types - Updated v2.0"""
 	widths = {
-		# Matches: 17 columns = 100%
-		'matches': ["6%", "9%", "8%", "6%", "9%", "8%", "6%", "4%", "4%", "4%", "3%", "3%", "5%", "6%", "6%", "5%", "8%"],
+		# Matches: 16 columns = 100%
+		'matches': ["6%", "9%", "8%", "6%", "9%", "8%", "6%", "4%", "4%", "4%", "3%", "3%", "5%", "6%", "5%", "8%"],
 		# Games: 11 columns = 100% 
 		'games': ["12%", "12%", "7%", "9%", "9%", "9%", "9%", "8%", "8%", "8%", "9%"],
 		# Plays: 14 columns = 100%
@@ -626,7 +626,6 @@ def process_logs(self, data):
 											p2_wins=match[12],
 											match_winner=match[13],
 											format=match[14],
-											limited_format=match[15],
 											match_type=match[16],
 											date=match[17],
 											proc_dt=proc_dt)
@@ -717,7 +716,7 @@ def process_logs(self, data):
 							existing.player6 = draft[6]
 							existing.player7 = draft[7]
 							existing.player8 = draft[8]
-							existing.format = draft[11]
+							existing.draft_format = draft[11]
 							existing.date = draft[12]
 							existing.proc_dt = proc_dt
 							Pick.query.filter_by(uid=uid, draft_id=draft[0]).delete()
@@ -740,7 +739,7 @@ def process_logs(self, data):
 											player8=draft[8],
 											match_wins=draft[9],
 											match_losses=draft[10],
-											format=draft[11],
+											draft_format=draft[11],
 											date=draft[12],
 											proc_dt=proc_dt)
 							db.session.add(new_draft)
@@ -937,7 +936,6 @@ def process_revisions_from_app(self, data):
 					existing_match.p2_wins = match[12]
 					existing_match.match_winner = match[13]
 					existing_match.format = match[14]
-					existing_match.limited_format = match[15]
 					existing_match.match_type = match[16]
 					existing_match.proc_dt = proc_dt
 					merged_match = db.session.merge(existing_match)
@@ -1120,7 +1118,6 @@ def process_from_app(self, data):
 					existing_match.p2_wins = match[12]
 					existing_match.match_winner = match[13]
 					existing_match.format = match[14]
-					existing_match.limited_format = match[15]
 					existing_match.match_type = match[16]
 					existing_match.proc_dt = proc_dt
 					merged_match = db.session.merge(existing_match)
@@ -1144,7 +1141,6 @@ def process_from_app(self, data):
 									p2_wins=match[12],
 									match_winner=match[13],
 									format=match[14],
-									limited_format=match[15],
 									match_type=match[16],
 									date=match[17],
 									proc_dt=proc_dt)
@@ -1247,7 +1243,7 @@ def process_from_app(self, data):
 						existing_draft.player8 = draft[8]
 						existing_draft.match_wins = draft[9]
 						existing_draft.match_losses = draft[10]
-						existing_draft.format = draft[11]
+						existing_draft.draft_format = draft[11]
 						existing_draft.date = draft[12]
 						existing_draft.proc_dt = proc_dt
 						merged_draft = db.session.merge(existing_draft)
@@ -1267,7 +1263,7 @@ def process_from_app(self, data):
 										player8=draft[8],
 										match_wins=draft[9],
 										match_losses=draft[10],
-										format=draft[11],
+										draft_format=draft[11],
 										date=draft[12],
 										proc_dt=proc_dt)
 						db.session.add(new_draft)
@@ -1582,7 +1578,7 @@ def reprocess_logs(self, data):
 							existing.match_winner = match[13]
 							existing.date = match[17]
 							existing.proc_dt = proc_dt
-							# Preserve user-revised columns: draft_id, p1_arch, p1_subarch, p2_arch, p2_subarch, format, limited_format, match_type
+							# Preserve user-revised columns: draft_id, p1_arch, p1_subarch, p2_arch, p2_subarch, format, match_type
 							counts['matches_updated'] += 1
 						else:
 							new_match = Match(uid=uid,
@@ -1601,7 +1597,6 @@ def reprocess_logs(self, data):
 											p2_wins=match[12],
 											match_winner=match[13],
 											format=match[14],
-											limited_format=match[15],
 											match_type=match[16],
 											date=match[17],
 											proc_dt=proc_dt)
@@ -1702,7 +1697,7 @@ def reprocess_logs(self, data):
 							existing.player8 = draft[8]
 							existing.match_wins = draft[9]
 							existing.match_losses = draft[10]
-							existing.format = draft[11]
+							existing.draft_format = draft[11]
 							existing.date = draft[12]
 							existing.proc_dt = proc_dt
 							counts['drafts_updated'] += 1
@@ -1719,7 +1714,7 @@ def reprocess_logs(self, data):
 											player8=draft[8],
 											match_wins=draft[9],
 											match_losses=draft[10],
-											format=draft[11],
+											draft_format=draft[11],
 											date=draft[12],
 											proc_dt=proc_dt)
 							db.session.add(new_draft)
@@ -2847,8 +2842,6 @@ def api_draft_id_update():
 				possible_draft_ids = draft_ids_100
 			elif len(draft_ids_80) > 0:
 				possible_draft_ids = draft_ids_80
-			else:
-				possible_draft_ids = draft_ids_all
 
 			if len(possible_draft_ids) > 0:
 				# Found next match with possible associations
@@ -3245,7 +3238,7 @@ def profile():
 		elif p2_wins > p1_wins:
 			return f'Loss {p1_wins}-{p2_wins}'
 	
-	def format_match_format(fmt, limited_format):
+	def format_match_format(fmt, limited_format='NA'):
 		if limited_format and limited_format != 'NA':
 			return f'{fmt}: {limited_format}'
 		return fmt
@@ -3264,23 +3257,28 @@ def profile():
 		except ValueError:
 			return date_str
 
-	# Get recent match history (last 10 matches)
-	match_history_query = Match.query.filter(
-		Match.uid == current_user.uid, 
-		Match.p1 == current_user.username
-	).order_by(desc(Match.date)).limit(10)
+	# Get recent match history (last 10 matches) with optional draft info
+	match_history_query = (
+		Match.query
+		.filter(Match.uid == current_user.uid, Match.p1 == current_user.username)
+		.outerjoin(Draft, (Draft.uid == Match.uid) & (Draft.draft_id == Match.draft_id))
+		.add_entity(Draft)
+		.order_by(desc(Match.date))
+		.limit(10)
+	)
 	
 	match_history_data = match_history_query.all()
 	match_history_list = []
 	
-	for match in match_history_data:
+	# Build recent matches list, showing draft format when applicable
+	for match, draft in match_history_data:
 		match_dict = {
 			'Date': format_date(match.date),
 			'Opponent': match.p2,
 			'Deck': match.p1_subarch,
 			'Opp_Deck': match.p2_subarch,
 			'Match_Result': match_result(match.p1_wins, match.p2_wins),
-			'Match_Format': format_match_format(match.format, match.limited_format)
+			'Match_Format': format_match_format(match.format, draft.draft_format if draft else 'NA')
 		}
 		match_history_list.append(match_dict)
 
@@ -3321,7 +3319,6 @@ def filter_options():
 	filter_options_dict['Opponent'] = [i.p2 for i in table.with_entities(Match.p2).distinct().order_by(Match.p2).all()]
 	filter_options_dict['Opponent'].sort(key=str.lower)
 	filter_options_dict['Format'] = [i.format for i in table.with_entities(Match.format).distinct().order_by(Match.format).all()]
-	filter_options_dict['Limited Format'] = [i.limited_format for i in table.with_entities(Match.limited_format).distinct().order_by(Match.limited_format).all()]
 	filter_options_dict['Deck'] = [i.p1_subarch for i in table.with_entities(Match.p1_subarch).distinct().order_by(Match.p1_subarch).all()]
 	filter_options_dict['Opp. Deck'] = [i.p2_subarch for i in table.with_entities(Match.p2_subarch).distinct().order_by(Match.p2_subarch).all()]
 	filter_options_dict['Action'] = ['Land Drop','Casts','Activated Ability','Triggers']
@@ -3429,12 +3426,7 @@ def api_dashboard_filtered_options():
 		format_options = list(set([m.format for m in filtered_matches if m.format]))
 		format_options.sort()
 		filtered_options['Format'] = format_options
-		
-		# Limited Formats
-		limited_format_options = list(set([m.limited_format for m in filtered_matches if m.limited_format]))
-		limited_format_options.sort()
-		filtered_options['Limited Format'] = limited_format_options
-		
+			
 		# Decks (p1_subarch)
 		deck_options = list(set([m.p1_subarch for m in filtered_matches if m.p1_subarch]))
 		deck_options.sort()
@@ -3523,10 +3515,6 @@ def apply_dashboard_filters(query, filters):
 		if filters.get('format'):
 			query = query.filter(Match.format == filters['format'])
 		
-		# Filter by limited format
-		if filters.get('limitedFormat'):
-			query = query.filter(Match.limited_format == filters['limitedFormat'])
-		
 		# Filter by deck (p1_subarch)
 		if filters.get('deck'):
 			query = query.filter(Match.p1_subarch == filters['deck'])
@@ -3565,10 +3553,6 @@ def apply_dashboard_filters_to_play_query(query, filters):
 		if filters.get('format'):
 			query = query.filter(Match.format == filters['format'])
 		
-		# Filter by limited format
-		if filters.get('limitedFormat'):
-			query = query.filter(Match.limited_format == filters['limitedFormat'])
-		
 		# Filter by deck (p1_subarch)
 		if filters.get('deck'):
 			query = query.filter(Match.p1_subarch == filters['deck'])
@@ -3603,10 +3587,6 @@ def apply_dashboard_filters_to_game_query(query, filters):
 		# Filter by format
 		if filters.get('format'):
 			query = query.filter(Match.format == filters['format'])
-		
-		# Filter by limited format
-		if filters.get('limitedFormat'):
-			query = query.filter(Match.limited_format == filters['limitedFormat'])
 		
 		# Filter by deck (p1_subarch)
 		if filters.get('deck'):
@@ -4192,7 +4172,7 @@ def generate_opponent_analysis_dashboard(filtered_query, filters):
 				'tables': [
 					{
 						'title': 'Recent Match History',
-						'headers': ['<center>Date</center>', '<center>Deck</center>', '<center>Opp. Deck</center>', '<center>Match Result</center>', '<center>Match Format</center>', '<center>Match Type</center>'],
+						'headers': ['<center>Date</center>', '<center>Opponent</center>', '<center>Deck</center>', '<center>Opp. Deck</center>', '<center>Match Result</center>', '<center>Match Format</center>', '<center>Match Type</center>'],
 						'height': '400px',
 						'rows': []
 					}
@@ -4247,7 +4227,7 @@ def generate_opponent_analysis_dashboard(filtered_query, filters):
 			except ValueError:
 				return date_str
 		
-		def format_match_format(fmt, limited_format):
+		def format_match_format(fmt, limited_format='NA'):
 			if limited_format and limited_format != 'NA':
 				return f'{fmt}: {limited_format}'
 			return fmt
@@ -4270,7 +4250,14 @@ def generate_opponent_analysis_dashboard(filtered_query, filters):
 		}
 		
 		# Create match history table (most recent matches first)
-		recent_matches = filtered_query.order_by(Match.date.desc()).limit(25).all()
+		recent_matches = (
+			filtered_query
+			.outerjoin(Draft, (Draft.uid == Match.uid) & (Draft.draft_id == Match.draft_id))
+			.add_entity(Draft)
+			.order_by(Match.date.desc())
+			.limit(25)
+			.all()
+		)
 		
 		def get_row_color(result_text):
 			"""Get background color based on match result"""
@@ -4283,20 +4270,23 @@ def generate_opponent_analysis_dashboard(filtered_query, filters):
 		
 		match_history_table = {
 			'title': 'Recent Match History',
-			'headers': ['<center>Date</center>', '<center>Deck</center>', '<center>Opp. Deck</center>', '<center>Match Result</center>', '<center>Match Format</center>', '<center>Match Type</center>'],
+			'headers': ['<center>Date</center>', '<center>Opponent</center>', '<center>Deck</center>', '<center>Opp. Deck</center>', '<center>Match Result</center>', '<center>Match Format</center>', '<center>Match Type</center>'],
 			'height': '400px',
-			'rows': []
+			'rows': [],
+			'columnWidths': ['16%', '14%', '14%', '14%', '14%', '14%', '14%']
 		}
 		
-		for match in recent_matches:
+		# Build recent match rows including draft format when present
+		for match, draft in recent_matches:
 			result_text = match_result(match.p1_wins, match.p2_wins)
 			row_style = get_row_color(result_text)
 			match_history_table['rows'].append([
 				f"<center>{format_date(match.date)}</center>",
+				f"<center>{match.p2}</center>",
 				f"<center>{match.p1_subarch}</center>",
 				f"<center>{match.p2_subarch}</center>",
 				f"<center>{result_text}</center>",
-				f"<center>{format_match_format(match.format, match.limited_format)}</center>",
+				f"<center>{format_match_format(match.format, draft.draft_format if draft else 'NA')}</center>",
 				f"<center>{match.match_type}</center>",
 				row_style  # Add row styling as the 7th element
 			])
@@ -4503,7 +4493,7 @@ def generate_game_data_dashboard(filtered_query, filters):
 			'headers': ['<center></center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Win%</center>', '<center>Mulls/Game</center>', '<center>Opp Mulls/Game</center>', '<center>Turns/Game</center>'],
 			'height': '416px',
 			'rows': table_rows,
-			'columnWidths': ['16%', '14%', '14%', '14%', '14%', '14%', '14%'],  # Option 1: Custom widths
+			'columnWidths': ['16%', '14%', '14%', '14%', '14%', '14%', '14%']  # Option 1: Custom widths
 		}
 
 		return {
@@ -4858,7 +4848,6 @@ def api_match_revise():
 				if data.get('p2_subarch'): match.p2_subarch = data['p1_subarch']
 			
 			if data.get('format'): match.format = data['format']
-			if data.get('limited_format'): match.limited_format = data['limited_format']
 			if data.get('match_type'): match.match_type = data['match_type']
 		
 		try:
@@ -4933,8 +4922,6 @@ def api_match_revise_multi():
 			elif field_to_change == 'Format':
 				if data.get('format'):
 					match.format = data['format']
-				if data.get('limited_format'):
-					match.limited_format = data['limited_format']
 				
 				# Handle Limited format archetype changes
 				if data.get('format') in options.get('Limited Formats', []):

@@ -33,6 +33,21 @@ class TableManager {
       }
       
       if (existingRows.length > 0) {
+        // Derive current page from rendered page info if available
+        const pageInfoEl = document.querySelector('.page-info');
+        if (pageInfoEl && pageInfoEl.textContent) {
+          const match = pageInfoEl.textContent.match(/Page\s+(\d+)/i);
+          if (match) {
+            this.currentPage = parseInt(match[1], 10) || this.currentPage;
+          }
+        } else {
+          // Fallback to URL path parsing: /table/<table>/<page>
+          const parts = window.location.pathname.split('/').filter(Boolean);
+          if (parts.length === 3 && parts[0] === 'table') {
+            const maybePage = parseInt(parts[2], 10);
+            if (!Number.isNaN(maybePage)) this.currentPage = maybePage;
+          }
+        }
         // We have pre-loaded data (drill-down mode), just set up interactions
         this.setupEventListeners();
         this.updateButtonStates();
@@ -168,7 +183,7 @@ class TableManager {
           row.draft_id, row.p1, row.p1_arch, row.p1_subarch,
           row.p2, row.p2_arch, row.p2_subarch, row.p1_roll, row.p2_roll,
           row.roll_winner, row.p1_wins, row.p2_wins, row.match_winner,
-          row.format, row.limited_format, row.match_type, row.date
+          row.format, row.match_type, row.date
         ];
       case 'games':
         return [
@@ -438,7 +453,6 @@ class TableManager {
         p2_arch: data.p2_arch,
         p2_subarch: data.p2_subarch,
         format: data.format,
-        limited_format: data.limited_format,
         match_type: data.match_type
       };
     }
@@ -503,7 +517,6 @@ class TableManager {
     this.updateDropdownValue('P1ArchButton', data.p1_arch);
     this.updateDropdownValue('P2ArchButton', data.p2_arch);
     this.updateDropdownValue('FormatButton', data.format);
-    this.updateDropdownValue('LimitedFormatButton', data.limited_format);
     this.updateDropdownValue('MatchTypeButton', data.match_type);
 
     // Update text inputs
@@ -534,7 +547,6 @@ class TableManager {
   async handleFormatChange(format) {
     const p1ArchButton = document.getElementById('P1ArchButton');
     const p2ArchButton = document.getElementById('P2ArchButton');
-    const limitedFormatButton = document.getElementById('LimitedFormatButton');
 
     // Ensure input options are loaded
     await this.loadInputOptions();
@@ -560,12 +572,6 @@ class TableManager {
           p2ArchButton.textContent = 'Limited';
         }
       }
-      if (limitedFormatButton) {
-        limitedFormatButton.disabled = false;
-      }
-
-      // Populate Limited Format dropdown menu based on the format
-      this.populateLimitedFormatMenu(format);
     } else {
       // Constructed format
       if (p1ArchButton) {
@@ -574,41 +580,6 @@ class TableManager {
       if (p2ArchButton) {
         p2ArchButton.disabled = false;
       }
-      if (limitedFormatButton) {
-        limitedFormatButton.disabled = true;
-        const span = limitedFormatButton.querySelector('span');
-        if (span) {
-          span.textContent = 'NA';
-        } else {
-          limitedFormatButton.textContent = 'NA';
-        }
-      }
-    }
-  }
-
-  populateLimitedFormatMenu(format) {
-    const limitedFormatMenu = document.getElementById("LimitedFormatMenu");
-    if (!limitedFormatMenu || !this.inputOptions) return;
-
-    // Clear the menu first
-    limitedFormatMenu.innerHTML = '';
-
-    // Populate based on the limited format type
-    if (format === "Booster Draft") {
-      const formats = this.inputOptions["Booster Draft Formats"] || [];
-      limitedFormatMenu.innerHTML = formats.map(fmt => 
-        `<li onclick="showLimitedFormat(this)">${fmt}</li>`
-      ).join('');
-    } else if (format === "Sealed Deck") {
-      const formats = this.inputOptions["Sealed Formats"] || [];
-      limitedFormatMenu.innerHTML = formats.map(fmt => 
-        `<li onclick="showLimitedFormat(this)">${fmt}</li>`
-      ).join('');
-    } else if (format === "Cube") {
-      const formats = this.inputOptions["Cube Formats"] || [];
-      limitedFormatMenu.innerHTML = formats.map(fmt => 
-        `<li onclick="showLimitedFormat(this)">${fmt}</li>`
-      ).join('');
     }
   }
 
@@ -924,7 +895,16 @@ document.addEventListener('DOMContentLoaded', function() {
   console.log('TableManager: tname element:', tableNameElement);
   if (tableNameElement) {
     const tableName = tableNameElement.value;
-    const pageNum = parseInt(new URLSearchParams(window.location.search).get('page')) || 1;
+    // Prefer path segment for page number: /table/<table>/<page>
+    let pageNum = parseInt(new URLSearchParams(window.location.search).get('page'));
+    if (Number.isNaN(pageNum) || !pageNum) {
+      const parts = window.location.pathname.split('/').filter(Boolean);
+      if (parts.length === 3 && parts[0] === 'table' && parts[1] === tableName) {
+        const maybePage = parseInt(parts[2], 10);
+        if (!Number.isNaN(maybePage)) pageNum = maybePage;
+      }
+    }
+    if (Number.isNaN(pageNum) || !pageNum) pageNum = 1;
     console.log('TableManager: Initializing with table:', tableName, 'page:', pageNum);
     
     tableManager = new TableManager(tableName, pageNum);
@@ -948,7 +928,6 @@ function changeHiddenInputs() {
     p2_arch: document.getElementById('P2ArchButton')?.textContent,
     p2_subarch: document.getElementById('P2_Subarch')?.value,
     format: document.getElementById('FormatButton')?.textContent,
-    limited_format: document.getElementById('LimitedFormatButton')?.textContent,
     match_type: document.getElementById('MatchTypeButton')?.textContent
   };
 
@@ -984,7 +963,6 @@ function changeHiddenInputsMulti() {
     p2_arch: getButtonText('P2ArchButtonMulti'),
     p2_subarch: document.getElementById('P2_Subarch_Multi')?.value?.trim(),
     format: getButtonText('FormatButtonMulti'),
-    limited_format: getButtonText('LimitedFormatButtonMulti'),
     match_type: getButtonText('MatchTypeButtonMulti')
   };
 
@@ -1051,48 +1029,8 @@ function showFormat(item) {
       console.error('Error handling format change:', err)
     );
   }
-  
-  // Populate limited format menu based on selected format
-  if (tableManager && tableManager.inputOptions) {
-    const constructedFormats = tableManager.inputOptions['Constructed Formats'] || [];
-    const limitedFormatButton = document.getElementById("LimitedFormatButton");
-    
-    if (!constructedFormats.includes(item.innerHTML) && item.innerHTML !== "NA") {
-      // This is a limited format, populate the dropdown
-      const limitedFormatMenu = document.getElementById("LimitedFormatMenu");
-      if (limitedFormatMenu && limitedFormatButton) {
-        limitedFormatButton.textContent = 'NA';
-        
-        if (item.innerHTML === "Booster Draft") {
-          const formats = tableManager.inputOptions["Booster Draft Formats"] || [];
-          limitedFormatMenu.innerHTML = formats.map(format => 
-            `<li onclick="showLimitedFormat(this)">${format}</li>`
-          ).join('');
-        } else if (item.innerHTML === "Sealed Deck") {
-          const formats = tableManager.inputOptions["Sealed Formats"] || [];
-          limitedFormatMenu.innerHTML = formats.map(format => 
-            `<li onclick="showLimitedFormat(this)">${format}</li>`
-          ).join('');
-        } else if (item.innerHTML === "Cube") {
-          const formats = tableManager.inputOptions["Cube Formats"] || [];
-          limitedFormatMenu.innerHTML = formats.map(format => 
-            `<li onclick="showLimitedFormat(this)">${format}</li>`
-          ).join('');
-        }
-      }
-    }
-  }
 }
-function showLimitedFormat(item) { 
-  const button = document.getElementById("LimitedFormatButton");
-  const span = button.querySelector('span');
-  if (span) {
-    span.textContent = item.textContent;
-  } else {
-    button.innerHTML = item.innerHTML;
-  }
-  closeAllDropdowns();
-}
+
 function showMatchType(item) { 
   const button = document.getElementById("MatchTypeButton");
   const span = button.querySelector('span');
@@ -1114,46 +1052,6 @@ function showP2ArchMulti(item) {
 }
 function showFormatMulti(item) { 
   document.getElementById("FormatButtonMulti").innerHTML = item.innerHTML;
-  closeAllDropdowns();
-  
-  // Handle limited format logic
-  if (tableManager && tableManager.inputOptions) {
-    const constructedFormats = tableManager.inputOptions['Constructed Formats'] || [];
-    if (constructedFormats.includes(item.innerHTML)) {
-      document.getElementById("LimitedFormatButtonMulti").innerHTML = "NA";
-      document.getElementById("LimitedFormatButtonMulti").disabled = true;
-    } else if (item.innerHTML === "NA") {
-      document.getElementById("LimitedFormatButtonMulti").innerHTML = "NA";
-      document.getElementById("LimitedFormatButtonMulti").disabled = true;
-    } else {
-      document.getElementById("LimitedFormatButtonMulti").innerHTML = "NA";
-      document.getElementById("LimitedFormatButtonMulti").disabled = false;
-      
-      // Populate limited format menu based on selected format
-      const limitedFormatMenu = document.getElementById("LimitedFormatMenuMulti");
-      if (limitedFormatMenu && tableManager.inputOptions) {
-        if (item.innerHTML === "Booster Draft") {
-          const formats = tableManager.inputOptions["Booster Draft Formats"] || [];
-          limitedFormatMenu.innerHTML = formats.map(format => 
-            `<li onclick="showLimitedFormatMulti(this)">${format}</li>`
-          ).join('');
-        } else if (item.innerHTML === "Sealed Deck") {
-          const formats = tableManager.inputOptions["Sealed Formats"] || [];
-          limitedFormatMenu.innerHTML = formats.map(format => 
-            `<li onclick="showLimitedFormatMulti(this)">${format}</li>`
-          ).join('');
-        } else if (item.innerHTML === "Cube") {
-          const formats = tableManager.inputOptions["Cube Formats"] || [];
-          limitedFormatMenu.innerHTML = formats.map(format => 
-            `<li onclick="showLimitedFormatMulti(this)">${format}</li>`
-          ).join('');
-        }
-      }
-    }
-  }
-}
-function showLimitedFormatMulti(item) { 
-  document.getElementById("LimitedFormatButtonMulti").innerHTML = item.innerHTML;
   closeAllDropdowns();
 }
 function showMatchTypeMulti(item) { 
