@@ -620,12 +620,42 @@ class TableManager {
   async showReviseMultiModal() {
     await this.populateDropdownMenus();
     
+    // Reset multi-modal dropdowns/inputs to default 'NA'
+    this.resetMultiModalFields();
+
     // Initialize field container visibility (default is P1 Deck)
     this.initializeMultiModalFields();
     
     const modal = document.getElementById('ReviseMultiModal');
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+  }
+
+  resetMultiModalFields() {
+    const setText = (id, text) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const span = el.querySelector && el.querySelector('span');
+      if (span) {
+        span.textContent = text;
+      } else {
+        el.innerHTML = text;
+      }
+    };
+
+    // Reset P1/P2 archetype buttons
+    setText('P1ArchButtonMulti', 'NA');
+    setText('P2ArchButtonMulti', 'NA');
+
+    // Reset subarch text inputs
+    const p1Sub = document.getElementById('P1_Subarch_Multi');
+    if (p1Sub) p1Sub.value = 'NA';
+    const p2Sub = document.getElementById('P2_Subarch_Multi');
+    if (p2Sub) p2Sub.value = 'NA';
+
+    // Reset format and match type buttons
+    setText('FormatButtonMulti', 'NA');
+    setText('MatchTypeButtonMulti', 'NA');
   }
 
   initializeMultiModalFields() {

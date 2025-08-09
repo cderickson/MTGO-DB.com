@@ -375,7 +375,7 @@
 
 .card-content {
     border-radius: 6px;
-    min-height: 250px;
+    min-height: 275px;
     padding: 12px;
     font-size: 13px;
     color: #333;
@@ -894,4 +894,14 @@
     outline: none;
     border-color: #0039A6;
     box-shadow: 0 0 0 3px rgba(0, 57, 166, 0.1);
+}
+
+/* Ensure Revise modals' footer button layout matches base modal footers */
+#ReviseModal .modal-footer > div,
+#ReviseMultiModal .modal-footer > div,
+#RemoveModal .modal-footer > div {
+    display: flex;
+    gap: 12px; /* match .modal-footer gap in base.css */
+    justify-content: flex-end; /* align buttons to the right like base */
+    width: 100%;
 }

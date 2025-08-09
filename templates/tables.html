@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
-{% block title %}MTGO-DB - Tables{% endblock %}
-{% block page_title %}Tables{% endblock %}
+{% block title %}MTGO-DB - Database Tables{% endblock %}
+{% block page_title %}Database Tables{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
@@ -66,20 +66,30 @@
         </div>
         
         <!-- Full-width info message -->
-        {% if table_name.lower() in ['matches', 'games', 'drafts'] %}
+        {% if table_name.lower() in ['matches'] %}
         <div class="table-hint">
           <i class="fas fa-info-circle"></i>
-          Double-click rows to drill down to related data
+          Double-click rows to drill down into the selected Match.
+        </div>
+        {% elif table_name.lower() in ['games'] %}
+        <div class="table-hint">
+          <i class="fas fa-info-circle"></i>
+          Double-click rows to drill down into the selected Game.
+        </div>
+        {% elif table_name.lower() in ['drafts'] %}
+        <div class="table-hint">
+          <i class="fas fa-info-circle"></i>
+          Double-click rows to drill down into the selected Draft.
         </div>
         {% elif table_name.lower() in ['plays', 'picks'] %}
         <div class="table-hint">
           <i class="fas fa-info-circle"></i>
-          Click Back to return to the previous view
+          Click the Back button to return to the previous view.
         </div>
         {% elif table_name.lower() in ['ignored'] %}
         <div class="table-hint">
           <i class="fas fa-info-circle"></i>
-          Remove matches from your Ignored list and they will be scanned during your next import
+          Remove matches from your Ignored list and they will be scanned during your next import.
         </div>
         {% endif %}
       </div>
@@ -803,7 +813,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!table) return;
     
     const headers = table.querySelectorAll('thead th');
-    const leftAlignHeaders = ['Player 1', 'Player 2', 'P1 Subdeck', 'P2 Subdeck'];
+    const leftAlignHeaders = [];
     
     headers.forEach((header, index) => {
       const headerText = header.textContent.trim();
@@ -816,20 +826,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       }
     });
-  }
-  
-  // Enhanced row selection with visual feedback - handled by TableManager
-  function enhanceRowSelection() {
-    // Row selection is now handled by the TableManager class
-    // This function is kept for compatibility but does nothing
-    return;
-  }
-  
-  // Update button states based on current selection - handled by TableManager
-  function updateButtonStates() {
-    // Button state management is now handled by the TableManager class
-    // This function is kept for compatibility but does nothing
-    return;
   }
   
   // Function to add tooltips to all cell content

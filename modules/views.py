@@ -1,7 +1,7 @@
 from flask import render_template, request, Blueprint, flash, redirect, send_file, Response, jsonify, redirect, url_for, current_app, session, after_this_request
 from flask_mail import Mail, Message
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import func, create_engine, desc, select, and_, asc
+from sqlalchemy import func, create_engine, desc, select, and_, asc, case
 from sqlalchemy.sql.expression import not_
 from flask_login import login_user, login_required, logout_user, current_user
 from datetime import datetime, timedelta
@@ -152,11 +152,11 @@ def get_column_widths(table_name):
 	"""Get column widths for different table types - Updated v2.0"""
 	widths = {
 		# Matches: 16 columns = 100%
-		'matches': ["6%", "9%", "8%", "6%", "9%", "8%", "6%", "4%", "4%", "4%", "3%", "3%", "5%", "6%", "5%", "8%"],
+		'matches': ["10%", "6%", "6%", "6%", "6%", "6%", "6%", "6%", "6%", "6%", "6%", "6%", "6%", "6%", "6%", "6%"],
 		# Games: 11 columns = 100% 
-		'games': ["12%", "12%", "7%", "9%", "9%", "9%", "9%", "8%", "8%", "8%", "9%"],
+		'games': ["12%", "12%", "8%", "8%", "9%", "9%", "9%", "8%", "8%", "8%", "9%"],
 		# Plays: 14 columns = 100%
-		'plays': ["5%", "5%", "5%", "10%", "8%", "12%", "9%", "7%", "7%", "7%", "7%", "6%", "7%", "5%"],
+		'plays': ["5%", "5%", "5%", "10%", "7%", "7%", "7%", "7%", "7%", "7%", "7%", "6%", "10%", "10%"],
 		# Drafts: 12 columns = 100%
 		'drafts': ["8%", "7%", "7%", "7%", "7%", "7%", "7%", "7%", "9%", "9%", "12%", "13%"],
 		# Picks: 18 columns - Compact widths to fit without horizontal scroll
@@ -2815,6 +2815,10 @@ def api_draft_id_update():
 			spells = list(modo.clean_card_set(set(spells), multifaced))
 
 			# Find possible draft IDs based on card overlap
+			debug_log(f"next_match.match_id: {next_match.match_id}")
+			debug_log(f"next_match.date: {next_match.date}")
+			debug_log(f"nb_lands: {nb_lands}")
+			debug_log(f"spells: {spells}")
 			draft_ids_100 = []
 			draft_ids_80 = []
 			draft_ids_all = []
@@ -2835,6 +2839,9 @@ def api_draft_id_update():
 					draft_ids_80.append(draft.draft_id)
 				else:
 					draft_ids_all.append(draft.draft_id)
+			debug_log(f"draft_ids_100: {len(draft_ids_100)}")
+			debug_log(f"draft_ids_80: {len(draft_ids_80)}")
+			debug_log(f"draft_ids_all: {len(draft_ids_all)}")
 			
 			# Prioritize better matches
 			possible_draft_ids = []
@@ -3630,6 +3637,46 @@ def generate_match_performance_dashboard(filtered_query, filters):
 		# Calculate games statistics
 		total_games = sum([m.p1_wins + m.p2_wins for m in matches])
 		avg_games_per_match = (total_games / total_matches) if total_matches > 0 else 0
+
+		# Build rolling match win rate (last 25 matches)
+		# Use already-filtered matches; order by date
+		matches_seq = sorted(matches, key=lambda m: (m.date or ''))
+		# Convert to sequential outcomes (1 for match win, 0 otherwise)
+		match_outcomes = [1 if m.match_winner == 'P1' else 0 for m in matches_seq]
+		labels_matches = list(range(1, len(match_outcomes) + 1))
+		window = 25
+		rolling_wr = []
+		cumsum = 0
+		from collections import deque
+		window_q = deque()
+		for val in match_outcomes:
+			window_q.append(val)
+			cumsum += val
+			if len(window_q) > window:
+				cumsum -= window_q.popleft()
+			current_len = len(window_q)
+			rolling_wr.append(round((cumsum / current_len) * 100, 1) if current_len > 0 else 0)
+
+		rolling_win_chart = {
+			'title': 'Rolling Match Win Rate',
+			'type': 'line',
+			'xTitle': 'Match Number',
+			'yTitle': 'Win Rate %',
+			'chartTitle': 'Rolling Match Win Rate',
+			'chartSubtitle': 'Previous 25 Matches',
+			'data': {
+				'labels': labels_matches,
+				'datasets': [{
+					'label': 'Win Rate %',
+					'data': rolling_wr,
+					'borderColor': '#0039A6',
+					'backgroundColor': 'rgba(0,57,166,0.15)',
+					'tension': 0.25,
+					'fill': False,
+					'borderWidth': 2
+				}]
+			}
+		}
 		
 		# Performance by Format
 		if matches:
@@ -3662,14 +3709,16 @@ def generate_match_performance_dashboard(filtered_query, filters):
 					f"<center>{int(row['wins'])}</center>",
 					f"<center>{int(row['losses'])}</center>",
 					f"<center>{row['win_pct']:.1f}%</center>"
-				] for _, row in format_stats.iterrows()]
+				] for _, row in format_stats.iterrows()],
+				'columnWidths': ['25%', '25%', '25%', '25%']
 			}
 		else:
 			format_performance_table = {
 				'title': 'Performance by Format',
 				'headers': ['<center>Format</center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Match Win%</center>'],
 				'height': '214px',
-				'rows': []
+				'rows': [],
+				'columnWidths': ['25%', '25%', '25%', '25%']
 			}
 		
 		# Performance by Match Type
@@ -3703,14 +3752,16 @@ def generate_match_performance_dashboard(filtered_query, filters):
 					f"<center>{int(row['wins'])}</center>",
 					f"<center>{int(row['losses'])}</center>",
 					f"<center>{row['win_pct']:.1f}%</center>"
-				] for _, row in matchtype_stats.iterrows()]
+				] for _, row in matchtype_stats.iterrows()],
+				'columnWidths': ['25%', '25%', '25%', '25%']
 			}
 		else:
 			matchtype_performance_table = {
 				'title': 'Performance by Match Type',
 				'headers': ['<center>Match Type</center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Match Win%</center>'],
 				'height': '214px',
-				'rows': []
+				'rows': [],
+				'columnWidths': ['25%', '25%', '25%', '25%']
 			}
 
 		# Decks Played
@@ -3746,14 +3797,16 @@ def generate_match_performance_dashboard(filtered_query, filters):
 					f"<center>{int(row['wins'])}</center>",
 					f"<center>{int(row['losses'])}</center>",
 					f"<center>{row['win_pct']:.1f}%</center>"
-				] for _, row in deck_stats.iterrows()]
+				] for _, row in deck_stats.iterrows()],
+				'columnWidths': ['20%', '20%', '20%', '20%', '20%']
 			}
 		else:
 			deck_performance_table = {
 				'title': 'Decks Played',
 				'headers': ['<center>Deck</center>', '<center>Share</center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Match Win%</center>'],
 				'height': '214px',
-				'rows': []
+				'rows': [],
+				'columnWidths': ['20%', '20%', '20%', '20%', '20%']
 			}
 
 		# Observed Metagame
@@ -3789,14 +3842,16 @@ def generate_match_performance_dashboard(filtered_query, filters):
 					f"<center>{int(row['wins'])}</center>",
 					f"<center>{int(row['losses'])}</center>",
 					f"<center>{row['win_pct']:.1f}%</center>"
-				] for _, row in deck_stats.iterrows()]
+				] for _, row in deck_stats.iterrows()],
+				'columnWidths': ['20%', '20%', '20%', '20%', '20%']
 			}
 		else:
 			oppdeck_performance_table = {
 				'title': 'Observed Metagame',
 				'headers': ['<center>Deck</center>', '<center>Share</center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Match Win%</center>'],
 				'height': '214px',
-				'rows': []
+				'rows': [],
+				'columnWidths': ['20%', '20%', '20%', '20%', '20%']
 			}
 		
 		return {
@@ -3820,19 +3875,7 @@ def generate_match_performance_dashboard(filtered_query, filters):
 					'type': 'percentage'
 				}
 			],
-			'charts': [
-				{
-					'title': 'Win Rate Over Time',
-					'type': 'line',
-					'data': {
-						'labels': [],  # TODO: Generate time-based labels
-						'datasets': [{
-							'label': 'Win Rate',
-							'data': []  # TODO: Calculate win rate over time
-						}]
-					}
-				}
-			],
+			'charts': [rolling_win_chart],
 			'table_grids': [
 				{
 					'type': '2x2',
@@ -3981,14 +4024,16 @@ def generate_card_analysis_dashboard(filtered_query, filters):
 					row['card'],
 					f"<center>{int(row['games_cast'])} - ({row['games_cast_pct']:.1f}%)</center>",
 					f"<center>{row['game_win_pct']:.1f}%</center>"
-				] for _, row in card_games_g1.iterrows()]
+				] for _, row in card_games_g1.iterrows()],
+				'columnWidths': ['34%', '33%', '33%']
 			}
 		else:
 			game1_table = {
 				'title': f'Pre-Sideboard Card Performance ({perspective_label})',
 				'headers': ['<center>Card</center>', '<center>Games Cast</center>', '<center>Hero Game Win%</center>'],
 				'height': '400px',
-				'rows': []
+				'rows': [],
+				'columnWidths': ['34%', '33%', '33%']
 			}
 		
 		# Games 2/3 Analysis
@@ -4057,14 +4102,16 @@ def generate_card_analysis_dashboard(filtered_query, filters):
 					row['card'],
 					f"<center>{int(row['games_cast'])} - ({row['games_cast_pct']:.1f}%)</center>",
 					f"<center>{row['game_win_pct']:.1f}%</center>"
-				] for _, row in card_games_g23.iterrows()]
+				] for _, row in card_games_g23.iterrows()],
+				'columnWidths': ['34%', '33%', '33%']
 			}
 		else:
 			games23_table = {
 				'title': f'Post-Sideboard Card Performance ({perspective_label})',
 				'headers': ['<center>Card</center>', '<center>Games Cast</center>', '<center>Hero Game Win%</center>'],
 				'height': '400px',
-				'rows': []
+				'rows': [],
+				'columnWidths': ['34%', '33%', '33%']
 			}
 		
 
@@ -4174,7 +4221,8 @@ def generate_opponent_analysis_dashboard(filtered_query, filters):
 						'title': 'Recent Match History',
 						'headers': ['<center>Date</center>', '<center>Opponent</center>', '<center>Deck</center>', '<center>Opp. Deck</center>', '<center>Match Result</center>', '<center>Match Format</center>', '<center>Match Type</center>'],
 						'height': '400px',
-						'rows': []
+						'rows': [],
+						'columnWidths': ['16%', '14%', '14%', '14%', '14%', '14%', '14%']
 					}
 				],
 				'table_grids': [
@@ -4187,13 +4235,15 @@ def generate_opponent_analysis_dashboard(filtered_query, filters):
 									'title': 'Opponent Performance',
 									'headers': ['<center>Opponent</center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Win% Against</center>'],
 									'height': '300px',
-									'rows': []
+									'rows': [],
+									'columnWidths': ['31%', '23%', '23%', '23%']
 								},
 								{
 									'title': 'Decks Played',
 									'headers': ['<center>Deck</center>', '<center>Share</center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Win% Against</center>'],
 									'height': '300px',
-									'rows': []
+									'rows': [],
+									'columnWidths': ['24%', '19%', '19%', '19%', '19%']
 								}
 							]
 						]
@@ -4246,7 +4296,8 @@ def generate_opponent_analysis_dashboard(filtered_query, filters):
 				f"<center>{opp[1]['wins']}</center>",
 				f"<center>{opp[1]['losses']}</center>",
 				f"<center>{opp[1]['win_rate']:.1f}%</center>"
-			] for opp in top_opponents]
+			] for opp in top_opponents],
+			'columnWidths': ['31%', '23%', '23%', '23%']
 		}
 		
 		# Create match history table (most recent matches first)
@@ -4326,14 +4377,16 @@ def generate_opponent_analysis_dashboard(filtered_query, filters):
 					f"<center>{int(row['wins'])}</center>",
 					f"<center>{int(row['losses'])}</center>",
 					f"<center>{row['win_pct']:.1f}%</center>"
-				] for _, row in deck_stats.iterrows()]
+				] for _, row in deck_stats.iterrows()],
+				'columnWidths': ['24%', '19%', '19%', '19%', '19%']
 			}
 		else:
 			observed_metagame_table = {
 				'title': 'Decks Played',
 				'headers': ['<center>Deck</center>', '<center>Share</center>', '<center>Wins</center>', '<center>Losses</center>', '<center>Win% Against</center>'],
 				'height': '300px',
-				'rows': []
+				'rows': [],
+				'columnWidths': ['24%', '19%', '19%', '19%', '19%']
 			}
 		
 		return {
@@ -4390,9 +4443,7 @@ def generate_opponent_analysis_dashboard(filtered_query, filters):
 
 def generate_game_data_dashboard(filtered_query, filters):
 	"""Generate game data dashboard with hierarchical statistics"""
-	try:
-		matches = filtered_query.all()
-		
+	try:		
 		# Get games for filtered matches with joins
 		games_query = db.session.query(Game).join(Match,
 			(Game.uid == Match.uid) & (Game.match_id == Match.match_id) & (Game.p1 == Match.p1)
@@ -4496,6 +4547,91 @@ def generate_game_data_dashboard(filtered_query, filters):
 			'columnWidths': ['16%', '14%', '14%', '14%', '14%', '14%', '14%']  # Option 1: Custom widths
 		}
 
+		# Build stacked bar chart: Actions by Turn
+		# Join Match → Game → Play with special counting rules
+		value_expr = case(
+				(Play.action == 'Attacks', func.coalesce(Play.attackers, 0)),
+				(Play.action == 'Draws', func.coalesce(Play.cards_drawn, 0)),
+				else_=1
+		)
+
+		play_query = db.session.query(
+			Play.turn_num.label('turn_num'),
+			Play.action.label('action'),
+			func.sum(value_expr).label('action_count')
+		).join(
+				Game,
+				(Game.uid == Play.uid) & (Game.match_id == Play.match_id) & (Game.game_num == Play.game_num)
+		).join(
+				Match,
+				(Match.uid == Game.uid) & (Match.match_id == Game.match_id) & (Match.p1 == Game.p1)
+		).filter(
+				Match.uid == current_user.uid,
+				Match.p1 == current_user.username
+		)
+
+		# Apply filters consistent with dashboards (expects Match already joined)
+		play_query = apply_dashboard_filters_to_play_query(play_query, filters)
+
+		# Apply chart-specific casting perspective (only affects this chart)
+		chart_casting = (filters.get('chartCasting') or 'hero').lower()
+		if chart_casting == 'hero':
+				play_query = play_query.filter(Play.casting_player == current_user.username)
+		elif chart_casting == 'opponents':
+				play_query = play_query.filter(Play.casting_player != current_user.username)
+
+		# Apply mulligan filters to the Play-based query as well
+		if hero_mulls_filter > 0:
+			play_query = play_query.filter(Game.p1_mulls >= hero_mulls_filter)
+		if opp_mulls_filter > 0:
+			play_query = play_query.filter(Game.p2_mulls >= opp_mulls_filter)
+
+		play_query = play_query.group_by(Play.turn_num, Play.action).order_by(asc(Play.turn_num))
+		action_rows = play_query.all()
+
+		# Prepare chart data
+		turn_labels = sorted({row.turn_num for row in action_rows if row.turn_num is not None})
+		actions = sorted({row.action for row in action_rows if row.action is not None})
+
+		# Map (action, turn) → count
+		counts = {}
+		for row in action_rows:
+				if row.turn_num is None or row.action is None:
+						continue
+				counts[(row.action, row.turn_num)] = int(row.action_count or 0)
+
+		datasets = []
+		for action_name in actions:
+				data_points = [counts.get((action_name, t), 0) for t in turn_labels]
+				datasets.append({
+						'label': action_name,
+						'data': data_points
+				})
+
+		# Determine chart subtitle based on casting perspective
+		if chart_casting == 'hero':
+			chart_subtitle = 'Casting Player: Hero'
+		elif chart_casting == 'opponents':
+			chart_subtitle = 'Casting Player: Opponent'
+		else:
+			chart_subtitle = ''
+
+		actions_by_turn_chart = {
+			'title': 'Actions by Turn (Stacked)',
+			'type': 'bar',
+			'stacked': True,
+			'xTitle': 'Turn Number',
+			'yTitle': 'Game Actions',
+			'chartTitle': 'Total Game Actions by Turn Number',
+			'chartSubtitle': chart_subtitle,
+			'chartPerspectiveControls': True,
+			'chartCastingApplied': chart_casting,
+			'data': {
+				'labels': turn_labels,
+				'datasets': datasets
+			}
+		}
+   
 		return {
 			'metrics': [
 				{
@@ -4517,7 +4653,9 @@ def generate_game_data_dashboard(filtered_query, filters):
 					'type': 'percentage'
 				}
 			],
-			'charts': [],
+			'charts': [
+				actions_by_turn_chart
+			],
 			'tables': [
 				game_performance_table
 			]
@@ -4834,21 +4972,32 @@ def api_match_revise():
 		if not matches:
 			return jsonify({'error': 'Match not found'}), 404
 		
+		# Small helper to strip strings
+		clean = lambda v: v.strip() if isinstance(v, str) else v
+
 		# Update match data
 		for match in matches:
+			# Pre-clean inputs
+			p1_arch_in = clean(data.get('p1_arch'))
+			p1_subarch_in = clean(data.get('p1_subarch'))
+			p2_arch_in = clean(data.get('p2_arch'))
+			p2_subarch_in = clean(data.get('p2_subarch'))
+			format_in = clean(data.get('format'))
+			match_type_in = clean(data.get('match_type'))
+
 			if match.p1 == current_user.username:
-				if data.get('p1_arch'): match.p1_arch = data['p1_arch']
-				if data.get('p1_subarch'): match.p1_subarch = data['p1_subarch']
-				if data.get('p2_arch'): match.p2_arch = data['p2_arch']
-				if data.get('p2_subarch'): match.p2_subarch = data['p2_subarch']
+				if p1_arch_in: match.p1_arch = p1_arch_in
+				if p1_subarch_in: match.p1_subarch = p1_subarch_in
+				if p2_arch_in: match.p2_arch = p2_arch_in
+				if p2_subarch_in: match.p2_subarch = p2_subarch_in
 			else:
-				if data.get('p1_arch'): match.p1_arch = data['p2_arch']
-				if data.get('p1_subarch'): match.p1_subarch = data['p2_subarch']
-				if data.get('p2_arch'): match.p2_arch = data['p1_arch']
-				if data.get('p2_subarch'): match.p2_subarch = data['p1_subarch']
+				if p1_arch_in: match.p1_arch = p2_arch_in
+				if p1_subarch_in: match.p1_subarch = p2_subarch_in
+				if p2_arch_in: match.p2_arch = p1_arch_in
+				if p2_subarch_in: match.p2_subarch = p1_subarch_in
 			
-			if data.get('format'): match.format = data['format']
-			if data.get('match_type'): match.match_type = data['match_type']
+			if format_in: match.format = format_in
+			if match_type_in: match.match_type = match_type_in
 		
 		try:
 			db.session.commit()
@@ -4893,38 +5042,50 @@ def api_match_revise_multi():
 		if not matches:
 			return jsonify({'error': 'No matches found'}), 404
 		
+		# Small helper to strip strings
+		clean = lambda v: v.strip() if isinstance(v, str) else v
+
 		# Apply changes based on field type
 		for match in matches:
 			if field_to_change == 'P1 Deck':
 				if match.p1 == current_user.username:
-					if match.p1_arch != 'Limited' and data.get('p1_arch'):
-						match.p1_arch = data['p1_arch']
-					if data.get('p1_subarch'):
-						match.p1_subarch = data['p1_subarch']
+					p1_arch_in = clean(data.get('p1_arch'))
+					p1_subarch_in = clean(data.get('p1_subarch'))
+					if match.p1_arch != 'Limited' and p1_arch_in:
+						match.p1_arch = p1_arch_in
+					if p1_subarch_in:
+						match.p1_subarch = p1_subarch_in
 				else:
-					if match.p2_arch != 'Limited' and data.get('p1_arch'):
-						match.p2_arch = data['p1_arch']
-					if data.get('p1_subarch'):
-						match.p2_subarch = data['p1_subarch']
+					p1_arch_in = clean(data.get('p1_arch'))
+					p1_subarch_in = clean(data.get('p1_subarch'))
+					if match.p2_arch != 'Limited' and p1_arch_in:
+						match.p2_arch = p1_arch_in
+					if p1_subarch_in:
+						match.p2_subarch = p1_subarch_in
 			
 			elif field_to_change == 'P2 Deck':
 				if match.p1 == current_user.username:
-					if match.p2_arch != 'Limited' and data.get('p2_arch'):
-						match.p2_arch = data['p2_arch']
-					if data.get('p2_subarch'):
-						match.p2_subarch = data['p2_subarch']
+					p2_arch_in = clean(data.get('p2_arch'))
+					p2_subarch_in = clean(data.get('p2_subarch'))
+					if match.p2_arch != 'Limited' and p2_arch_in:
+						match.p2_arch = p2_arch_in
+					if p2_subarch_in:
+						match.p2_subarch = p2_subarch_in
 				else:
-					if match.p1_arch != 'Limited' and data.get('p2_arch'):
-						match.p1_arch = data['p2_arch']
-					if data.get('p2_subarch'):
-						match.p1_subarch = data['p2_subarch']
+					p2_arch_in = clean(data.get('p2_arch'))
+					p2_subarch_in = clean(data.get('p2_subarch'))
+					if match.p1_arch != 'Limited' and p2_arch_in:
+						match.p1_arch = p2_arch_in
+					if p2_subarch_in:
+						match.p1_subarch = p2_subarch_in
 			
 			elif field_to_change == 'Format':
-				if data.get('format'):
-					match.format = data['format']
+				fmt_in = clean(data.get('format'))
+				if fmt_in:
+					match.format = fmt_in
 				
 				# Handle Limited format archetype changes
-				if data.get('format') in options.get('Limited Formats', []):
+				if fmt_in in options.get('Limited Formats', []):
 					match.p1_arch = 'Limited'
 					match.p2_arch = 'Limited'
 				else:
@@ -4934,8 +5095,9 @@ def api_match_revise_multi():
 						match.p2_arch = 'NA'
 			
 			elif field_to_change == 'Match Type':
-				if data.get('match_type'):
-					match.match_type = data['match_type']
+				mt_in = clean(data.get('match_type'))
+				if mt_in:
+					match.match_type = mt_in
 		
 		try:
 			db.session.commit()

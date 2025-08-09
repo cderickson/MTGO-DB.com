@@ -151,6 +151,12 @@
     min-width: 180px;
 }
 
+/* Half-width mulls inputs */
+.dashboard-type-select.mulls-input {
+    min-width: 90px;
+    width: 90px;
+}
+
 /* Generate button now uses standard .button .primary class from base.css */
 
 
@@ -368,7 +374,18 @@
 .chart-container svg,
 .section-card-body canvas,
 .section-card-body svg {
-    margin: 20px 0;
+    margin: 16px 0; /* slightly tighter default */
+}
+
+/* Reduce bottom gap specifically for chart canvases inside chart-canvas-container */
+.chart-canvas-container canvas {
+    margin-bottom: 0 !important;
+}
+
+/* Also trim container bottom spacing */
+.chart-canvas-container {
+    padding-bottom: 0;
+    margin-bottom: 0;
 }
 
 .chart-icon {

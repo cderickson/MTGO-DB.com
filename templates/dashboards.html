@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}MTGO-DB - Analytics{% endblock %}
-{% block page_title %}Analytics{% endblock %}
+{% block page_title %}Analytics Dashboards{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='dashboards.css') }}">
@@ -44,8 +44,6 @@
               <option value="">All Formats</option>
             </select>
           </div>
-          
-          
           
           <div class="filter-group">
             <label class="filter-label" for="deckFilter">Deck</label>
@@ -626,11 +624,11 @@ function renderDashboardContent(dashboardData, dashboardType) {
       <div class="dashboard-edit-controls-header">
         <div class="dashboard-selector">
           <label for="heroMullsFilter"><strong>Hero Mulls:</strong></label>
-          <input type="number" class="dashboard-type-select" id="heroMullsFilter" value="${currentHeroMulls}" min="0" max="10" 
+              <input type="number" class="dashboard-type-select mulls-input" id="heroMullsFilter" value="${currentHeroMulls}" min="0" max="10" 
             onchange="generateDashboard();" 
           />
           <label for="oppMullsFilter"><strong>Opp. Mulls:</strong></label>
-          <input type="number" class="dashboard-type-select" id="oppMullsFilter" value="${currentOppMulls}" min="0" max="10" 
+              <input type="number" class="dashboard-type-select mulls-input" id="oppMullsFilter" value="${currentOppMulls}" min="0" max="10" 
             onchange="generateDashboard();" 
           />
         </div>
@@ -677,7 +675,7 @@ function renderDashboardContent(dashboardData, dashboardType) {
   
   // Render each chart in its own individual section-thin-card
   if (dashboardData.charts && dashboardData.charts.length > 0) {
-    dashboardData.charts.forEach(chart => {
+    dashboardData.charts.forEach((chart, chartIdx) => {
       content += `
         <div class="section-card section-thin-card">
           <div class="section-card-header">
@@ -685,19 +683,20 @@ function renderDashboardContent(dashboardData, dashboardType) {
               <i class="fas fa-chart-${chart.type === 'line' ? 'line' : chart.type === 'bar' ? 'bar' : 'pie-chart'}"></i>
               ${chart.title}
             </h2>
+            ${chart.chartPerspectiveControls ? `
+            <div class="dashboard-edit-controls-header">
+              <button type="button" class="perspective-button ${chart.chartCastingApplied === 'hero' ? 'active' : ''}" id="chart-persp-hero-${chartIdx}" onclick="setChartCasting('${chartIdx}', 'hero')">
+                <i class="fas fa-user"></i> Hero
+              </button>
+              <button type="button" class="perspective-button ${chart.chartCastingApplied === 'opponents' ? 'active' : ''}" id="chart-persp-opponents-${chartIdx}" onclick="setChartCasting('${chartIdx}', 'opponents')">
+                <i class="fas fa-users"></i> Opponents
+              </button>
+            </div>
+            ` : ''}
           </div>
           <div class="section-card-body section-thin-body">
-            <div class="chart-placeholder">
-              <i class="fas fa-chart-${chart.type === 'line' ? 'line' : chart.type === 'bar' ? 'bar' : 'pie-chart'} chart-icon"></i>
-              <div class="chart-info">
-                <div class="chart-type"><strong>${chart.title}</strong></div>
-                <div class="chart-meta">
-                  ${chart.data.labels ? `Labels: ${chart.data.labels.length}` : 'No data available'}
-                </div>
-                <div class="chart-status">
-                  Chart visualization will be implemented here
-                </div>
-              </div>
+            <div class="chart-canvas-container" style="height: 340px;">
+              <canvas id="chart-canvas-${chartIdx}"></canvas>
             </div>
           </div>
         </div>
@@ -841,6 +840,11 @@ function renderDashboardContent(dashboardData, dashboardType) {
   setTimeout(() => {
     addDashboardTableTooltips();
   }, 0);
+
+  // Render charts after content is in the DOM
+  if (dashboardData.charts && dashboardData.charts.length > 0) {
+    renderCharts(dashboardData.charts);
+  }
 }
 
 // Function to set perspective and regenerate dashboard
@@ -909,6 +913,161 @@ function addDashboardTableTooltips() {
 
 // Make function globally accessible for when new data is loaded
 window.addDashboardTableTooltips = addDashboardTableTooltips;
+
+// Dynamically load Chart.js if not already loaded
+function ensureChartJsLoaded() {
+  return new Promise((resolve, reject) => {
+    if (window.Chart) {
+      resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Failed to load Chart.js'));
+    document.head.appendChild(script);
+  });
+}
+
+function renderCharts(charts) {
+  ensureChartJsLoaded().then(() => {
+    const palette = [
+      '#0039A6', '#4F46E5', '#22C55E', '#EAB308', '#EF4444',
+      '#06B6D4', '#A855F7', '#F97316', '#84CC16', '#0EA5E9'
+    ];
+
+    charts.forEach((chart, idx) => {
+      const canvas = document.getElementById(`chart-canvas-${idx}`);
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      const isStacked = !!chart.stacked;
+
+    const datasets = (chart.data?.datasets || []).map((ds, i) => {
+      const base = {
+        label: ds.label || `Series ${i + 1}`,
+        data: ds.data || []
+      };
+      if ((chart.type || 'bar') === 'line') {
+        return {
+          ...base,
+          borderColor: ds.borderColor || palette[i % palette.length],
+          backgroundColor: ds.backgroundColor ?? 'transparent',
+          borderWidth: ds.borderWidth ?? 2,
+          tension: ds.tension ?? 0.25,
+          fill: ds.fill ?? false,
+          pointRadius: ds.pointRadius ?? 0,
+          spanGaps: ds.spanGaps ?? true,
+          showLine: true
+        };
+      }
+      // default (bar, etc.)
+      return {
+        ...base,
+        backgroundColor: ds.backgroundColor || palette[i % palette.length],
+        borderWidth: ds.borderWidth ?? 0,
+        stack: isStacked ? 'default' : undefined
+      };
+    });
+
+      new Chart(ctx, {
+        type: chart.type || 'bar',
+        data: {
+          labels: chart.data?.labels || [],
+          datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { 
+              display: true, 
+              position: 'right',
+              labels: {
+                padding: 12
+              }
+            },
+            title: { 
+              display: !!chart.chartTitle,
+              text: chart.chartTitle || '',
+              font: { weight: 'bold', size: 16 },
+              padding: { bottom: 6 }
+            },
+            subtitle: chart.chartSubtitle ? {
+              display: true,
+              text: chart.chartSubtitle,
+              font: { weight: 'bold', size: 12 },
+              color: (Chart && Chart.defaults && Chart.defaults.color) ? Chart.defaults.color : '#667',
+              padding: { top: 2, bottom: 24 }
+            } : undefined
+          },
+          scales: isStacked ? {
+            x: { stacked: true, title: { display: !!chart.xTitle, text: chart.xTitle || '', font: { weight: 'bold', size: 13 } } },
+            y: { stacked: true, beginAtZero: true, title: { display: !!chart.yTitle, text: chart.yTitle || '', font: { weight: 'bold', size: 13 } } }
+          } : {
+            x: { title: { display: !!chart.xTitle, text: chart.xTitle || '', font: { weight: 'bold', size: 13 } } },
+            y: { beginAtZero: true, title: { display: !!chart.yTitle, text: chart.yTitle || '', font: { weight: 'bold', size: 13 } } }
+          }
+        }
+      });
+    });
+  }).catch(err => {
+    console.error('Chart rendering failed:', err);
+  });
+}
+
+// Per-chart casting perspective filter (only affects charts; does not touch tables/metrics)
+function setChartCasting(chartIdx, perspective) {
+  // Preserve current dashboard type and filters
+  const filters = getCurrentFilterValues();
+  // Add chart-specific casting filter
+  filters.chartCasting = perspective; // 'hero' or 'opponents'
+
+  // Show loading state quickly for better UX
+  document.getElementById('loadingState').style.display = 'block';
+  document.getElementById('dashboardResults').style.display = 'none';
+
+  const dashboardType = document.getElementById('dashboardType').value;
+  fetch('/api/dashboard/generate', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Requested-By': 'MTGO-Tracker'
+    },
+    body: JSON.stringify({
+      dashboard_type: dashboardType,
+      filters
+    })
+  })
+  .then(r => r.json())
+  .then(result => {
+    if (result.success) {
+      renderDashboardContent(result.data, dashboardType);
+      // Re-activate the selected button visually for this chart index
+      // Since we re-render full dashboard, the index may shift; simply toggle both newest hero/opponents buttons if present
+      setTimeout(() => {
+        const heroBtn = document.getElementById(`chart-persp-hero-${chartIdx}`);
+        const oppBtn = document.getElementById(`chart-persp-opponents-${chartIdx}`);
+        if (heroBtn && oppBtn) {
+          if (perspective === 'hero') {
+            heroBtn.classList.add('active');
+            oppBtn.classList.remove('active');
+          } else {
+            oppBtn.classList.add('active');
+            heroBtn.classList.remove('active');
+          }
+        }
+      }, 0);
+    } else {
+      throw new Error(result.error || 'Failed to regenerate dashboard');
+    }
+  })
+  .catch(err => {
+    console.error('Failed to set chart casting:', err);
+    hideProcessingModal?.();
+  });
+}
 </script>
 
 {% endblock %} 
