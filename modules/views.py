@@ -3853,7 +3853,7 @@ def generate_match_performance_dashboard(filtered_query, filters):
 				'rows': [],
 				'columnWidths': ['20%', '20%', '20%', '20%', '20%']
 			}
-		
+
 		return {
 			'metrics': [
 				{
@@ -3958,6 +3958,12 @@ def generate_card_analysis_dashboard(filtered_query, filters):
 		# Apply the same filters as the filtered_query
 		games = apply_dashboard_filters_to_game_query(games, filters).all()
 		
+		# Helper to safely embed strings in JS onclick
+		def escape_for_js(text):
+			if not isinstance(text, str):
+				text = str(text)
+			return text.replace('\\', '\\\\').replace("'", "\\'").replace('"', '\\"')
+
 		# Game 1 Analysis
 		games_g1 = [g for g in games if g.game_num == 1]
 		total_games_g1 = len(games_g1)
@@ -4020,8 +4026,8 @@ def generate_card_analysis_dashboard(filtered_query, filters):
 				'title': f'Pre-Sideboard Card Performance ({perspective_label})',
 				'headers': ['<center>Card</center>', '<center>Games Cast</center>', '<center>Hero Game Win%</center>'],
 				'height': '400px',
-				'rows': [[
-					row['card'],
+        'rows': [[
+          f"<a href=\"#\" onclick=\"filterByCard('{escape_for_js(row['card'])}'); return false;\" style=\"color: var(--sky-blue); text-decoration: none; font-weight: 600; cursor: pointer;\" onmouseover=\"this.style.textDecoration='underline'\" onmouseout=\"this.style.textDecoration='none'\">{row['card']}</a>",
 					f"<center>{int(row['games_cast'])} - ({row['games_cast_pct']:.1f}%)</center>",
 					f"<center>{row['game_win_pct']:.1f}%</center>"
 				] for _, row in card_games_g1.iterrows()],
@@ -4098,8 +4104,8 @@ def generate_card_analysis_dashboard(filtered_query, filters):
 				'title': f'Post-Sideboard Card Performance ({perspective_label})',
 				'headers': ['<center>Card</center>', '<center>Games Cast</center>', '<center>Hero Game Win%</center>'],
 				'height': '400px',
-				'rows': [[
-					row['card'],
+        'rows': [[
+          f"<a href=\"#\" onclick=\"filterByCard('{escape_for_js(row['card'])}'); return false;\" style=\"color: var(--sky-blue); text-decoration: none; font-weight: 600; cursor: pointer;\" onmouseover=\"this.style.textDecoration='underline'\" onmouseout=\"this.style.textDecoration='none'\">{row['card']}</a>",
 					f"<center>{int(row['games_cast'])} - ({row['games_cast_pct']:.1f}%)</center>",
 					f"<center>{row['game_win_pct']:.1f}%</center>"
 				] for _, row in card_games_g23.iterrows()],
@@ -4113,7 +4119,102 @@ def generate_card_analysis_dashboard(filtered_query, filters):
 				'rows': [],
 				'columnWidths': ['34%', '33%', '33%']
 			}
-		
+
+		# If both Pre- and Post-SB tables are small (<=5 rows), reduce height by 50%
+		try:
+			g1_rows = len(game1_table.get('rows', []))
+			g23_rows = len(games23_table.get('rows', []))
+			if g1_rows <= 1 and g23_rows <= 1:
+				game1_table['height'] = '100px'
+				games23_table['height'] = '100px'
+			elif g1_rows <= 5 and g23_rows <= 5:
+				game1_table['height'] = '200px'
+				games23_table['height'] = '200px'
+		except Exception:
+			pass
+
+		# Build dual-axis win rate by turn chart for selected card (if any)
+		selected_card = (filters.get('card') or '').strip()
+		winrate_chart = None
+		if selected_card:
+			play_turns_query = db.session.query(
+				Play.turn_num.label('turn_num'),
+				Game.game_winner.label('game_winner'),
+				Play.match_id.label('match_id'),
+				Play.game_num.label('game_num')
+			).join(
+				Game, (Play.uid == Game.uid) & (Play.match_id == Game.match_id) & (Play.game_num == Game.game_num)
+			).join(
+				Match, (Match.uid == Game.uid) & (Match.match_id == Game.match_id) & (Match.p1 == Game.p1)
+			).filter(
+				Match.uid == current_user.uid,
+				Match.p1 == current_user.username,
+				Play.action == 'Casts',
+				Play.primary_card != 'NA',
+				casting_player_filter
+			)
+			play_turns_query = apply_dashboard_filters_to_play_query(play_turns_query, filters)
+			rows = play_turns_query.all()
+			from collections import defaultdict
+			turn_to_games = defaultdict(set)
+			turn_to_wins = defaultdict(set)
+			for r in rows:
+				if r.turn_num is None:
+					continue
+				key = (r.match_id, r.game_num)
+				turn_to_games[r.turn_num].add(key)
+				if r.game_winner == 'P1':
+					turn_to_wins[r.turn_num].add(key)
+			# Include missing turns with zeroes from turn 1 to max observed turn
+			max_turn = max(turn_to_games.keys()) if turn_to_games else 1
+			turn_labels = list(range(1, max_turn + 1))
+			counts = [len(turn_to_games.get(t, set())) for t in turn_labels]
+			win_rates = [
+				(len(turn_to_wins.get(t, set())) / len(turn_to_games.get(t, set())) * 100)
+				if len(turn_to_games.get(t, set())) > 0 else 0
+				for t in turn_labels
+			]
+			winrate_chart = {
+				'title': f"Game Win Rate & Occurrences",
+				'chartTitle': 'Game Win Rate & Occurrences by Turn Number',
+				'chartSubtitle': f"Casting Player: {'Opponent' if perspective == 'opponents' else 'Hero'} | Card: {selected_card}",
+				'type': 'bar',
+				'dualAxis': True,
+				'xTitle': 'Turn Number',
+				'yTitle': 'Win Rate %',
+				'yRightTitle': 'Games',
+				'yBeginAtZero': True,
+				'yMin': 0,
+				'yMax': 100,
+				'legendDisplay': False,
+				'data': {
+					'labels': turn_labels,
+					'datasets': [
+						{
+							'label': 'Win Rate %',
+							'type': 'line',
+							'data': win_rates,
+							'yAxisID': 'y',
+							'borderColor': '#0039A6',
+							'backgroundColor': 'transparent',
+							'tension': 0.25,
+							'borderWidth': 2
+						},
+						{
+							'label': 'Games',
+							'type': 'bar',
+							'data': counts,
+							'yAxisID': 'y1',
+							'backgroundColor': 'rgba(14,116,233,0.7)'
+						}
+					]
+				}
+			}
+
+			# Attach Scryfall image URL on the chart payload
+			image_url = get_card_image_url(selected_card)
+			if image_url:
+				winrate_chart['imageUrl'] = image_url
 
 		return {
 			'metrics': [
@@ -4136,19 +4237,7 @@ def generate_card_analysis_dashboard(filtered_query, filters):
 					'type': 'text'
 				}
 			],
-			'charts': [
-				{
-					'title': 'Most Played Cards',
-					'type': 'bar',
-					'data': {
-						'labels': [card[0] for card in top_cards_hero],
-						'datasets': [{
-							'label': 'Times Played',
-							'data': [card[1] for card in top_cards_hero]
-						}]
-					}
-				}
-			],
+			'charts': ([winrate_chart] if winrate_chart else []),
 			'tables': [
 			],
 			'table_grids': [
@@ -4736,6 +4825,7 @@ def api_table_status():
 		return jsonify({'error': 'Failed to check table status'}), 500
 multifaced = None
 all_decks = None
+scryfall_image_cache = {}
 
 def ensure_data_loaded():
 	"""Load global data if not already loaded"""
@@ -4761,6 +4851,50 @@ def ensure_data_loaded():
 		except Exception as e:
 			debug_log(f"Warning: Could not load all decks: {e}")
 			all_decks = {}
+
+def get_card_image_url(card_name: str):
+    """Fetch a Scryfall image URL for a given exact card name with simple caching.
+    Handles MDFC/split/adventure by falling back to first face.
+    Returns a string URL or None on failure.
+    """
+    try:
+        if not card_name:
+            return None
+        key = card_name.strip().lower()
+        if key in scryfall_image_cache:
+            return scryfall_image_cache[key]
+
+        base = 'https://api.scryfall.com/cards/named'
+        # First try exact match
+        try:
+            r = requests.get(base, params={'exact': card_name}, timeout=5)
+        except Exception:
+            r = None
+        if not r or r.status_code != 200:
+            # Fallback to fuzzy
+            try:
+                r = requests.get(base, params={'fuzzy': card_name}, timeout=5)
+            except Exception:
+                r = None
+        if not r or r.status_code != 200:
+            return None
+        data = r.json()
+        image_url = None
+        if isinstance(data, dict):
+            if 'image_uris' in data and isinstance(data['image_uris'], dict):
+                # Prefer normal → large → border_crop
+                image_url = data['image_uris'].get('normal') or data['image_uris'].get('large') or data['image_uris'].get('border_crop')
+            elif 'card_faces' in data and isinstance(data['card_faces'], list) and data['card_faces']:
+                faces0 = data['card_faces'][0]
+                if 'image_uris' in faces0 and isinstance(faces0['image_uris'], dict):
+                    image_url = faces0['image_uris'].get('normal') or faces0['image_uris'].get('large') or faces0['image_uris'].get('border_crop')
+        if image_url:
+            scryfall_image_cache[key] = image_url
+            return image_url
+        return None
+    except Exception as e:
+        debug_log(f"Scryfall image fetch failed for '{card_name}': {e}")
+        return None
 
 @views.route('/test_email')
 @login_required 

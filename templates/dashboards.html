@@ -496,6 +496,43 @@ function filterByOpponent(opponentName) {
   }
 }
 
+function filterByCard(cardName) {
+  // Set the card filter to the selected card and regenerate the dashboard
+  const cardFilter = document.getElementById('cardFilter');
+  if (cardFilter) {
+    // Ensure the option exists
+    let optionExists = false;
+    for (let i = 0; i < cardFilter.options.length; i++) {
+      if (cardFilter.options[i].value === cardName) {
+        optionExists = true;
+        break;
+      }
+    }
+
+    if (!optionExists) {
+      const newOption = document.createElement('option');
+      newOption.value = cardName;
+      newOption.textContent = cardName;
+      cardFilter.appendChild(newOption);
+    }
+
+    // Enable the card filter if it was disabled (should only be enabled on Card Analysis)
+    if (cardFilter.disabled) {
+      cardFilter.disabled = false;
+      const cardFilterGroup = cardFilter.closest('.filter-group');
+      if (cardFilterGroup) {
+        cardFilterGroup.style.opacity = '1';
+        cardFilterGroup.style.pointerEvents = 'auto';
+      }
+    }
+
+    cardFilter.value = cardName;
+
+    // Ensure we are generating the current dashboard
+    generateDashboard();
+  }
+}
+
 async function generateDashboard() {
   const dashboardType = document.getElementById('dashboardType').value;
   
@@ -695,8 +732,16 @@ function renderDashboardContent(dashboardData, dashboardType) {
             ` : ''}
           </div>
           <div class="section-card-body section-thin-body">
-            <div class="chart-canvas-container" style="height: 340px;">
-              <canvas id="chart-canvas-${chartIdx}"></canvas>
+            <div class="chart-row" style="display: flex; gap: 16px; align-items: stretch;">
+              <div class="chart-canvas-container" style="height: 340px; flex: 1 1 auto;">
+                <canvas id="chart-canvas-${chartIdx}"></canvas>
+              </div>
+              ${chart.imageUrl ? `
+              <div class="chart-image-container" style="flex: 0 0 240px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <img src="${chart.imageUrl}" alt="${chart.cardName || 'Card Image'}" style="max-width: 100%; max-height: 300px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.12);" />
+                <div style="margin-top: 6px; font-size: 12px; color: var(--fg-muted);">Images courtesy of <a href="https://scryfall.com" target="_blank" rel="noopener" style="color: inherit; text-decoration: underline;">Scryfall</a></div>
+              </div>
+              ` : ''}
             </div>
           </div>
         </div>
@@ -945,31 +990,61 @@ function renderCharts(charts) {
       const isStacked = !!chart.stacked;
 
     const datasets = (chart.data?.datasets || []).map((ds, i) => {
+      const datasetType = ds.type || chart.type || 'bar';
       const base = {
         label: ds.label || `Series ${i + 1}`,
-        data: ds.data || []
+        data: ds.data || [],
+        type: datasetType
       };
-      if ((chart.type || 'bar') === 'line') {
-        return {
-          ...base,
-          borderColor: ds.borderColor || palette[i % palette.length],
-          backgroundColor: ds.backgroundColor ?? 'transparent',
-          borderWidth: ds.borderWidth ?? 2,
-          tension: ds.tension ?? 0.25,
-          fill: ds.fill ?? false,
-          pointRadius: ds.pointRadius ?? 0,
-          spanGaps: ds.spanGaps ?? true,
+      if (datasetType === 'line') {
+        const defaults = {
+          borderColor: palette[i % palette.length],
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          tension: 0.25,
+          fill: false,
+          pointRadius: 0,
+          spanGaps: true,
           showLine: true
         };
+        return { ...defaults, ...base, ...ds };
       }
-      // default (bar, etc.)
-      return {
-        ...base,
-        backgroundColor: ds.backgroundColor || palette[i % palette.length],
-        borderWidth: ds.borderWidth ?? 0,
+      // default (bar)
+      const defaults = {
+        backgroundColor: palette[i % palette.length],
+        borderWidth: 0,
         stack: isStacked ? 'default' : undefined
       };
+      return { ...defaults, ...base, ...ds };
     });
+
+      const dualAxis = !!chart.dualAxis;
+      const baseScales = dualAxis ? {
+        x: { title: { display: !!chart.xTitle, text: chart.xTitle || '', font: { weight: 'bold', size: 13 } } },
+        y: { 
+          type: 'linear',
+          position: 'left',
+          beginAtZero: chart.yBeginAtZero ?? true,
+          min: chart.yMin ?? undefined,
+          max: chart.yMax ?? undefined,
+          title: { display: !!chart.yTitle, text: chart.yTitle || '', font: { weight: 'bold', size: 13 } }
+        },
+        y1: { 
+          type: 'linear',
+          position: 'right',
+          beginAtZero: chart.y1BeginAtZero ?? true,
+          min: chart.y1Min ?? undefined,
+          max: chart.y1Max ?? undefined,
+          grid: { drawOnChartArea: false },
+          title: { display: !!chart.yRightTitle, text: chart.yRightTitle || '', font: { weight: 'bold', size: 13 } }
+        }
+      } : (isStacked ? {
+        x: { stacked: true, title: { display: !!chart.xTitle, text: chart.xTitle || '', font: { weight: 'bold', size: 13 } } },
+        y: { stacked: true, beginAtZero: true, title: { display: !!chart.yTitle, text: chart.yTitle || '', font: { weight: 'bold', size: 13 } } }
+      } : {
+        x: { title: { display: !!chart.xTitle, text: chart.xTitle || '', font: { weight: 'bold', size: 13 } } },
+        y: { beginAtZero: true, title: { display: !!chart.yTitle, text: chart.yTitle || '', font: { weight: 'bold', size: 13 } } }
+      });
 
       new Chart(ctx, {
         type: chart.type || 'bar',
@@ -980,9 +1055,15 @@ function renderCharts(charts) {
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          // Fallback for Chart.js v2
+          legend: {
+            display: (typeof chart.legendDisplay !== 'undefined') ? !!chart.legendDisplay : true,
+            position: 'right',
+            labels: { padding: 12 }
+          },
           plugins: {
             legend: { 
-              display: true, 
+              display: (typeof chart.legendDisplay !== 'undefined') ? !!chart.legendDisplay : true, 
               position: 'right',
               labels: {
                 padding: 12
@@ -1002,13 +1083,7 @@ function renderCharts(charts) {
               padding: { top: 2, bottom: 24 }
             } : undefined
           },
-          scales: isStacked ? {
-            x: { stacked: true, title: { display: !!chart.xTitle, text: chart.xTitle || '', font: { weight: 'bold', size: 13 } } },
-            y: { stacked: true, beginAtZero: true, title: { display: !!chart.yTitle, text: chart.yTitle || '', font: { weight: 'bold', size: 13 } } }
-          } : {
-            x: { title: { display: !!chart.xTitle, text: chart.xTitle || '', font: { weight: 'bold', size: 13 } } },
-            y: { beginAtZero: true, title: { display: !!chart.yTitle, text: chart.yTitle || '', font: { weight: 'bold', size: 13 } } }
-          }
+          scales: baseScales
         }
       });
     });
