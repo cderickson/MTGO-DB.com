@@ -145,28 +145,27 @@ function disableCarouselBehavior() {
   document.body.style.overflowX = 'hidden';
   document.body.style.overflowY = 'auto';
   
-  // Target feature cards specifically
+  // Target feature cards specifically - but preserve our grid layout
   setTimeout(() => {
     const featuresContainer = document.querySelector('.features-container');
     if (featuresContainer) {
-      featuresContainer.style.display = 'flex';
-      featuresContainer.style.flexWrap = 'wrap';
+      // Keep our CSS grid layout, just disable carousel behavior
       featuresContainer.style.position = 'static';
       featuresContainer.style.transform = 'none';
       featuresContainer.style.scrollSnapType = 'none';
       featuresContainer.style.overflow = 'visible';
-      featuresContainer.style.justifyContent = 'center';
       
-      // Fix all cards in the container
-      const cards = featuresContainer.querySelectorAll('.card');
+      // Fix all cards in the container - but don't override grid layout
+      const cards = featuresContainer.querySelectorAll('.section-card');
       cards.forEach(card => {
         card.style.position = 'static';
         card.style.transform = 'none';
         card.style.scrollSnapAlign = 'none';
-        card.style.flex = '1 1 300px';
-        card.style.maxWidth = '400px';
-        card.style.minWidth = '300px';
-        card.style.width = 'auto';
+        // Remove flex properties that interfere with grid
+        card.style.flex = '';
+        card.style.maxWidth = '';
+        card.style.minWidth = '';
+        card.style.width = '';
       });
     }
     
@@ -1039,6 +1038,7 @@ function showImageModal(imageSrc, title, description) {
   const modalImage = document.getElementById('modalImage');
   const modalTitle = document.getElementById('modalTitle');
   const modalDescription = document.getElementById('modalDescription');
+  const content = modal ? modal.querySelector('.image-modal-content') : null;
   
   if (!modal || !modalImage || !modalTitle || !modalDescription) {
     console.error('Modal elements not found');
@@ -1050,18 +1050,13 @@ function showImageModal(imageSrc, title, description) {
   modalTitle.textContent = title;
   modalDescription.textContent = description;
   
-  // Force modal to overlay properly
+  // Optional: set a default modal height; callers can override with CSS var
+  if (content) {
+    content.style.setProperty('--image-modal-height', '80vh');
+  }
+  
+  // Show modal using CSS (with dimmed background)
   modal.style.display = 'flex';
-  modal.style.position = 'fixed';
-  modal.style.top = '0';
-  modal.style.left = '0';
-  modal.style.right = '0';
-  modal.style.bottom = '0';
-  modal.style.zIndex = '99999';
-  modal.style.justifyContent = 'center';
-  modal.style.alignItems = 'center';
-  modal.style.width = '100vw';
-  modal.style.height = '100vh';
   
   document.body.style.overflow = 'hidden';
 }

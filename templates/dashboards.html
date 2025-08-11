@@ -643,7 +643,7 @@ function renderDashboardContent(dashboardData, dashboardType) {
       <div class="dashboard-edit-controls-header">
         <div class="dashboard-selector">
           <label for="opponentThresholdFilter"><strong>Min Matches:</strong></label>
-          <input type="number" class="dashboard-type-select" id="opponentThresholdFilter" value="${currentThreshold}" min="1" max="100" 
+          <input type="number" class="dashboard-type-select mulls-input" id="opponentThresholdFilter" value="${currentThreshold}" min="1" max="100" 
             onchange="generateDashboard();" 
           />
         </div>
@@ -733,9 +733,19 @@ function renderDashboardContent(dashboardData, dashboardType) {
           </div>
           <div class="section-card-body section-thin-body">
             <div class="chart-row" style="display: flex; gap: 16px; align-items: stretch;">
-              <div class="chart-canvas-container" style="height: 340px; flex: 1 1 auto;">
-                <canvas id="chart-canvas-${chartIdx}"></canvas>
-              </div>
+              ${chart.isPlaceholder ? `
+                <div class="chart-canvas-container" style="height: 340px; flex: 1 1 auto; display: flex; align-items: center; justify-content: center; border: 2px dashed var(--border-color, rgba(0,0,0,0.12)); border-radius: 8px; background: var(--bg-elevated, transparent); color: var(--fg-muted, #666);">
+                  <div style="text-align: center;">
+                    <div style="font-size: 36px; margin-bottom: 8px; opacity: 0.8;"><i class="fas fa-magic"></i></div>
+                    <div style="font-weight: 600; margin-bottom: 4px;">Select a Card to View Analysis</div>
+                    <div style="font-size: 13px;">Use the Card filter on the left or select a card in the tables below.</div>
+                  </div>
+                </div>
+              ` : `
+                <div class="chart-canvas-container" style="height: 340px; flex: 1 1 auto;">
+                  <canvas id="chart-canvas-${chartIdx}"></canvas>
+                </div>
+              `}
               ${chart.imageUrl ? `
               <div class="chart-image-container" style="flex: 0 0 240px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
                 <img src="${chart.imageUrl}" alt="${chart.cardName || 'Card Image'}" style="max-width: 100%; max-height: 300px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.12);" />

@@ -162,6 +162,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    cursor: help; /* headers now have tooltips */
 }
 
 .modern-table td {

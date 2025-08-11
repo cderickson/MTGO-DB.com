@@ -162,19 +162,19 @@
 
 /* Match result styling */
 .match-win {
-    background-color: rgba(40, 167, 69, 0.05);
+    background-color: rgba(40, 167, 69, 0.14); /* darker green tint */
 }
 
 .match-win:hover {
-    background-color: rgba(40, 167, 69, 0.1);
+    background-color: rgba(40, 167, 69, 0.22);
 }
 
 .match-loss {
-    background-color: rgba(220, 53, 69, 0.05);
+    background-color: rgba(220, 53, 69, 0.14); /* darker red tint */
 }
 
 .match-loss:hover {
-    background-color: rgba(220, 53, 69, 0.1);
+    background-color: rgba(220, 53, 69, 0.22);
 }
 
 .match-na {

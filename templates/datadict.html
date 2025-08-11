@@ -4,7 +4,7 @@
 {% block page_title %}Data Dictionary{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='data_dict.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='datadict.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -17,11 +17,12 @@
 			<div class="section-card-header">
 				<h2 class="section-card-title">
 					Matches Table
-					<span class="table-badge">Primary</span>
+					<span class="table-badge">Primary Table</span>
 				</h2>
 				<div class="message-box standard table-description">
 					<strong>Match-level table:</strong> Contains match details including players, decks, results, and metadata for each MTGO match.
 				</div>
+				<i class="fas fa-chevron-down"></i>
 			</div>
     	<div class="section-card-content" id="matches">
 				<div class="table-container">
@@ -250,7 +251,7 @@
 			<div class="section-card-header">
 				<h2 class="section-card-title">
 					Games Table
-					<span class="table-badge secondary">Secondary</span>
+					<span class="table-badge secondary">Secondary Table</span>
 				</h2>
 				<div class="message-box standard table-description">
 					<strong>Game-level data:</strong> Individual game details within each match, including play/draw decisions and game outcomes.
@@ -408,7 +409,7 @@
 			<div class="section-card-header">
 				<h2 class="section-card-title">
 					Plays Table
-					<span class="table-badge secondary">Secondary</span>
+					<span class="table-badge secondary">Secondary Table</span>
 				</h2>
 				<div class="message-box standard table-description">
 					<strong>Play-by-play data:</strong> Individual card plays and actions within each game, providing detailed gameplay analysis.
@@ -561,7 +562,7 @@
 			<div class="section-card-header">
 				<h2 class="section-card-title">
 					Drafts Table
-					<span class="table-badge">Primary</span>
+					<span class="table-badge">Primary Table</span>
 				</h2>
 				<div class="message-box standard table-description">
 					<strong>Draft data:</strong> Information about draft sessions, including players, format, and results.
@@ -664,7 +665,7 @@
 			<div class="section-card-header">
 				<h2 class="section-card-title">
 					Draft Picks Table
-					<span class="table-badge secondary">Secondary</span>
+					<span class="table-badge secondary">Secondary Table</span>
 				</h2>
 				<div class="message-box standard table-description">
 					<strong>Draft pick data:</strong> Individual card picks during draft sessions, including pack and pick numbers and available cards.

@@ -11,7 +11,7 @@ body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f8f9fa;
+    background-color: #e5e7eb; /* neutral-300 */
     color: #333333;
     line-height: 1.5;
     font-size: 14px;
@@ -527,6 +527,7 @@ body.js-loaded .getting-started-container .section-card-content {
 }
 
 /* Section Styles */
+/* Legacy section container (not used on new Home) */
 .section {
     background: white;
     border-radius: 8px;
@@ -550,7 +551,7 @@ body.js-loaded .getting-started-container .section-card-content {
 }
 
 .section-subtitle {
-    color: #666;
+    color: black;
     margin: 0;
     font-size: 16px;
     line-height: 1.4;
@@ -771,6 +772,70 @@ table tbody tr:last-child td {
     display: block; /* Change from flex to block for absolute positioning */
 }
 
+/* Image Modal Specific Styling */
+.image-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 99999;
+}
+
+.image-modal .image-modal-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    /* Inner padding to visibly show a 16px inset around content */
+    padding: 16px;
+    width: min(850px, calc(100vw - 32px));
+    overflow: hidden;
+    position: absolute;
+    top: 50%;
+    left: calc(50% + 140px); /* Center of viewport + half sidebar width (280px / 2) */
+    transform: translate(-50%, -50%); /* Perfect centering regardless of modal size */
+    display: grid;
+    grid-template-rows: 1fr auto; /* image area + caption */
+}
+
+.image-modal .modal-image {
+    width: 100%;
+    height: 100%; /* fill available image area */
+    display: block;
+    object-fit: contain; /* maintain aspect ratio */
+    background: #f8f9fa; /* subtle background to visualize 16px padding */
+    border-radius: 4px;
+}
+
+.image-modal .image-modal-caption {
+    padding: 16px 4px 4px 4px; /* only top padding; others zero to avoid double spacing */
+    background: #fff;
+    border-top: 1px solid #e9ecef;
+}
+
+.image-modal .image-modal-caption h3 {
+    margin: 0 0 6px 0;
+    font-size: 16px;
+}
+
+.image-modal .image-modal-caption p {
+    margin: 0;
+    color: #555;
+    font-size: 14px;
+}
+
+.image-modal .image-modal-close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 24px;
+    color: #555;
+    cursor: pointer;
+    background: rgba(255,255,255,0.9);
+    border-radius: 4px;
+    padding: 0 6px;
+    line-height: 1.2;
+}
+
 .modal-content {
     background: white;
     border-radius: 8px;
@@ -905,7 +970,7 @@ table tbody tr:last-child td {
     left: 50%;
     transform: translateX(-50%);
     z-index: 1100;
-    max-width: 560px; /* slightly wider */
+    max-width: 600px; /* slightly wider */
     width: calc(100% - 24px); /* responsive on very small screens */
 }
 
@@ -976,6 +1041,89 @@ table tbody tr:last-child td {
     border: 1px solid #e9ecef;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
+}
+
+/* New Home layout */
+.home-container {
+    max-width: 1400px; /* Explicit set width container */
+    margin: 0 auto;
+    padding: 0 12px;
+}
+
+/* Normalize vertical spacing on Home to match card grid gap */
+.home-container > .section-card {
+    margin-bottom: 16px; /* match features grid gap */
+}
+
+/* Masonry-like responsive rows with fixed card width */
+.features-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px; /* horizontal and vertical */
+    margin: 16px 0; /* equal spacing above and below, collapses with header margin */
+}
+
+/* Ensure all feature cards have equal height */
+.features-container .section-card.feature-card {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Remove default margins inside grid items; rely on grid gap instead */
+.features-container .section-card {
+    margin: 0 !important;
+}
+
+.features-container .section-card.feature-card .section-card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Center the image container vertically within its space */
+.features-container .section-card.feature-card .section-card-body > div:first-child {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Responsive: tweak card min widths for smaller screens */
+@media (max-width: 1200px) {
+    .features-container {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
+}
+
+.home-container .section-card.feature-card img,
+.features-container .section-card.feature-card img {
+    width: 100%;
+    height: auto; /* maintain aspect ratio */
+    display: block;
+    margin-bottom: 16px; /* space between image and description */
+}
+
+/* Feature card body spacing: ensure 16px from description to card bottom */
+.features-container .section-card.feature-card .section-card-body,
+.home-container .section-card.feature-card .section-card-body {
+    padding-bottom: 16px;
+}
+
+.features-container .section-card.feature-card .section-card-body p,
+.home-container .section-card.feature-card .section-card-body p {
+    margin-bottom: 0; /* rely on body padding for the final 16px gap */
+}
+
+@media (max-width: 768px) {
+    .home-container {
+        max-width: 100%;
+        padding: 0 16px;
+    }
+    
+    .features-container {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
 }
 
 .card-header {
@@ -1800,9 +1948,43 @@ table tbody tr:last-child td {
 
 /* FAQ Container Width Constraints */
 .faq-container {
-    max-width: 1000px;
+    max-width: 1200px; /* increased from 1000px */
     margin: 0 auto;
     width: 100%;
+}
+
+/* Getting Started: 2x2 grid for static cards */
+.faq-container .static-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* Standardized static-card height */
+.faq-container .static-grid .static-card {
+    display: block;
+    margin-bottom: 0; /* grid gap controls spacing */
+}
+
+.faq-container .static-grid .static-card .section-card-content {
+    overflow: visible;
+}
+
+@media (max-width: 900px) {
+    .faq-container .static-grid {
+        grid-template-columns: 1fr; /* stack on small screens */
+    }
+}
+
+/* Generic blue-badge styling for use outside titles */
+.blue-badge {
+    background: #e0e7ff;
+    color: black;
+    font-weight: 400;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    display: inline-block;
 }
 
 /* Responsive width adjustments for FAQ */
@@ -1817,6 +1999,26 @@ table tbody tr:last-child td {
         margin: 0 16px;
         max-width: none;
     }
+}
+
+/* Getting Started: smaller body text inside message boxes */
+.faq-container .message-box p,
+.faq-container .message-box ul,
+.faq-container .message-box ol {
+    font-size: 12px;
+}
+
+/* Getting Started: smaller headings in message boxes */
+.faq-container .message-box h4,
+.faq-container .message-box h5 {
+    font-size: 14px; /* override base 16px for tighter layout */
+}
+
+/* Getting Started: gold badge style overrides */
+.faq-container .blue-badge {
+    background: #fff7cc !important; /* lighter yellow */
+    border: 1px solid #daa520 !important; /* goldenrod */
+    color: #333 !important;
 }
 
 /* Sidebar Footer Styling */

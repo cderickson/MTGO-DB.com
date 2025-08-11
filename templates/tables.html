@@ -831,12 +831,25 @@ document.addEventListener('DOMContentLoaded', function() {
   // Function to add tooltips to all cell content
   function addCellTooltips() {
     const tableCells = document.querySelectorAll('.modern-table td');
-    
+    const tableHeaders = document.querySelectorAll('.modern-table th');
+
+    // Add title attribute with full text content to all data cells
     tableCells.forEach(cell => {
-      // Add title attribute with full text content to all cells
       const textContent = cell.textContent.trim();
       if (textContent) {
-        cell.title = textContent;
+        cell.setAttribute('title', textContent);
+      } else {
+        cell.removeAttribute('title');
+      }
+    });
+
+    // Add title attribute to headers as well
+    tableHeaders.forEach(header => {
+      const textContent = header.textContent.trim();
+      if (textContent) {
+        header.setAttribute('title', textContent);
+      } else {
+        header.removeAttribute('title');
       }
     });
   }

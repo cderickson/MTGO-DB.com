@@ -2061,7 +2061,7 @@ def reset_email(token):
 		if user is None:
 			flash('User not found.', category='error')
 			return redirect(url_for('views.index'))
-		return render_template('reset_pwd.html', user=current_user, inputs=[email])
+		return render_template('resetpwd.html', user=current_user, inputs=[email])
 	except SignatureExpired:
 		flash('Reset Password link has expired.', category='error')
 		return redirect(url_for('views.index'))
@@ -2079,10 +2079,10 @@ def change_pwd():
 		return redirect(url_for('views.index'))
 	if (not inputs[0]) or (not inputs[1]) or (not inputs[2]):
 		flash(f'Please fill in all fields.', category='error')
-		return render_template('reset_pwd.html', user=current_user, inputs=[inputs[1]])
+		return render_template('resetpwd.html', user=current_user, inputs=[inputs[1]])
 	elif inputs[1] != inputs[2]:
 		flash(f'Passwords do not match.', category='error')
-		return render_template('reset_pwd.html', user=current_user, inputs=[inputs[1]])
+		return render_template('resetpwd.html', user=current_user, inputs=[inputs[1]])
 	else:
 		user.pwd = generate_password_hash(inputs[1])
 		try:
@@ -3337,7 +3337,7 @@ def filter_options():
 
 @views.route('/getting_started', methods=['GET'])
 def getting_started():
-	return render_template('getting-started.html', user=current_user)
+	return render_template('gettingstarted.html', user=current_user)
 
 @views.route('/faq', methods=['GET'])
 def faq():
@@ -3361,7 +3361,7 @@ def reprocess():
 
 @views.route('/data_dictionary', methods=['GET'])
 def data_dict():
-	return render_template('data-dict.html', user=current_user)
+  return render_template('datadict.html', user=current_user)
 
 @views.route('/dashboards', methods=['GET'])
 @login_required
@@ -3612,8 +3612,7 @@ def apply_dashboard_filters_to_game_query(query, filters):
 		# Filter by card (requires additional join with Play table)
 		if filters.get('card'):
 			query = query.join(Play, (Game.match_id == Play.match_id) & (Game.game_num == Play.game_num) & (Game.uid == Play.uid))\
-						 .filter(Play.primary_card == filters['card'])\
-						 .filter(Play.casting_player == current_user.username)
+						 .filter(Play.primary_card == filters['card'])
 		
 		return query
 		
@@ -3646,9 +3645,12 @@ def generate_match_performance_dashboard(filtered_query, filters):
 		labels_matches = list(range(1, len(match_outcomes) + 1))
 		window = 25
 		rolling_wr = []
+		cumulative_wr = []
 		cumsum = 0
 		from collections import deque
 		window_q = deque()
+		cum_total = 0
+		count_so_far = 0
 		for val in match_outcomes:
 			window_q.append(val)
 			cumsum += val
@@ -3656,6 +3658,10 @@ def generate_match_performance_dashboard(filtered_query, filters):
 				cumsum -= window_q.popleft()
 			current_len = len(window_q)
 			rolling_wr.append(round((cumsum / current_len) * 100, 1) if current_len > 0 else 0)
+			# cumulative average up to this match index
+			count_so_far += 1
+			cum_total += val
+			cumulative_wr.append(round((cum_total / count_so_far) * 100, 1))
 
 		rolling_win_chart = {
 			'title': 'Rolling Match Win Rate',
@@ -3666,15 +3672,26 @@ def generate_match_performance_dashboard(filtered_query, filters):
 			'chartSubtitle': 'Previous 25 Matches',
 			'data': {
 				'labels': labels_matches,
-				'datasets': [{
-					'label': 'Win Rate %',
-					'data': rolling_wr,
-					'borderColor': '#0039A6',
-					'backgroundColor': 'rgba(0,57,166,0.15)',
-					'tension': 0.25,
-					'fill': False,
-					'borderWidth': 2
-				}]
+				'datasets': [
+					{
+						'label': 'Win Rate % (Last 25)',
+						'data': rolling_wr,
+						'borderColor': '#0039A6',
+						'backgroundColor': 'rgba(0,57,166,0.15)',
+						'tension': 0.25,
+						'fill': False,
+						'borderWidth': 2
+					},
+					{
+						'label': 'Win Rate % (Overall)',
+						'data': cumulative_wr,
+						'borderColor': '#9ca3af',
+						'backgroundColor': 'transparent',
+						'tension': 0.25,
+						'fill': False,
+						'borderWidth': 2
+					}
+				]
 			}
 		}
 		
@@ -3998,26 +4015,40 @@ def generate_card_analysis_dashboard(filtered_query, filters):
 			card_games_g1.columns = ['card', 'games_cast']
 			
 			# Calculate games cast percentage
+			# Default denominator: total Game 1 count
 			card_games_g1['games_cast_pct'] = (card_games_g1['games_cast'] / total_games_g1 * 100).round(1)
+			# If a specific card is selected, adjust ONLY that card's denominator to the
+			# number of unique games where that selected card was cast (for this perspective)
+			selected_card_local = (filters.get('card') or '').strip()
+			if selected_card_local:
+				selected_game_keys = set(
+					f"{p.match_id}_{p.game_num}"
+					for p in plays_g1 if p.primary_card == selected_card_local
+				)
+				denom_g1 = len(selected_game_keys) or total_games_g1
+				mask_sel = card_games_g1['card'] == selected_card_local
+				if mask_sel.any():
+					card_games_g1.loc[mask_sel, 'games_cast_pct'] = (
+						card_games_g1.loc[mask_sel, 'games_cast'] / denom_g1 * 100
+					).round(1)
 
+			# Filter out rows below threshold
 			card_games_g1 = card_games_g1[(card_games_g1['games_cast_pct'] >= 2.5)]
-			
-			# Calculate game win rate for each card
+
+			# Calculate Hero Game Win% per card for Game 1 using perspective-specific games
 			card_winrates_g1 = []
 			for _, row in card_games_g1.iterrows():
 				card = row['card']
-				# Find games where this card was cast
+				# Find games where this card was cast by the relevant perspective
 				card_plays = [p for p in plays_g1 if p.primary_card == card]
 				card_game_keys = set((p.match_id, p.game_num) for p in card_plays)
-				
-				# Find corresponding games and count wins
+				# Find corresponding games and count hero wins
 				card_games = [g for g in games_g1 if (g.match_id, g.game_num) in card_game_keys]
 				wins = len([g for g in card_games if g.game_winner == 'P1'])
 				total = len(card_games)
 				win_rate = (wins / total * 100) if total > 0 else 0
 				card_winrates_g1.append(win_rate)
-			
-			card_games_g1['game_win_pct'] = card_winrates_g1
+			card_games_g1['game_win_pct'] = [round(x, 1) for x in card_winrates_g1]
 			
 			# Sort by games cast descending
 			card_games_g1 = card_games_g1.sort_values('games_cast', ascending=False)
@@ -4076,26 +4107,39 @@ def generate_card_analysis_dashboard(filtered_query, filters):
 			card_games_g23.columns = ['card', 'games_cast']
 			
 			# Calculate games cast percentage
+			# Default denominator: total Games 2/3 count
 			card_games_g23['games_cast_pct'] = (card_games_g23['games_cast'] / total_games_g23 * 100).round(1)
+			# If a specific card is selected, adjust ONLY that card's denominator to the
+			# number of unique games where that selected card was cast (for this perspective)
+			selected_card_local = (filters.get('card') or '').strip()
+			if selected_card_local:
+				selected_game_keys_g23 = set(
+					f"{p.match_id}_{p.game_num}"
+					for p in plays_g23 if p.primary_card == selected_card_local
+				)
+				denom_g23 = len(selected_game_keys_g23) or total_games_g23
+				mask_sel_g23 = card_games_g23['card'] == selected_card_local
+				if mask_sel_g23.any():
+					card_games_g23.loc[mask_sel_g23, 'games_cast_pct'] = (
+						card_games_g23.loc[mask_sel_g23, 'games_cast'] / denom_g23 * 100
+					).round(1)
 
 			card_games_g23 = card_games_g23[(card_games_g23['games_cast_pct'] >= 2.5)]
-			
-			# Calculate game win rate for each card
+
+			# Calculate Hero Game Win% per card for Games 2/3 using perspective-specific games
 			card_winrates_g23 = []
 			for _, row in card_games_g23.iterrows():
 				card = row['card']
-				# Find games where this card was cast
+				# Find games where this card was cast by the relevant perspective
 				card_plays = [p for p in plays_g23 if p.primary_card == card]
 				card_game_keys = set((p.match_id, p.game_num) for p in card_plays)
-				
-				# Find corresponding games and count wins
+				# Find corresponding games and count hero wins
 				card_games = [g for g in games_g23 if (g.match_id, g.game_num) in card_game_keys]
 				wins = len([g for g in card_games if g.game_winner == 'P1'])
 				total = len(card_games)
 				win_rate = (wins / total * 100) if total > 0 else 0
 				card_winrates_g23.append(win_rate)
-			
-			card_games_g23['game_win_pct'] = card_winrates_g23
+			card_games_g23['game_win_pct'] = [round(x, 1) for x in card_winrates_g23]
 			
 			# Sort by games cast descending
 			card_games_g23 = card_games_g23.sort_values('games_cast', ascending=False)
@@ -4215,6 +4259,24 @@ def generate_card_analysis_dashboard(filtered_query, filters):
 			image_url = get_card_image_url(selected_card)
 			if image_url:
 				winrate_chart['imageUrl'] = image_url
+		else:
+			# Placeholder card analysis panel when no card is selected
+			winrate_chart = {
+				'title': 'Card Analysis',
+				'chartTitle': 'Select a Card to View Analysis',
+				'chartSubtitle': 'Use the Card filter above or click a card in the tables.',
+				'isPlaceholder': True,
+				'type': 'bar',  # still provide a type for consistent rendering container
+				'dualAxis': False,
+				'xTitle': '',
+				'yTitle': '',
+				'legendDisplay': False,
+				'imageUrl': '/static/images/mtgback.jpg',
+				'data': {
+					'labels': [],
+					'datasets': []
+				}
+			}
 
 		return {
 			'metrics': [
@@ -4500,17 +4562,6 @@ def generate_opponent_analysis_dashboard(filtered_query, filters):
 				}
 			],
 			'charts': [
-				{
-					'title': 'Win Rate by Opponent',
-					'type': 'bar',
-					'data': {
-						'labels': [opp[0] for opp in top_opponents[:10]],  # Top 10 opponents
-						'datasets': [{
-							'label': 'Win Rate %',
-							'data': [opp[1]['win_rate'] for opp in top_opponents[:10]]
-						}]
-					}
-				}
 			],
 			'tables': [
 				match_history_table
