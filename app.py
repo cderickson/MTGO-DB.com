@@ -51,8 +51,12 @@ def create_app():
 		app.config.from_pyfile('local-dev/local_config.cfg')
 		print("Running in LOCAL/DEVELOPMENT mode")
 	else:
-		app.config.from_pyfile('auxiliary/config.cfg')
-		print("Running in PRODUCTION mode")
+		# In production, config file may not be baked into the image; fall back to env-only
+		try:
+			app.config.from_pyfile('auxiliary/config.cfg')
+			print("Running in PRODUCTION mode (file config)")
+		except Exception:
+			print("Running in PRODUCTION mode (env-only config)")
 	
 	# Override with environment variables if they exist (for production)
 	app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", app.config.get('SECRET_KEY'))
