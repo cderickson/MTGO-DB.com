@@ -61,6 +61,17 @@ def create_app():
 	# Override with environment variables if they exist (for production)
 	app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", app.config.get('SECRET_KEY'))
 	app.config['MAIL_SERVER'] = os.environ.get("MAIL_SERVER", app.config.get('MAIL_SERVER'))
+
+	# Mail transport overrides: allow switching ports and TLS/SSL via env
+	def _as_bool(value, default=False):
+		if value is None:
+			return default
+		return str(value).strip().lower() in ("1", "true", "yes", "on")
+
+	app.config['MAIL_PORT'] = int(os.environ.get("MAIL_PORT", app.config.get('MAIL_PORT', 587)))
+	app.config['MAIL_USE_TLS'] = _as_bool(os.environ.get("MAIL_USE_TLS", app.config.get('MAIL_USE_TLS', True)))
+	app.config['MAIL_USE_SSL'] = _as_bool(os.environ.get("MAIL_USE_SSL", app.config.get('MAIL_USE_SSL', False)))
+
 	app.config['MAIL_USERNAME'] = os.environ.get("MAIL_USERNAME", app.config.get('MAIL_USERNAME'))
 	app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASSWORD", app.config.get('MAIL_PASSWORD'))
 	app.config['MAIL_DEFAULT_SENDER'] = os.environ.get("MAIL_DEFAULT_SENDER", app.config.get('MAIL_DEFAULT_SENDER'))

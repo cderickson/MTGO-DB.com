@@ -23,8 +23,8 @@ import zipfile
 import requests
 from celery import shared_task
 from celery.contrib.abortable import AbortableTask
-from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient, generate_blob_sas, BlobSasPermissions
-from azure.core.exceptions import ResourceNotFoundError
+import boto3
+from botocore.exceptions import ClientError
 import pytz
 import json
 import logging
@@ -42,35 +42,36 @@ def debug_log(message):
 	print(log_message)
 	
 	# Write to log file
-	try:
-		log_dir = os.path.join('local-dev', 'data', 'logs')
-		os.makedirs(log_dir, exist_ok=True)
-		log_file = os.path.join(log_dir, 'debug_log.txt')
+	# try:
+	# 	log_dir = os.path.join('local-dev', 'data', 'logs')
+	# 	os.makedirs(log_dir, exist_ok=True)
+	# 	log_file = os.path.join(log_dir, 'debug_log.txt')
 		
-		with open(log_file, 'a', encoding='utf-8') as f:
-			f.write(log_message + '\n')
-	except Exception as e:
-		debug_log(f"Warning: Could not write to log file: {e}")
+	# 	with open(log_file, 'a', encoding='utf-8') as f:
+	# 		f.write(log_message + '\n')
+	# 	except Exception as e:
+	# 		debug_log(f"Warning: Could not write to log file: {e}")
 
 page_size = 20
 
-# Initialize Azure clients only if connection string is available
+# Initialize S3 client if configured
 try:
-    azure_connection_string = os.environ.get('AZURE_CONNECTION_STRING')
-    if azure_connection_string:
-        blob_service_client = BlobServiceClient.from_connection_string(azure_connection_string)
-        log_container_client = blob_service_client.get_container_client(os.environ.get('LOG_CONTAINER_NAME'))
-        export_container_client = blob_service_client.get_container_client(os.environ.get('EXPORT_CONTAINER_NAME'))
+    S3_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME')
+    S3_PREFIX = os.environ.get('S3_PREFIX', '').strip()
+    if S3_PREFIX and not S3_PREFIX.endswith('/'):
+        S3_PREFIX = S3_PREFIX + '/'
+    if S3_BUCKET_NAME:
+        s3_client = boto3.client('s3', region_name=os.environ.get('AWS_REGION'))
+        S3_ENABLED = True
+        debug_log(f"S3 enabled for bucket: {S3_BUCKET_NAME}")
     else:
-        blob_service_client = None
-        log_container_client = None
-        export_container_client = None
-        debug_log("Azure connection string not found - running in local mode")
+        s3_client = None
+        S3_ENABLED = False
+        debug_log("S3 bucket not configured - using local storage")
 except Exception as e:
-    blob_service_client = None
-    log_container_client = None
-    export_container_client = None
-    debug_log(f"Failed to initialize Azure clients: {e}")
+    s3_client = None
+    S3_ENABLED = False
+    debug_log(f"Failed to initialize S3 client: {e}")
 
 s = URLSafeTimedSerializer(os.environ.get("URL_SAFETIMEDSERIALIZER", "dev-secret-key"))
 views = Blueprint('views', __name__)
@@ -319,7 +320,7 @@ def process_logs(self, data):
 		skipped_files = []
 		
 		# Create local storage directory if it doesn't exist
-		if log_container_client is None:  # Local mode
+		if not S3_ENABLED:  # Local mode
 			local_storage_dir = os.path.join('local-dev', 'data', 'uploads', str(data['user_id']))
 			os.makedirs(local_storage_dir, exist_ok=True)
 			debug_log(f"🔍 EXTRACT DEBUG: Using local storage: {local_storage_dir}")
@@ -336,7 +337,7 @@ def process_logs(self, data):
 				skipped += 1
 				continue
 			
-			if log_container_client is None:  # Local file storage
+			if not S3_ENABLED:  # Local file storage
 				# Local file storage logic
 				local_file_path = os.path.join(local_storage_dir, member.filename)
 				new_mtime = time.strftime('%Y%m%d%H%M', member.date_time + (0, 0, -1))
@@ -391,33 +392,35 @@ def process_logs(self, data):
 						f.write(new_mtime)
 					new_files.append(member.filename.split('/')[-1])
 					uploaded += 1
-			else:  # Azure Blob Storage logic (original)
-				extracted_file_name = path + member.filename
-				blob_client = log_container_client.get_blob_client(extracted_file_name)
+			else:  # S3 storage
+				s3_key = f"{path}{member.filename}"
+				new_mtime = time.strftime('%Y%m%d%H%M', member.date_time + (0, 0, -1))
+				# Check if object exists
 				try:
-					# File exists in Azure Blob Storage.
-					existing_mtime = blob_client.get_blob_properties()['metadata']['original_mod_time']
-					new_mtime = time.strftime('%Y%m%d%H%M', member.date_time + (0, 0, -1))
-					if new_mtime >= existing_mtime:
+					resp = s3_client.head_object(Bucket=S3_BUCKET_NAME, Key=S3_PREFIX + s3_key)
+					existing_mtime = resp.get('Metadata', {}).get('original_mod_time')
+					if existing_mtime and new_mtime >= existing_mtime:
 						skipped_files.append(member.filename.split('/')[-1])
 						skipped += 1
 					else:
-						# Replace newer file with older file
 						zip_ref.extract(member, os.getcwd())
 						with open(member.filename, 'rb') as file_to_upload:
-							blob_client.upload_blob(file_to_upload, metadata={'original_mod_time':new_mtime}, overwrite=True)
+							s3_client.put_object(Bucket=S3_BUCKET_NAME, Key=S3_PREFIX + s3_key, Body=file_to_upload, Metadata={'original_mod_time': new_mtime})
 						replaced_files.append(member.filename.split('/')[-1])
 						os.remove(member.filename)
 						uploaded += 1
-				except ResourceNotFoundError:
-					# New file.
-					file_mod_time = time.strftime('%Y%m%d%H%M', member.date_time + (0, 0, -1))
-					zip_ref.extract(member, os.getcwd())
-					with open(member.filename, 'rb') as file_to_upload:
-						blob_client.upload_blob(file_to_upload, metadata={'original_mod_time':file_mod_time})
-					new_files.append(member.filename.split('/')[-1])
-					os.remove(member.filename)
-					uploaded += 1
+				except ClientError as e:
+					if e.response['Error']['Code'] in ('404', 'NoSuchKey', 'NotFound'):
+						# New object
+						file_mod_time = time.strftime('%Y%m%d%H%M', member.date_time + (0, 0, -1))
+						zip_ref.extract(member, os.getcwd())
+						with open(member.filename, 'rb') as file_to_upload:
+							s3_client.put_object(Bucket=S3_BUCKET_NAME, Key=S3_PREFIX + s3_key, Body=file_to_upload, Metadata={'original_mod_time': file_mod_time})
+						new_files.append(member.filename.split('/')[-1])
+						os.remove(member.filename)
+						uploaded += 1
+					else:
+						raise
 		debug_log(f"🔍 EXTRACT DEBUG: Extraction complete - skipped: {skipped}, uploaded: {uploaded}")
 		debug_log(f"🔍 EXTRACT DEBUG: new_files: {new_files}")
 		debug_log(f"🔍 EXTRACT DEBUG: replaced_files: {replaced_files}")
@@ -458,7 +461,7 @@ def process_logs(self, data):
 		# Get list of files to process based on storage type
 		files_to_process = []
 		
-		if log_container_client is None:  # Local file storage
+		if not S3_ENABLED:  # Local file storage
 			local_storage_dir = os.path.join('local-dev', 'data', 'uploads', str(uid))
 			debug_log(f"🔍 DEBUG: Looking for files in: {local_storage_dir}")
 			debug_log(f"🔍 DEBUG: Directory exists: {os.path.exists(local_storage_dir)}")
@@ -500,28 +503,28 @@ def process_logs(self, data):
 						debug_log(f"🔍 DEBUG: Skipping {filename} - log_type '{log_type}' not in ['GameLog', 'DraftLog']")
 			else:
 				debug_log(f"🔍 DEBUG: Local storage directory does not exist: {local_storage_dir}")
-		else:  # Azure Blob Storage
-			for blob in log_container_client.list_blobs():
-				filename = blob.name.split('/')[-1]
-				if filename in upload_dict['skipped_files']:
-					continue
-				try:
-					blob_uid = blob.name.split('/')[0]
-				except:
-					blob_uid = 0
-
-				if (get_logtype_from_filename(filename) in ['GameLog', 'DraftLog']) and (str(uid) == blob_uid):
-					blob_client = blob_service_client.get_blob_client(container=os.environ.get('LOG_CONTAINER_NAME'), blob=blob.name)
-					blob_properties = blob_client.get_blob_properties()
-					mtime = blob_properties['metadata']['original_mod_time']
-					
-					files_to_process.append({
-						'filename': filename,
-						'blob_client': blob_client,
-						'mtime': mtime,
-						'storage_type': 'azure',
-						'log_type': get_logtype_from_filename(filename)
-					})
+		else:  # S3 storage
+			prefix = f"{S3_PREFIX}{uid}/"
+			paginator = s3_client.get_paginator('list_objects_v2')
+			for page in paginator.paginate(Bucket=S3_BUCKET_NAME, Prefix=prefix):
+				for obj in page.get('Contents', []):
+					key = obj['Key']
+					filename = key.split('/')[-1]
+					if filename in upload_dict['skipped_files']:
+						continue
+					if get_logtype_from_filename(filename) in ['GameLog', 'DraftLog']:
+						try:
+							head = s3_client.head_object(Bucket=S3_BUCKET_NAME, Key=key)
+							mtime = head.get('Metadata', {}).get('original_mod_time', '202301010000')
+							files_to_process.append({
+								'filename': filename,
+								's3_key': key,
+								'mtime': mtime,
+								'storage_type': 's3',
+								'log_type': get_logtype_from_filename(filename)
+							})
+						except ClientError:
+							continue
 		
 		# Now process all files with unified logic
 		debug_log(f"🔍 Processing {len(files_to_process)} files")
@@ -541,12 +544,10 @@ def process_logs(self, data):
 				if file_info['storage_type'] == 'local':
 					with open(file_info['path'], 'r', encoding='utf-8', errors='ignore') as f:
 						initial = f.read().replace('\x00','')
-				else:  # Azure
-					if log_type == 'DraftLog':
-						initial = file_info['blob_client'].download_blob().readall().decode('utf-8').replace('\r','')
-					else:  # GameLog
-						initial = file_info['blob_client'].download_blob().readall().decode('utf-8', errors='ignore')
-						initial = initial.replace('\x00','')
+				elif file_info['storage_type'] == 's3':
+					obj = s3_client.get_object(Bucket=S3_BUCKET_NAME, Key=file_info['s3_key'])
+					body = obj['Body'].read()
+					initial = body.decode('utf-8', errors='ignore').replace('\r','').replace('\x00','')
 
 				# Process based on log type
 				if log_type == 'GameLog':
