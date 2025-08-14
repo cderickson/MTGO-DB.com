@@ -19,13 +19,13 @@ def make_celery(app):
 		broker=app.config['CELERY_BROKER_URL']
 	)
 	
-	# Simplified Celery configuration to avoid conflicts
+	# Celery configuration - use JSON only for safer serialization
 	celery_config = {
 		'broker_url': app.config.get('CELERY_BROKER_URL'),
 		'result_backend': app.config.get('CELERY_RESULT_BACKEND'),
-		'task_serializer': 'pickle',  # Changed to pickle for better compatibility
-		'accept_content': ['pickle', 'json'],  # Allow both
-		'result_serializer': 'pickle',
+		'task_serializer': 'json',
+		'accept_content': ['json'],
+		'result_serializer': 'json',
 		'timezone': 'UTC',
 		'enable_utc': True,
 		'worker_prefetch_multiplier': 1,  # Process one task at a time

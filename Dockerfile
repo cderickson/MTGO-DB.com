@@ -20,6 +20,10 @@ RUN pip install --no-cache-dir -r requirements.txt \
 # Copy the rest of the app
 COPY . .
 
+# Drop root for runtime safety
+RUN useradd -m app && chown -R app:app /app
+USER app
+
 EXPOSE 8080
 
 # Default to web server; can be overridden by platform to run the worker
