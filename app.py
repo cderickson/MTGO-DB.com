@@ -1,6 +1,7 @@
 from flask import Flask
 import os
 from celery import Celery, Task
+import ssl
 from modules.models import Player, Match, Game, Play, Pick, Draft, GameActions, Removed, CardsPlayed
 from flask import request, url_for, flash, render_template, redirect
 from flask_login import login_user, login_required, logout_user, current_user
@@ -26,6 +27,13 @@ def make_celery(app):
 		'task_serializer': 'json',
 		'accept_content': ['json'],
 		'result_serializer': 'json',
+		# TLS for Redis (rediss://)
+		'broker_use_ssl': {
+			'ssl_cert_reqs': ssl.CERT_REQUIRED
+		},
+		'redis_backend_use_ssl': {
+			'ssl_cert_reqs': ssl.CERT_REQUIRED
+		},
 		'timezone': 'UTC',
 		'enable_utc': True,
 		'worker_prefetch_multiplier': 1,  # Process one task at a time

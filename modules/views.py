@@ -455,7 +455,7 @@ def process_logs(self, data):
 	file_stream = io.BytesIO(data['file_stream'])
 
 	with zipfile.ZipFile(file_stream, 'r') as zip_ref:
-		upload_dict = extract_zip_file(zip_ref, str(uid) + '\\')
+		upload_dict = extract_zip_file(zip_ref, f"{uid}/")
 	
 	try:
 		# Get list of files to process based on storage type
@@ -1446,7 +1446,7 @@ def reprocess_logs(self, data):
 			files_to_process = []
 			proc_dt = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('US/Pacific'))
 			
-			if log_container_client is None:  # Local file storage
+			if not S3_ENABLED:  # Local file storage
 				local_storage_dir = os.path.join('local-dev', 'data', 'uploads', str(uid))
 				debug_log(f"🔍 REPROCESS: Looking for files in: {local_storage_dir}")
 				debug_log(f"🔍 REPROCESS: Directory exists: {os.path.exists(local_storage_dir)}")
@@ -1484,26 +1484,26 @@ def reprocess_logs(self, data):
 							debug_log(f"🔍 REPROCESS: Skipping {filename} - log_type '{log_type}' not in ['GameLog', 'DraftLog']")
 				else:
 					debug_log(f"🔍 REPROCESS: Local storage directory does not exist: {local_storage_dir}")
-			else:  # Azure Blob Storage
-				for blob in log_container_client.list_blobs():
-					filename = blob.name.split('/')[-1]
-					try:
-						blob_uid = blob.name.split('/')[0]
-					except:
-						blob_uid = 0
-
-					if (get_logtype_from_filename(filename) in ['GameLog', 'DraftLog']) and (str(uid) == blob_uid):
-						blob_client = blob_service_client.get_blob_client(container=os.environ.get('LOG_CONTAINER_NAME'), blob=blob.name)
-						blob_properties = blob_client.get_blob_properties()
-						mtime = blob_properties['metadata']['original_mod_time']
-						
-						files_to_process.append({
-							'filename': filename,
-							'blob_client': blob_client,
-							'mtime': mtime,
-							'storage_type': 'azure',
-							'log_type': get_logtype_from_filename(filename)
-						})
+			else:  # S3 storage
+				prefix = f"{S3_PREFIX}{uid}/"
+				paginator = s3_client.get_paginator('list_objects_v2')
+				for page in paginator.paginate(Bucket=S3_BUCKET_NAME, Prefix=prefix):
+					for obj in page.get('Contents', []):
+						key = obj['Key']
+						filename = key.split('/')[-1]
+						if get_logtype_from_filename(filename) in ['GameLog', 'DraftLog']:
+							try:
+								head = s3_client.head_object(Bucket=S3_BUCKET_NAME, Key=key)
+								mtime = head.get('Metadata', {}).get('original_mod_time', '202301010000')
+								files_to_process.append({
+									'filename': filename,
+									's3_key': key,
+									'mtime': mtime,
+									'storage_type': 's3',
+									'log_type': get_logtype_from_filename(filename)
+								})
+							except ClientError:
+								continue
 			
 			# Now process all files with unified logic
 			debug_log(f"🔍 REPROCESS: Processing {len(files_to_process)} files")
@@ -1522,9 +1522,10 @@ def reprocess_logs(self, data):
 				if file_info['storage_type'] == 'local':
 					with open(file_info['path'], 'r', encoding='utf-8', errors='ignore') as f:
 						initial = f.read().replace('\x00','')
-				else:  # Azure
-					initial = file_info['blob_client'].download_blob().readall().decode('utf-8', errors='ignore')
-					initial = initial.replace('\x00','')
+				elif file_info['storage_type'] == 's3':
+					obj = s3_client.get_object(Bucket=S3_BUCKET_NAME, Key=file_info['s3_key'])
+					body = obj['Body'].read()
+					initial = body.decode('utf-8', errors='ignore').replace('\r','').replace('\x00','')
 
 				# Process based on log type
 				if log_type == 'GameLog':
