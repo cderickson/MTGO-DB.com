@@ -334,16 +334,14 @@ body {
     background-color: transparent !important;
 }
 
-/* Table-dependent buttons start disabled by default */
-.sidebar .nav-link.table-dependent {
-    opacity: 0.5;
-    pointer-events: none;
-    cursor: not-allowed;
-    color: #6c757d;
+/* When sidebar is collapsed, disable all nav links (mouse/touch) */
+.sidebar.collapsed .nav-link {
+    pointer-events: none !important;
 }
 
-.sidebar .nav-link.table-dependent .nav-icon {
-    color: #6c757d;
+/* Ensure all sidebar anchors are non-interactive when collapsed */
+.sidebar.collapsed a {
+    pointer-events: none !important;
 }
 
 .nav-section {

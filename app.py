@@ -21,25 +21,33 @@ def make_celery(app):
 	)
 	
 	# Celery configuration - use JSON only for safer serialization
+	broker_url = app.config.get('CELERY_BROKER_URL')
+	result_backend = app.config.get('CELERY_RESULT_BACKEND')
+	use_broker_ssl = isinstance(broker_url, str) and broker_url.strip().lower().startswith('rediss://')
+	use_backend_ssl = isinstance(result_backend, str) and result_backend.strip().lower().startswith('rediss://')
+
 	celery_config = {
-		'broker_url': app.config.get('CELERY_BROKER_URL'),
-		'result_backend': app.config.get('CELERY_RESULT_BACKEND'),
+		'broker_url': broker_url,
+		'result_backend': result_backend,
 		'task_serializer': 'json',
 		'accept_content': ['json'],
 		'result_serializer': 'json',
-		# TLS for Redis (rediss://)
-		'broker_use_ssl': {
-			'ssl_cert_reqs': ssl.CERT_REQUIRED
-		},
-		'redis_backend_use_ssl': {
-			'ssl_cert_reqs': ssl.CERT_REQUIRED
-		},
 		'timezone': 'UTC',
 		'enable_utc': True,
 		'worker_prefetch_multiplier': 1,  # Process one task at a time
 		'task_acks_late': True,  # Acknowledge tasks only after completion
 		'worker_hijack_root_logger': False,  # Don't interfere with logging
 	}
+
+	# Enable TLS only when using rediss://
+	if use_broker_ssl:
+		celery_config['broker_use_ssl'] = {
+			'ssl_cert_reqs': ssl.CERT_REQUIRED
+		}
+	if use_backend_ssl:
+		celery_config['redis_backend_use_ssl'] = {
+			'ssl_cert_reqs': ssl.CERT_REQUIRED
+		}
 	celery.conf.update(celery_config)
 
 	class ContextTask(celery.Task):

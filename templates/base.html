@@ -114,9 +114,9 @@
 
     <div id="loadBlock" class="app-layout">
       <!-- Sidebar Navigation -->
-      <nav class="sidebar" id="sidebar">
-        <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" onclick="toggleDesktopSidebar()" title="Collapse Sidebar">
-          <i class="fas fa-chevron-left"></i>
+      <nav class="sidebar{% if request.cookies.get('sidebarCollapsed') == 'true' %} collapsed{% endif %}" id="sidebar">
+        <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" onclick="toggleDesktopSidebar()" title="{% if request.cookies.get('sidebarCollapsed') == 'true' %}Expand Sidebar{% else %}Collapse Sidebar{% endif %}">
+          <i class="fas {% if request.cookies.get('sidebarCollapsed') == 'true' %}fa-chevron-right{% else %}fa-chevron-left{% endif %}"></i>
         </button>
         <div class="sidebar-content">
           {% if not user.is_authenticated %}
@@ -158,13 +158,13 @@
             <h3 class="nav-section-title">Tables</h3>
             <ul class="nav-list">
                           <li class="nav-item">
-              <a href="{{ url_for('views.table', table_name='matches', page_num=1) }}" class="nav-link disabled table-dependent" id="matchesMenuButton">
+              <a href="{{ url_for('views.table', table_name='matches', page_num=1) }}" class="nav-link table-dependent {% if initial_sidebar_status and not initial_sidebar_status.matches_enabled %}disabled{% endif %}" id="matchesMenuButton">
                 <i class="fas fa-chess-board nav-icon"></i>
                 <span class="nav-text">Matches</span>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{{ url_for('views.table', table_name='drafts', page_num=1) }}" class="nav-link disabled table-dependent" id="draftsMenuButton">
+              <a href="{{ url_for('views.table', table_name='drafts', page_num=1) }}" class="nav-link table-dependent {% if initial_sidebar_status and not initial_sidebar_status.drafts_enabled %}disabled{% endif %}" id="draftsMenuButton">
                 <i class="fas fa-cube nav-icon"></i>
                 <span class="nav-text">Drafts</span>
               </a>
@@ -182,21 +182,21 @@
             <h3 class="nav-section-title">Data Cleaning</h3>
             <ul class="nav-list">
                           <li class="nav-item">
-              <a href="#" class="nav-link disabled table-dependent" id="bestGuessMenuButton" data-original-onclick="showBestGuessModal()">
+              <a href="#" class="nav-link table-dependent {% if initial_sidebar_status and not initial_sidebar_status.best_guess_enabled %}disabled{% endif %}" id="bestGuessMenuButton" data-original-onclick="showBestGuessModal()">
                 <i class="fas fa-magic nav-icon"></i>
                 <span class="nav-text">Best Guess Deck Names</span>
               </a>
             </li>
               <li class="nav-item">
-                <a href="#" class="nav-link disabled table-dependent" id="getMissingMenuButton" data-original-onclick="initGetWinner()">
+                <a href="#" class="nav-link table-dependent {% if initial_sidebar_status and not initial_sidebar_status.missing_winners_enabled %}disabled{% endif %}" id="getMissingMenuButton" data-original-onclick="initGetWinner()">
                   <i class="fas fa-trophy nav-icon"></i>
-                  <span class="nav-text">Get Missing Game Winners</span>
+                  <span class="nav-text">Missing Game Winners</span>
                 </a>
               </li>
               <li class="nav-item">
-                <a href="#" class="nav-link disabled table-dependent" id="applyDraftIdMenuButton" data-original-onclick="initGetDraftId()">
+                <a href="#" class="nav-link table-dependent {% if initial_sidebar_status and not initial_sidebar_status.draft_ids_enabled %}disabled{% endif %}" id="applyDraftIdMenuButton" data-original-onclick="initGetDraftId()">
                   <i class="fas fa-link nav-icon"></i>
-                  <span class="nav-text">Apply Associated Draft IDs</span>
+                  <span class="nav-text">Associated Draft IDs</span>
                 </a>
               </li>
             </ul>
@@ -224,19 +224,19 @@
                 </a>
               </li>
               <li class="nav-item">
-                <a href="#" class="nav-link disabled table-dependent" id="reprocessMenuButton" onclick="showReprocessModal()">
+                <a href="#" class="nav-link table-dependent {% if initial_sidebar_status and not initial_sidebar_status.reprocess_enabled %}disabled{% endif %}" id="reprocessMenuButton" onclick="showReprocessModal()">
                   <i class="fas fa-redo nav-icon"></i>
                   <span class="nav-text">Re-Process Archived Files</span>
                 </a>
               </li>
                           <li class="nav-item">
-              <a href="/ignored" class="nav-link disabled table-dependent" id="ignoredMatchesMenuButton">
+              <a href="/ignored" class="nav-link table-dependent {% if initial_sidebar_status and not initial_sidebar_status.ignored_matches_enabled %}disabled{% endif %}" id="ignoredMatchesMenuButton">
                 <i class="fas fa-eye-slash nav-icon"></i>
                 <span class="nav-text">Ignored Matches</span>
               </a>
             </li>
               <li class="nav-item">
-                <a href="{{ url_for('views.export') }}" class="nav-link disabled table-dependent" id="exportMenuButton" onclick="handleExportClick(this); return false;">
+                <a href="{{ url_for('views.export') }}" class="nav-link table-dependent {% if initial_sidebar_status and not initial_sidebar_status.export_enabled %}disabled{% endif %}" id="exportMenuButton" onclick="handleExportClick(this); return false;">
                   <i class="fas fa-file-excel nav-icon"></i>
                   <span class="nav-text">Export to Excel</span>
                 </a>
@@ -248,7 +248,7 @@
             <h3 class="nav-section-title">Dashboards</h3>
             <ul class="nav-list">
               <li class="nav-item">
-                <a href="{{ url_for('views.dashboards') }}" class="nav-link disabled table-dependent" id="dashboardsMenuButton">
+                <a href="{{ url_for('views.dashboards') }}" class="nav-link table-dependent {% if initial_sidebar_status and not initial_sidebar_status.dashboards_enabled %}disabled{% endif %}" id="dashboardsMenuButton">
                   <i class="fas fa-chart-line nav-icon"></i>
                   <span class="nav-text">Analytics Dashboards</span>
                 </a>
@@ -310,7 +310,7 @@
       </nav>
 
       <!-- Main Content Area -->
-      <div class="main-content" id="main-content">
+      <div class="main-content" id="main-content" {% if request.cookies.get('sidebarCollapsed') == 'true' %}style="margin-left: 0;"{% endif %}>
         <!-- Page Content -->
         <main class="content-wrapper">
           {% block content %}{% endblock %}
@@ -1362,6 +1362,26 @@
       }
     }
     
+    // Show processing modal on Import submit
+    document.addEventListener('DOMContentLoaded', function() {
+      const importForm = document.getElementById('importForm');
+      if (importForm) {
+        importForm.addEventListener('submit', function() {
+          // Visually hide the Import modal without resetting the form (preserves file input)
+          const modal = document.getElementById('ImportModal');
+          if (modal) {
+            modal.style.visibility = 'hidden';
+            modal.style.opacity = '0';
+            modal.style.pointerEvents = 'none';
+          }
+          // Show processing modal
+          showProcessingModal('Uploading and processing your GameLogs...');
+          const buttons = document.getElementById('processingButtons');
+          if (buttons) buttons.style.display = 'none';
+        });
+      }
+    });
+    
     // File validation for LoadRevisions modal
     function validateLoadRevisionsFiles() {
       const fileInput = document.getElementById('loadRevisionsFileInput');
@@ -1504,6 +1524,7 @@
       const sidebar = document.getElementById('sidebar');
       const collapseBtn = document.getElementById('sidebarCollapseBtn');
       const mainContent = document.querySelector('.main-content');
+      const sidebarLinks = document.querySelectorAll('.sidebar a');
       
       sidebar.classList.toggle('collapsed');
       
@@ -1516,6 +1537,11 @@
         if (mainContent) {
           mainContent.style.marginLeft = '0';
         }
+        // Disable keyboard focus on all sidebar links when collapsed
+        sidebarLinks.forEach(link => {
+          link.setAttribute('data-prev-tabindex', link.getAttribute('tabindex') || '');
+          link.setAttribute('tabindex', '-1');
+        });
       } else {
         icon.className = 'fas fa-chevron-left';
         collapseBtn.title = 'Collapse Sidebar';
@@ -1523,32 +1549,29 @@
         if (mainContent) {
           mainContent.style.marginLeft = '280px';
         }
+        // Restore previous tabindex state for all sidebar links
+        sidebarLinks.forEach(link => {
+          const prev = link.getAttribute('data-prev-tabindex');
+          if (prev === '') {
+            link.removeAttribute('tabindex');
+          } else if (prev !== null) {
+            link.setAttribute('tabindex', prev);
+          }
+          link.removeAttribute('data-prev-tabindex');
+        });
       }
       
-      // Save state to localStorage
-      localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+      // Persist state in both localStorage and cookie (for server-rendered initial state)
+      const isCollapsed = sidebar.classList.contains('collapsed');
+      localStorage.setItem('sidebarCollapsed', isCollapsed);
+      try {
+        document.cookie = `sidebarCollapsed=${isCollapsed}; path=/; SameSite=Lax`;
+      } catch (e) {
+        // Ignore cookie errors
+      }
     }
 
-    // Restore sidebar state on page load
-    document.addEventListener('DOMContentLoaded', function() {
-      const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-      if (sidebarCollapsed) {
-        const sidebar = document.getElementById('sidebar');
-        const collapseBtn = document.getElementById('sidebarCollapseBtn');
-        
-        if (sidebar && collapseBtn) {
-          sidebar.classList.add('collapsed');
-          const icon = collapseBtn.querySelector('i');
-          icon.className = 'fas fa-chevron-right';
-          collapseBtn.title = 'Expand Sidebar';
-          
-          const mainContent = document.querySelector('.main-content');
-          if (mainContent) {
-            mainContent.style.marginLeft = '0';
-          }
-        }
-      }
-    });
+    // No JS reflow needed on load; initial state is applied server-side via cookie
     </script>
 
   </body>

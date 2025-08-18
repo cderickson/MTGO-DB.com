@@ -76,6 +76,63 @@ except Exception as e:
 s = URLSafeTimedSerializer(os.environ.get("URL_SAFETIMEDSERIALIZER", "dev-secret-key"))
 views = Blueprint('views', __name__)
 
+def compute_sidebar_status_for_user(uid):
+    """Compute sidebar enable/disable status for a given user id."""
+    match_count = Match.query.filter_by(uid=uid).count()
+    draft_count = Draft.query.filter_by(uid=uid).count()
+    removed_count = Removed.query.filter_by(uid=uid).count()
+    game_actions_count = GameActions.query.filter_by(uid=uid).count()
+
+    # Check if there are GameActions with valid match_ids (exist in Match table)
+    valid_game_actions_count = 0
+    if game_actions_count > 0:
+        game_action_match_ids = db.session.query(GameActions.match_id).filter_by(uid=uid).distinct().all()
+        game_action_match_ids = [row[0] for row in game_action_match_ids]
+        if game_action_match_ids:
+            valid_match_ids = db.session.query(Match.match_id).filter(
+                Match.uid == uid,
+                Match.match_id.in_(game_action_match_ids)
+            ).all()
+            valid_match_ids = [row[0] for row in valid_match_ids]
+            if valid_match_ids:
+                valid_game_actions_count = GameActions.query.filter(
+                    GameActions.uid == uid,
+                    GameActions.match_id.in_(valid_match_ids)
+                ).count()
+
+    # Check if archive directory has files for reprocessing
+    archive_files_count = 0
+    archive_dir = os.path.join('local-dev', 'data', 'uploads', str(uid))
+    if os.path.exists(archive_dir):
+        all_files = os.listdir(archive_dir)
+        for filename in all_files:
+            if not filename.endswith('.meta'):
+                log_type = get_logtype_from_filename(filename)
+                if log_type in ['GameLog', 'DraftLog']:
+                    archive_files_count += 1
+
+    return {
+        'matches_enabled': match_count > 0,
+        'best_guess_enabled': match_count > 0,
+        'drafts_enabled': draft_count > 0,
+        'ignored_matches_enabled': removed_count > 0,
+        'missing_winners_enabled': valid_game_actions_count > 0,
+        'draft_ids_enabled': match_count > 0 and draft_count > 0,
+        'reprocess_enabled': archive_files_count > 0,
+        'export_enabled': match_count > 0 or draft_count > 0,
+        'dashboards_enabled': match_count > 0 or draft_count > 0
+    }
+
+@views.app_context_processor
+def inject_initial_sidebar_status():
+    try:
+        if current_user and hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
+            status = compute_sidebar_status_for_user(current_user.uid)
+            return {'initial_sidebar_status': status}
+    except Exception:
+        pass
+    return {'initial_sidebar_status': None}
+
 def update_draft_wins(uid, username, draft_id):
 	"""Update draft match statistics - shared function used by multiple processes"""
 	match_wins = 0
@@ -5162,6 +5219,9 @@ def api_match_revise():
 		# Small helper to strip strings
 		clean = lambda v: v.strip() if isinstance(v, str) else v
 
+		# Ensure shared option data is loaded (not strictly needed here)
+		ensure_data_loaded()
+
 		# Update match data
 		for match in matches:
 			# Pre-clean inputs
@@ -5232,6 +5292,10 @@ def api_match_revise_multi():
 		# Small helper to strip strings
 		clean = lambda v: v.strip() if isinstance(v, str) else v
 
+		# Ensure shared option data is loaded and create a safe local reference
+		ensure_data_loaded()
+		safe_options = options if isinstance(options, dict) else {}
+
 		# Apply changes based on field type
 		for match in matches:
 			if field_to_change == 'P1 Deck':
@@ -5272,7 +5336,7 @@ def api_match_revise_multi():
 					match.format = fmt_in
 				
 				# Handle Limited format archetype changes
-				if fmt_in in options.get('Limited Formats', []):
+				if fmt_in in safe_options.get('Limited Formats', []):
 					match.p1_arch = 'Limited'
 					match.p2_arch = 'Limited'
 				else:
